@@ -1,0 +1,138 @@
+import random
+
+deck_size = 104
+bull_range = [2, 7]
+
+
+"""
+Data Definitions necessary for representing the components of a 6 Nimmit! game
+"""
+
+class Card(object):
+    def __init__(self, face_value, bull):
+        self.face_value = face_value
+        self.bull = bull
+
+# Examples
+card_1 = Card(1, 2)
+card_2 = Card(50, 4)
+card_3 = Card(104, 7)
+
+
+class Stack(object):
+    def __init__(self, list_of_cards):
+        self.list_of_cards = list_of_cards
+        self.total_bull = sum([card.bull for card in self.list_of_cards])
+
+# Examples
+stack_1 = Stack([])
+stack_2 = Stack([card_1])
+stack_3 = Stack([card_1, card_2, card_3])
+
+
+class Player(object):
+    def __init__(self, name, strategy):
+        self.name = name
+        self.strategy = strategy
+        self.bull_points = 0
+        self.discard = None
+        self.turn_played = False
+
+# Examples
+player_1 = Player("Player 1", None)
+player_2 = Player("Player 2", None)
+
+
+class Dealer(object):
+    def __init__(self, list_of_players):
+        self.list_of_players = list_of_players
+        deck = []
+        for x in range(1, deck_size + 1):
+            bull = random.choice(bull_range)
+            card = Card(face_value=x, bull=bull)
+            deck.append(card)
+        self.deck = deck
+        self.discards = {}
+        self.list_of_stacks = []
+
+# Examples
+dealer_1 = Dealer([player_1, player_2])
+
+
+"""
+Protocol
+
+0: Main program creates n players and 1 dealer
+1: Round begins
+2: Dealer deals 10 cards to each player from deck
+2a. If no more cards exist in Deck, round continues without newly dealt cards
+3. Dealer creates four stacks of one card each
+4. Each player picks discard
+4a. Dealer takes discards from players (into dict)
+5. Dealer checks lowest card against each stack
+    if smaller than all:
+        1. Dealer asks player which stack to pick up
+        2. Dealer subtracts bull points from player
+        3. Dealer gives player Stack into Hand
+        4. Dealer starts new stack with discard
+    if larger and closest Stack is less than 5 cards:
+        1. Dealer places discard on top of closest Stack
+    if larger and closest Stack is 5 Cards:
+        1. Dealer subtracts bull points from Player
+        2. Dealer replaces Stack with discard
+6. Dealer checks bull points of all players to see if any have -66
+6a. If any player has -66, game ends, and player with least bull points is the winner
+7. New Round Begins (repeat from step 2)
+"""
+
+"""
+Signatures
+
+Dealer:
+deal: List-of-Player -> List-of-Player
+Transfers 10 cards to each player's hand from the deck
+
+create_stack: Card -> Stack
+Creates a new stack with the given card
+
+collect_discards: List-of-Players -> Dictionary
+Takes each players discard and adds it to a dictionary as a value corresponding to the players name
+
+replace_stack: Card List-of-Stack -> List-of-Stack
+Checks player discard against each stack and either adds to or replaces the appropriate stack
+
+    # Potential scenarios when replacing stack for each condition in Protocol Step 5
+    add_to_stack: Card Stack -> Stack
+    Adds the given card to a stack
+
+    subtract_bull: Player Stack -> Player
+    Subtracts the bull points of a replaced stack from the player's bull points
+
+    add_to_hand: Stack Player -> Player
+    Adds the cards from a replaced stack to the given player's hand
+
+find_winner: List-of-Players -> String
+Returns the name of the player with the least bill points if any player has exceeded -66 bull points
+
+play_game: Self -> String ("___ won the game")
+The dealer initiates a 6 Nimmit! game, returning the name of the winning player
+
+
+Player:
+pick_discard: List-of-Cards Strategy -> Card
+Selects a card from the hand to discard according to the given strategy
+
+pick_stack: Strategy -> Integer(0 - 3)
+Picks a stack to add to the hand according to the given strategy
+"""
+
+
+# The main function that will run a 6 Nimmit! game
+def main(n):
+    players = []
+    for x in range(1, n + 1):
+        player = Player(name="Player %d" % x, strategy=None)  # Strategies are not yet implemented
+        players.append(player)
+    dealer = Dealer(list_of_players=players)
+    result = dealer.play_game()
+    print result

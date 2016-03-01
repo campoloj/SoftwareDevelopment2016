@@ -1,0 +1,202 @@
+diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
+index e11f385..ddd7f2e 100644
+--- a/2/take5/Assignment_2.py
++++ b/2/take5/Assignment_2.py
+@@ -44,13 +44,14 @@ class Dealer(object):
+             bull = random.choice(self.bull_range)
+             card = Card(face_value=x, bull=bull)
+             deck.append(card)
+-        random.shuffle(deck)
+         self.deck = deck
+ 
+     def deal(self):
+         """
+         Transfers 10 cards to each player's hand from the deck
+         """
++        for player in self.list_of_players:
++            player.hand = []
+         for x in range(self.starting_player, self.starting_player + len(self.list_of_players)):
+             player_index = x % len(self.list_of_players)
+             cards_dealt = self.deck[0:10]
+@@ -110,31 +111,35 @@ class Dealer(object):
+         Checks each player's discard against each stack and performs the necessary modifications to stack and player
+         """
+         while self.discards:
+-            min_card = min(self.discards.values())
++            min_card = min(self.discards.values(), key=lambda x: x.face_value)
+             player_index = self.discards.keys()[self.discards.values().index(min_card)]
+             player = self.list_of_players[player_index]
+-            target_stack = None
++            closest_stack = None
++            lowest_diff = None
+             for stack in self.list_of_stacks:
+                 stack_top_val = stack.list_of_cards[-1].face_value
+-                if min_card.face_value > stack_top_val:
+-                    if target_stack and target_stack.list_of_cards[-1].face_value > stack_top_val:
+-                        continue
+-                    else:
+-                        target_stack = stack
+-            if not target_stack:
+-                target_stack_index = player.pick_stack(self)
+-                target_stack = self.list_of_stacks[target_stack_index]
+-                self.subtract_bull(player, target_stack)
+-                self.add_to_hand(player, target_stack)
+-                self.list_of_stacks.remove(target_stack)
++                if not closest_stack:
++                    closest_stack = stack
++                    lowest_diff = abs(min_card.face_value - stack_top_val)
++                else:
++                    current_diff = abs(min_card.face_value - stack_top_val)
++                    if current_diff < lowest_diff:
++                        lowest_diff = current_diff
++                        closest_stack = stack
++            if all([min_card.face_value < stack.list_of_cards[-1].face_value for stack in self.list_of_stacks]):
++                selected_stack_index = player.pick_stack(self)
++                selected_stack = self.list_of_stacks[selected_stack_index]
++                self.subtract_bull(player, selected_stack)
++                self.add_to_hand(player, selected_stack)
++                self.list_of_stacks.remove(selected_stack)
+                 self.list_of_stacks.append(self.create_stack(min_card))
+-            elif len(target_stack.list_of_cards) == 5:
+-                self.subtract_bull(player, target_stack)
+-                self.list_of_stacks.remove(target_stack)
++            elif len(closest_stack.list_of_cards) == 5:
++                self.subtract_bull(player, closest_stack)
++                self.list_of_stacks.remove(closest_stack)
+                 self.list_of_stacks.append(self.create_stack(min_card))
+             else:
+-                self.list_of_stacks.remove(target_stack)
+-                replace_stack = self.add_to_stack(min_card, target_stack)
++                self.list_of_stacks.remove(closest_stack)
++                replace_stack = self.add_to_stack(min_card, closest_stack)
+                 self.list_of_stacks.append(replace_stack)
+ 
+             self.list_of_players[player.name] = player
+@@ -165,10 +170,12 @@ class Dealer(object):
+             if result:
+                 return result
+             self.deal()
++            self.list_of_stacks = []
+             self.create_initial_stacks()
+             self.collect_discards()
+             self.fix_stacks()
+             self.make_deck()
++            random.shuffle(self.deck)
+ 
+ 
+ 
+@@ -200,13 +207,10 @@ def main(n, bull_range=(2, 7), starting_player=0):
+ 
+ if __name__ == "__main__":
+     args = sys.argv
+-    if len(args) > 5:
+-        raise RuntimeError("Too many args given, main only accepts number of players (n) and bull point value")
+-    elif len(args) < 3:
+-        raise RuntimeError("Must supply number of players between 1 and %d to main" % ((deck_size - 4) / 10))
++    if len(args) > 4:
++        raise RuntimeError("Too many args given, main only accepts number of players (n), bull point value")
++    elif len(args) < 4:
++        raise RuntimeError("Must supply number of players between 1 and %d, bull point range and the "
++                           "starting player to main" % ((deck_size - 4) / 10))
+     elif len(args) == 4:
+         main(args[1], args[2], args[3])
+-    elif len(args) == 3:
+-        main(args[1], args[2])
+-    else:
+-        main(args[1])
+\ No newline at end of file
+diff --git a/3/player-git-diff b/3/player-git-diff
+new file mode 100644
+index 0000000..c1d260e
+--- /dev/null
++++ b/3/player-git-diff
+@@ -0,0 +1,89 @@
++diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
++index 01b63c6..e11f385 100644
++--- a/2/take5/Assignment_2.py
+++++ b/2/take5/Assignment_2.py
++@@ -1,5 +1,11 @@
++ import random
++ import sys
+++import os
+++
+++cwd = os.getcwd()
+++sys.path.append(cwd + '/cs4500-lidauch-jcamp/3/')
+++
+++from player import Player
++ 
++ deck_size = 104
++ 
++@@ -19,29 +25,6 @@ class Stack(object):
++         self.list_of_cards = list_of_cards
++         self.total_bull = sum([card.bull for card in self.list_of_cards])
++ 
++-"""
++-This object will be implemented by Foomanistan developers
++-"""
++-class Player(object):
++-    def __init__(self, name):
++-        self.name = name
++-        self.hand = []
++-        self.bull_points = 0
++-        self.discard = None
++-
++-    def pick_discard(self):
++-        """
++-        Player selects card from hand to discard
++-        :return: card to discard
++-        """
++-
++-    def pick_stack(self, dealer):
++-        """
++-        Player selects stack to add to their hand
++-        :param dealer: the dealer object
++-        :return: index of stack to pick up
++-        """
++-
++ 
++ class Dealer(object):
++     def __init__(self, list_of_players, bull_range=(2, 7), starting_player=0):
++diff --git a/3/player.py b/3/player.py
++new file mode 100644
++index 0000000..75c963d
++--- /dev/null
+++++ b/3/player.py
++@@ -0,0 +1,36 @@
+++"""
+++Foomanistan developers failed to provide Player interface
+++"""
+++class Player(object):
+++    def __init__(self, name):
+++        self.name = name
+++        self.hand = []
+++        self.bull_points = 0
+++        self.discard = None
+++
+++    def pick_discard(self):
+++        """
+++        Player selects card from hand to discard
+++        :return: card to discard
+++        """
+++        high_card = None
+++        max_face = None
+++        for card in self.hand:
+++            if card.face_value > max_face:
+++                max_face = card.face_value
+++                high_card = card
+++        self.hand.remove(high_card)
+++        return high_card
+++
+++    def pick_stack(self, dealer):
+++        """
+++        Player selects stack to add to their hand
+++        :param dealer: the dealer object
+++        :return: index of stack to pick up
+++        """
+++        stacks = dealer.list_of_stacks
+++        min_stack = stacks[0]
+++        for stack in stacks:
+++            if stack.total_bull < min_stack.total_bull:
+++                min_stack = stack
+++        return dealer.list_of_stacks.index(min_stack)
++\ No newline at end of file

@@ -1,0 +1,26 @@
+diff --git a/3/player.py b/3/player.py
+index 75c963d..d55f173 100644
+--- a/3/player.py
++++ b/3/player.py
+@@ -13,14 +13,14 @@ class Player(object):
+         Player selects card from hand to discard
+         :return: card to discard
+         """
+-        high_card = None
+-        max_face = None
++        selected_card = None
++        selected_face = self.hand[0]
+         for card in self.hand:
+-            if card.face_value > max_face:
+-                max_face = card.face_value
+-                high_card = card
+-        self.hand.remove(high_card)
+-        return high_card
++            if card.face_value < selected_face:
++                selected_face = card.face_value
++                selected_card = card
++        self.hand.remove(selected_card)
++        return selected_card
+ 
+     def pick_stack(self, dealer):
+         """

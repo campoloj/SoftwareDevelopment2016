@@ -1,0 +1,23 @@
+The purpose of this project is to implement a remote proxy player, create unit test files for JSON in and out
+messages, and create a data definition for the Evolution game.
+
+remote/remote-client.py: The main function for the remote proxy player
+remote/globals.py:  Global variables used in remote/
+remote/convert.py: Object containing static methods to convert to/from JSON messages
+test/*: 5 different in/out pairs of JSON messages
+evolution/ambiguities.txt: document with questions to clarify rules of evolution
+evolution/Diagram.jpg: UML diagram for evolution objects
+
+______________________________________________________________________________________________________________________
+
+To run the files in remote/ cd into the remote directory and run "remote-client.py" for windows or "python remote.py"
+for linux boxes.
+
+______________________________________________________________________________________________________________________
+
+remote/remote-client.py should be read first from top to bottom using remote/convert.py and remote/globals.py as references.
+remote/convert.py should be read next from top to bottom.
+test/* should be read next. The files should be read in in/out pairs starting with pair number one.
+evolution/Diagram.jpg should be looked at next.
+evolution/ambiguities.txt should be read last.
+

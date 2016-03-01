@@ -1,0 +1,5 @@
+[[["food", 2], ["body", 3], ["population", 1], ["traits", ["climbing"]]],
+  [["food", 2], ["body", 3], ["population", 1], ["traits", ["carnivore"]]],
+  [["food", 2], ["body", 3], ["population", 1], ["traits", []]],
+  false
+]

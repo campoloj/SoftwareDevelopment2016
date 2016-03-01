@@ -1,0 +1,23 @@
+Ambiguities
+
+1) Can the food tokens on the watering hole be reduced to a negative value? If so,
+   does it remain negative for the next round or reset to 0?
+
+2) If a turn ends (watering hole food reduced to 0) before a player turns their
+   face down cards over, are they kept on the species board for the next turn
+   or removed? If kept, can they be added to in the following turn?
+
+3) Do "neighbors" (ex. trait 15) only include neighbors in the player's species boards,
+   or can other player's species boards be neighbors as well?
+
+4) Is there a limit to the number of species boards? If so, what happens to the species
+   board when that species goes extinct?
+
+5) What happens to the trait cards on a species board when that species extinct? Are they removed
+   from the game or returned to the deck?
+
+6) When a player trades in trait cards for additional population, body size, or species board, are
+   those cards returned to the deck or removed from the game?
+
+7) For the (6) Fat Tissue trait, is the total storable food equal to the larger value of
+   population size and body size, or the combination of the two values?

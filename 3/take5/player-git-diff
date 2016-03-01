@@ -1,0 +1,89 @@
+diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
+index 01b63c6..e11f385 100644
+--- a/2/take5/Assignment_2.py
++++ b/2/take5/Assignment_2.py
+@@ -1,5 +1,11 @@
+ import random
+ import sys
++import os
++
++cwd = os.getcwd()
++sys.path.append(cwd + '/cs4500-lidauch-jcamp/3/')
++
++from player import Player
+ 
+ deck_size = 104
+ 
+@@ -19,29 +25,6 @@ class Stack(object):
+         self.list_of_cards = list_of_cards
+         self.total_bull = sum([card.bull for card in self.list_of_cards])
+ 
+-"""
+-This object will be implemented by Foomanistan developers
+-"""
+-class Player(object):
+-    def __init__(self, name):
+-        self.name = name
+-        self.hand = []
+-        self.bull_points = 0
+-        self.discard = None
+-
+-    def pick_discard(self):
+-        """
+-        Player selects card from hand to discard
+-        :return: card to discard
+-        """
+-
+-    def pick_stack(self, dealer):
+-        """
+-        Player selects stack to add to their hand
+-        :param dealer: the dealer object
+-        :return: index of stack to pick up
+-        """
+-
+ 
+ class Dealer(object):
+     def __init__(self, list_of_players, bull_range=(2, 7), starting_player=0):
+diff --git a/3/player.py b/3/player.py
+new file mode 100644
+index 0000000..75c963d
+--- /dev/null
++++ b/3/player.py
+@@ -0,0 +1,36 @@
++"""
++Foomanistan developers failed to provide Player interface
++"""
++class Player(object):
++    def __init__(self, name):
++        self.name = name
++        self.hand = []
++        self.bull_points = 0
++        self.discard = None
++
++    def pick_discard(self):
++        """
++        Player selects card from hand to discard
++        :return: card to discard
++        """
++        high_card = None
++        max_face = None
++        for card in self.hand:
++            if card.face_value > max_face:
++                max_face = card.face_value
++                high_card = card
++        self.hand.remove(high_card)
++        return high_card
++
++    def pick_stack(self, dealer):
++        """
++        Player selects stack to add to their hand
++        :param dealer: the dealer object
++        :return: index of stack to pick up
++        """
++        stacks = dealer.list_of_stacks
++        min_stack = stacks[0]
++        for stack in stacks:
++            if stack.total_bull < min_stack.total_bull:
++                min_stack = stack
++        return dealer.list_of_stacks.index(min_stack)
+\ No newline at end of file

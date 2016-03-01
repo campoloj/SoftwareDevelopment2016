@@ -1,0 +1,19 @@
+Players will interface with the rest of the game as follows:
+Player
+	discard_card(card): The player will choose the card to discard
+	select_stack(): The player selects the stack they wish to put their card in
+
+The rest of the system contains methods that interface with the Player:
+Main/Core
+	initialize_game(player_amount): Initializes the game with player_amount Players and 104 cards, with unique numbers for each
+	add_player(player_id): A player object will be created and instantiated for the game
+	get_hand(player_id): Gets the cards player_id has in their hand
+	accept_discarded_card(card): Passes the discarded card to the Dealer
+	new_round(): Initialize a new round, by asking the Dealer to deal_cards() and create_stacks()
+	
+Dealer
+	deal_cards(): Dealer deals 10 cards to each player
+	create_stacks(): Dealer uses the cards remaining in the deck to create 4 card stacks with unique ids
+	store_discarded_card(card): Accepts the card to be discarded from Core
+	parse_cards(): Parses cards once all players have discarded 1 card and handles game logic: when the game terminates, when to start a new round, when the player needs to pick up card stacks
+	give_stack(stack_id, player_id): Give all the cards in the stack (specified by stack_id) to the player (specified by player_id), and the player's bull total is incremented by the amount of bull value of the stack

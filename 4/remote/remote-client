@@ -1,0 +1,129 @@
+#!/usr/bin/env python2.7
+
+import os
+import sys
+import socket
+import json
+from globals import *
+from convert import Conversions
+
+player_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "..%s..%s3" % (os.sep, os.sep))
+sys.path.append(player_path)
+
+from player import Player
+
+
+def main():
+    sock = socket.create_connection((SERVER_ADDRESS, PORT))
+    player = Player()
+    try:
+        message = ""
+        while True:
+            message += sock.recv(BUFFSIZE)
+            complete_message = complete_json(message)
+            if complete_message:
+                response = handle_message(player, complete_message)
+                sock.sendall(response)
+                message = ""
+    finally:
+        sock.close()
+
+
+def complete_json(message):
+    """
+    Determines of a message stub is a complete JSON message
+    :param message: string of JSON data
+    :return: True if JSON message is complete, else False
+    """
+    open_identifier_sum = 0
+    close_identifier_sum = 0
+    start_index = 0
+    for i in range(0, len(message)):
+        char = message[i]
+        if char == MESSAGE_OPEN_IDENTIFIER:
+            if start_index == 0:
+                start_index = i
+            open_identifier_sum += 1
+        elif char == MESSAGE_CLOSE_IDENTIFIER:
+            close_identifier_sum += 1
+        if open_identifier_sum != 0 and close_identifier_sum != 0 and open_identifier_sum == close_identifier_sum:
+            return message[start_index:i]
+
+
+def handle_message(player, message):
+    """
+    Creates a JSON response to the given message using the player object
+    :param player: a Player object
+    :param message: a string representation of
+    :return: The appropriate JSON response
+    """
+    json_data = json.loads(message)
+    message_type = json_data[0]
+    global PREVIOUS_MESSAGE
+    if message_type == "start-round":
+        return handle_start_round(json_data[1], player)
+    elif message_type == "take-turn":
+        return handle_take_turn(player)
+    elif message_type == "choose":
+        json_stack = handle_choose(json_data[1], player)
+        return json.dumps(json_stack)
+    PREVIOUS_MESSAGE = message_type
+
+
+def handle_start_round(json_hand, player):
+    """
+    Handles a start-round message by adding cards to the player hand
+    :param json_hand: list of [int, int] cards
+    :param player: the Player object
+    :return JSON Boolean message
+    """
+    global ROUND_STARTED, TURNS_TAKEN
+    if not ROUND_STARTED:
+        ROUND_STARTED = True
+        TURNS_TAKEN = 0
+        for json_card in json_hand:
+            card = Conversions.convert_json_to_card(json_card)
+            player.hand.append(card)
+        return json.dumps(True)
+    else:
+        return json.dumps(False)
+
+
+def handle_take_turn(player):
+    """
+    Handles a take-turn message by asking a player to pick a card to discard
+    :param player: the Player object
+    :return: JSON card message
+    """
+    global ROUND_STARTED, TURNS_TAKEN
+    if not ROUND_STARTED:
+        return json.dumps(False)
+    TURNS_TAKEN += 1
+    if TURNS_TAKEN == MAX_TURNS:
+        ROUND_STARTED = False
+    card = player.pick_discard()
+    json_card = Conversions.convert_card_to_json(card)
+    return json.dumps(json_card)
+
+
+def handle_choose(json_deck, player):
+    """
+    Handles a choose message by encoding the player's chosen stack into JSON
+    :param json_deck: list of JSON stacks
+    :param player: the Player object
+    :return: a JSON stack
+    """
+    global ROUND_STARTED, TURNS_TAKEN, PREVIOUS_MESSAGE
+    if not ROUND_STARTED or TURNS_TAKEN == 0 or not PREVIOUS_MESSAGE == "take-turn":
+        return json.dumps(False)
+    list_of_stacks = []
+    for json_stack in json_deck:
+        stack = Conversions.convert_json_to_stack(json_stack)
+        list_of_stacks.append(stack)
+    stack = player.pick_stack(list_of_stacks)
+    return json.dumps(Conversions.convert_stack_to_json(stack))
+
+
+if __name__ == "__main__":
+    main()

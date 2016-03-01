@@ -1,0 +1,145 @@
+Interaction Diagram
+
++-------------+                                   +-------------+
+|   Dealer    |                                   |    Player   |
++-------------+                                   +-------------+
+      ||                                                ||
+      ||        <------------------------------         ||
+  1   ||                    Registration                ||
+      ||        ===============================>        ||
+      ||           Waiting for x more players           ||
+      ||                                                ||
+      + + + + + + + + + + + + + + + + + + + + + + + + + +
+      ||                                                ||
+  2   ||        ------------------------------->        ||
+      ||                    Deal                        ||
+      ||                                                ||
+      + + + + + + + + + + + + + + + + + + + + + + + + + +
+      ||                                                ||
+      ||        ------------------------------->        ||
+      ||                    Discard?                    ||
+  3   ||                                                ||
+      ||        <===============================        ||
+      ||                    Discard                     ||
+      ||                                                ||
+      + + + + + + + + + + + + + + + + + + + + + + + + + +
+      ||                                                ||
+      ||        ------------------------------->        ||
+      ||              Pick up which stack?              ||
+      ||                                                ||
+      ||        <===============================        ||
+      ||                    Stack                       ||
+  4   ||                                                ||
+      ||        ------------------------------->        ||
+      ||                  Add to hand                   ||
+      ||                                                ||
+      ||        ------------------------------->        ||
+      ||           Bull point value and change          ||
+      ||                                                ||
+      + + + + + + + + + + + + + + + + + + + + + + + + + +
+      ||                                                ||
+      ||        ------------------------------->        ||
+      ||                You won/lost                    ||
+      ||                                                ||
+  5   + + + + + + + + + +     Or      + + + + + + + + + +
+      ||                                                ||
+      ||        ------------------------------->        ||
+      ||            New round is beginning              ||
+      ||                                                ||
+
+Each section must occur in chronological order.
+
+* 1
+This section is where the player registers with the server.
+Once one player registers, the server begins a timer until registration expires or the limit of players is met.
+The order of player registration doesn't matter.
+
+*2
+The server provides each registered player with a list of cards.
+The order of dealing goes in order with the specified starting player
+
+*3
+The dealer asks each player to provide a discard from their hand.
+The asking and receiving order does not matter.
+Each player must provide their discard withinn a time frame or they will be dropped from the server.
+
+*4
+This section occurs in ascending order of discard face_values.
+The dealer only asks which stack to pick up when the discard face value is lower than the face value on the top
+card of every stack. If this occurs, there will be a time limit imposed for selecting a stack.
+If the players discard go placed on a stack with the max number of cards, they will be given a list of cards to add
+to their hand.
+Every player will be provided with their current bull points and the value by which their bull points changed over
+the course of the round.
+
+*5
+If any player has exceeded the max number of bull points, each player is notified whether they won or lost and
+a list of all player rankings and scores. The game then ends.
+If no player has exceeded the max number of bull points, each player is notified that a new round is beginning.
+
+
+Signatures and Data Definitions
+
+Registration : String -> String
+{"registration":
+    {"name": String},
+    {"response": String}
+}
+
+Deal : List-of-Card -> None
+{"deal":
+    {"dealt_cards": List-of-Card},
+}
+
+Discard : PublicGameState -> Card
+{"discard":
+    {"game_state": PublicGameState},
+    {"card_to_discard": Card}
+}
+
+ChooseStack : PublicGameState -> Stack
+{"choose_stack":
+    {"game_state": PublicGameState},
+    {"stack_to_pick": Stack}
+}
+
+AddToHand : Stack -> None
+{"add_to_hand":
+    {"cards_to_add": Stack},
+}
+
+BullPoints : String -> None
+{"num_of_bull_points":
+    {"bull_points": String},
+}
+
+WinOrLose : String -> None
+{"win_or_lose":
+    {"win_or_lose": String},
+}
+
+Next_Round : String -> None
+{"beginning":
+    {"beginning": String},
+}
+
+
+class Card(object):
+    def __init__(self, face_value, bull):
+        self.face_value = face_value
+        self.bull = bull
+
+class Stack(object):
+    def __init__(self, list_of_cards):
+        self.list_of_cards = list_of_cards
+        self.total_bull = sum([card.bull for card in self.list_of_cards])
+
+class PublicGameState(object):
+    def __init__(self, list_of_stacks, list_of_scores, player_order, discard_list)
+        self.list_of_stacks = list_of_stacks
+        self.list_of_scores = list_of_scores
+        self.player_order = player_order
+        self.discard_list = discard_list
+
+
+

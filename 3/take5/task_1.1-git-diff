@@ -1,0 +1,21 @@
+diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
+index ddd7f2e..146406b 100644
+--- a/2/take5/Assignment_2.py
++++ b/2/take5/Assignment_2.py
+@@ -8,6 +8,7 @@ sys.path.append(cwd + '/cs4500-lidauch-jcamp/3/')
+ from player import Player
+ 
+ deck_size = 104
++max_stack_cards = 6
+ 
+ """
+ Data Definitions necessary for representing the components of a 6 Nimmit! game
+@@ -133,7 +134,7 @@ class Dealer(object):
+                 self.add_to_hand(player, selected_stack)
+                 self.list_of_stacks.remove(selected_stack)
+                 self.list_of_stacks.append(self.create_stack(min_card))
+-            elif len(closest_stack.list_of_cards) == 5:
++            elif len(closest_stack.list_of_cards) == max_stack_cards:
+                 self.subtract_bull(player, closest_stack)
+                 self.list_of_stacks.remove(closest_stack)
+                 self.list_of_stacks.append(self.create_stack(min_card))

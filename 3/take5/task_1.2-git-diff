@@ -1,0 +1,13 @@
+diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
+index 146406b..ae9d375 100644
+--- a/2/take5/Assignment_2.py
++++ b/2/take5/Assignment_2.py
+@@ -7,7 +7,7 @@ sys.path.append(cwd + '/cs4500-lidauch-jcamp/3/')
+ 
+ from player import Player
+ 
+-deck_size = 104
++deck_size = 210
+ max_stack_cards = 6
+ 
+ """

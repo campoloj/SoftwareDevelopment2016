@@ -1,0 +1,80 @@
+
+class Player(object):
+"""
+A statically linked Evolution player. For game security reasons, the Player does not store any
+of their own attributes; these are instead kept track of in a PlayerState object, maintained by the dealer.
+The player receives subsets of this PlayerState for each function when a decision is necessary/
+"""
+    def __init__(self, name):
+        self.name = name
+
+    def choose_wh_card(hand):
+    """
+    Select TraitCard from hand to place on the Watering Hole Board as a food card
+    Signature: List-of-TraitCards -> TraitCard
+    """
+
+    def play_cards(hand, species_boards):
+    """
+    Select Cards to play from the TraitCards in the hand
+    Given their hand and their species, returns a list of actions which specify
+    which of the players cards are being used for what purpose and on which species (see Action data def)
+    Signature: List-of-TraitCards, List-of-Species -> List-of-Actions
+    """
+
+    def direct_attack(attacker, all_species_boards):
+    """
+    Select which species to attack, given all the species currently in the game
+    Signature: Species, List-of-Species -> Species
+    """
+
+An Action is one of:
+# Add selected TraitCards to selected Species (up to three cards per species).
+{"supplement-species": (Species, List-of-TraitCard)},
+
+# Place face-down TraitCard (first) on top of face-up TraitCard (second) to replace it on selected Species
+{"replace-trait": (Species, TraitCard, TraitCard)},
+
+# Trade in a TraitCard to add a new species on the "left" or "right" side of their current species boards
+{"add-species": (TraitCard, String)},
+
+# Trade in a TraitCard to increase the body size of the selected Species
+{"grow-body": (TraitCard, Species)},
+
+# Trade in a TraitCard to increase the population size of the selected Species
+{"increase-population": (TraitCard, Species)}
+
+
+ class PlayerState(object):
+ """
+ Represents data about the player that is kept track of by the dealer
+ in order to prevent the player from modifying their data or acting out of turn
+ the dealer only sends the minimum amount of data needed for the player to make
+ choices
+ """
+    def __init__(self)
+        self.food_bag = 0
+        self.hand = []
+        self.species_boards = []
+
+
+class TraitCard(object):
+"""
+A Trait Card of the Evolution game
+"""
+    def __init__(self, trait, description, food_points):
+        self.trait = trait
+        self.description = description
+        self.food_points = food_points
+
+
+class Species(object):
+"""
+A Species Board of the Evolution game
+"""
+    def __init__(self):
+        self.food = 0
+        self.body = 0
+        self.population = 1
+        self.traits = []
+

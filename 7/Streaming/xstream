@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import sys
+import json
+
+
+decoder = json.JSONDecoder()
+
+def json_parser(line, buffer):
+    """
+    Searches for full JSON messages and adds incomplete messages to a buffer
+    :param line: line of JSON from stdin
+    :param buffer: the previous lines of incomplete JSON messages
+    :return: a tuple of (list-of-correct_JSON_messages, current buffer)
+    """
+    buffer += line
+    decoded_json = []
+    try:
+        while True:
+            (json_obj, end_index) = decoder.raw_decode(buffer)
+            decoded_json.append(json_obj)
+            buffer = buffer[end_index:]
+    except:
+        return (decoded_json, buffer)
+
+def main():
+    """
+    accepts JSON from stdin and echos each JSON object returning total count of JSON objects with KeyboardInterrupt
+    NOTE: if incorrect JSON is received, the program will not echo following bad object and will print a warning
+    upon termination
+    :return: total count of JSON objects to stdout
+    """
+    buffer = ""
+    count = 0
+    try:
+        while True:
+            line = sys.stdin.readline().strip(" \n\r\t")
+            (decoded_json, buffer) = json_parser(line, buffer)
+            if decoded_json:
+                for json_object in decoded_json:
+                    print(json.dumps(json_object))
+                    count += 1
+    except KeyboardInterrupt:
+        if buffer:
+            print("Warning the JSON stream contained incorrect JSON")
+        print(json.dumps({"count": count}))
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

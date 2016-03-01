@@ -1,0 +1,64 @@
+diff --git a/2/take5/Assignment_2.py b/2/take5/Assignment_2.py
+index cfbeb6d..964c9e2 100644
+--- a/2/take5/Assignment_2.py
++++ b/2/take5/Assignment_2.py
+@@ -10,6 +10,7 @@ from player import Player
+ deck_size = 210
+ max_stack_cards = 6
+ initial_hand_size = 9
++bull_range=(3, 7)
+ 
+ """
+ Data Definitions necessary for representing the components of a 6 Nimmit! game
+@@ -29,7 +30,7 @@ class Stack(object):
+ 
+ 
+ class Dealer(object):
+-    def __init__(self, list_of_players, bull_range=(2, 7), starting_player=0):
++    def __init__(self, list_of_players, starting_player=0):
+         self.list_of_players = list_of_players
+         self.deck = []
+         self.discards = {}
+@@ -181,18 +182,15 @@ class Dealer(object):
+ 
+ 
+ 
+-def main(n, bull_range=(2, 7), starting_player=0):
++def main(n, starting_player=0):
+     """
+     Creates n players and a dealer, and has the dealer run a 6 Nimmit! game
+     :param n: the number of players in the game
+-    :param bull: the bull point value on each card (defaults to random within bull_range)
+     :param starting_player; the index of the starting player
+     :return:
+     """
+     n = int(n)
+     starting_player = int(starting_player)
+-    if isinstance(bull_range, basestring):
+-        bull_range = (int(bull_range), int(bull_range))
+     if n > deck_size / initial_hand_size:
+         raise RuntimeError("Not enough cards in deck for %d players! Select less than %d players."
+                            % (n, deck_size / initial_hand_size))
+@@ -202,17 +200,17 @@ def main(n, bull_range=(2, 7), starting_player=0):
+     for x in range(0, n):
+         player = Player(name=x)
+         players.append(player)
+-    dealer = Dealer(list_of_players=players, bull_range=bull_range, starting_player=starting_player)
++    dealer = Dealer(list_of_players=players, starting_player=starting_player)
+     dealer.make_deck()
+     result = dealer.play_game()
+     print result
+ 
+ if __name__ == "__main__":
+     args = sys.argv
+-    if len(args) > 4:
++    if len(args) > 3:
+         raise RuntimeError("Too many args given, main only accepts number of players (n), bull point value")
+-    elif len(args) < 4:
++    elif len(args) < 3:
+         raise RuntimeError("Must supply number of players between 1 and %d, bull point range and the "
+                            "starting player to main" % ((deck_size - 4) / initial_hand_size))
+-    elif len(args) == 4:
+-        main(args[1], args[2], args[3])
++    elif len(args) == 3:
++        main(args[1], args[2])
