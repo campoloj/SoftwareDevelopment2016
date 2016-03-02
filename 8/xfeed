@@ -1,0 +1,30 @@
+#! /usr/bin/env python
+
+"""
+A test harness for the Player next_feeding method
+"""
+
+import sys
+import json
+from convert import Convert
+from feeding import player
+
+
+def main():
+    message = sys.stdin.readlines()
+    json_feeding = ""
+    for line in message:
+        json_feeding += line.rstrip('\n')
+    json_feeding = json.loads(json_feeding)
+    try:
+        feeding = Convert.json_to_feeding(json_feeding)
+        feed = player.Player.next_feeding(feeding[0], feeding[1], feeding[2])
+        if feed is None:
+            sys.exit(0)
+        sys.stdout.write(json.dumps(feed))
+    except AssertionError:
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
