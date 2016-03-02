@@ -3,6 +3,7 @@ from species import Species
 from traitcard import TraitCard
 from player import Player
 from player_state import PlayerState
+from globals import *
 
 
 class TestPlayer(unittest.TestCase):
@@ -26,13 +27,13 @@ class TestPlayer(unittest.TestCase):
         self.assertNotEqual(Player.sort_by_size(self.species_list), self.species_list)
 
     def test_largest_fatty_need(self):
-        self.species_1.traits = self.species_2.traits = self.species_4.traits = [TraitCard("fat-tissue")]
+        self.species_1.traits = self.species_2.traits = self.species_4.traits = [TraitCard(FATTISSUE)]
         self.species_1.fat_storage = self.species_2.fat_storage = self.species_4.fat_storage = 0
         self.assertEqual(Player.largest_fatty_need([self.species_1, self.species_4]), self.species_4)
         self.assertEqual(Player.largest_fatty_need([self.species_1, self.species_2]), self.species_1)
 
     def test_feed_fatty(self):
-        self.species_4.traits = self.species_1.traits = self.species_5.traits = [TraitCard("fat-tissue")]
+        self.species_4.traits = self.species_1.traits = self.species_5.traits = [TraitCard(FATTISSUE)]
         self.species_4.fat_storage = self.species_1.fat_storage = self.species_5.fat_storage = 0
         self.assertEqual(Player.feed_fatty([self.species_4, self.species_1, self.species_5], 10),
                          [self.species_5, 3])
@@ -45,9 +46,9 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(Player.feed_herbivores([self.species_4, self.species_5]), self.species_4)
 
     def test_feed_carnivore(self):
-        self.species_4.traits = [TraitCard("carnivore", 4)]
-        self.species_5.traits = [TraitCard("carnivore")]
-        self.species_6.traits = [TraitCard("carnivore")]
+        self.species_4.traits = [TraitCard(CARNIVORE, 4)]
+        self.species_5.traits = [TraitCard(CARNIVORE)]
+        self.species_6.traits = [TraitCard(CARNIVORE)]
 
         # Test tie in largest carnivore in attacking player's hand => first species chosen
         self.assertEqual(Player.feed_carnivore(self.player_1.species, self.player_1, [self.player_2, self.player_3]),
@@ -68,37 +69,37 @@ class TestPlayer(unittest.TestCase):
                          [self.species_6, self.player_3, self.species_7])
 
         # Retest tie, but with first species unattackable => second largest chosen
-        self.species_7.traits = [TraitCard("climbing")]
+        self.species_7.traits = [TraitCard(CLIMBING)]
         self.assertEqual(Player.feed_carnivore(self.player_1.species, self.player_1, [self.player_3, self.player_2]),
                          [self.species_6, self.player_3, self.species_2])
 
         # Repeat again, but since both largest in first player's hand are unattackable => second player w/ largest
-        self.species_2.traits = [TraitCard("burrowing")]
+        self.species_2.traits = [TraitCard(BURROWING)]
         self.assertEqual(Player.feed_carnivore(self.player_1.species, self.player_1, [self.player_3, self.player_2]),
                          [self.species_6, self.player_2, self.species_1])
 
         # Test that if all largest species are unattackable, a smaller species is chosen
-        self.species_1.traits = [TraitCard("climbing")]
+        self.species_1.traits = [TraitCard(CLIMBING)]
         self.assertEqual(Player.feed_carnivore(self.player_1.species, self.player_1, [self.player_3, self.player_2]),
                          [self.species_6, self.player_3, self.species_3])
 
         # Test that a carnivore with overriding traits attacks the largest species attackable
-        self.species_3.traits = [TraitCard("climbing")]
-        self.species_4.traits.append(TraitCard("climbing"))
+        self.species_3.traits = [TraitCard(CLIMBING)]
+        self.species_4.traits.append(TraitCard(CLIMBING))
         self.assertEqual(Player.feed_carnivore(self.player_1.species, self.player_1, [self.player_3, self.player_2]),
                          [self.species_4, self.player_3, self.species_7])
 
     def test_next_feeding(self):
-        self.species_4.traits = [TraitCard("carnivore")]
-        self.species_5.traits, self.species_5.fat_storage = ([TraitCard("fat-tissue")], 0)
+        self.species_4.traits = [TraitCard(CARNIVORE)]
+        self.species_5.traits, self.species_5.fat_storage = ([TraitCard(FATTISSUE)], 0)
         # Test if fat_tissue_species
         self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_2, self.player_3]), [1, 3])
         # Test if hungry_herbivores
         self.species_5.traits = []
         self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_2]), 2)
         # Test if hungry_carnivore
-        self.species_5.traits = [TraitCard("carnivore")]
-        self.species_6.traits = [TraitCard("carnivore")]
+        self.species_5.traits = [TraitCard(CARNIVORE)]
+        self.species_6.traits = [TraitCard(CARNIVORE)]
         self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_2, self.player_3]), [0, 0, 0])
         # Test no attackable species
         self.assertEqual(Player.next_feeding(self.player_1, 10, []), False)

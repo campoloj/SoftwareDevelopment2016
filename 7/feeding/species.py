@@ -12,15 +12,12 @@ class Species(object):
     """
     A data representation of a Species in the Evolution game
     """
-    def __init__(self, population=1, food=0, body=0, traits=[]):
+    def __init__(self, population=1, food=0, body=0, traits=None, fat_storage=None):
         self.population = population
         self.food = food
         self.body = body
-        self.traits = traits
-        if "fat-tissue" in self.trait_names():
-            self.fat_storage = 0
-        else:
-            self.fat_storage = None
+        self.traits = traits if traits else []
+        self.fat_storage = fat_storage
 
     def __str__(self):
         return "Species(pop=%d, food=%d, body=%d, traits=%s" \
@@ -46,88 +43,20 @@ class Species(object):
         attacker_traits = attacker.trait_names()
         left_traits = left_neighbor.trait_names() if left_neighbor else []
         right_traits = right_neighbor.trait_names() if right_neighbor else []
-        attacker_body = attacker.body + (attacker.population if "pack-hunting" in attacker_traits else 0)
+        attacker_body = attacker.body + (attacker.population if PACKHUNTING in attacker_traits else 0)
 
-        return not any(["carnivore" not in attacker_traits,
-                        "burrowing" in defender_traits and self.food == self.population,
-                        "climbing" in defender_traits and "climbing" not in attacker_traits,
-                        "hard-shell" in defender_traits and attacker_body - self.body < HARD_SHELL_DIFF,
-                        "herding" in defender_traits and attacker.population <= self.population,
-                        "symbiosis" in defender_traits and right_neighbor and right_neighbor.body > self.body,
-                        (("warning-call" in right_traits) or ("warning-call" in left_traits))
-                        and "ambush" not in attacker_traits])
+        return not any([CARNIVORE not in attacker_traits,
+                        BURROWING in defender_traits and self.food == self.population,
+                        CLIMBING in defender_traits and CLIMBING not in attacker_traits,
+                        HARDSHELL in defender_traits and attacker_body - self.body < HARD_SHELL_DIFF,
+                        HERDING in defender_traits and attacker.population <= self.population,
+                        SYMBIOSIS in defender_traits and right_neighbor and right_neighbor.body > self.body,
+                        ((WARNINGCALL in right_traits) or (WARNINGCALL in left_traits))
+                        and AMBUSH not in attacker_traits])
 
     def trait_names(self):
         """
         Gives the names of the TraitCard(s) of this species
         :return: a list of trait names
         """
-        return map(lambda (x): x.trait, self.traits)
-
-    @classmethod
-    def largest_tied_species(cls, list_of_species):
-        """
-        Returns the largest tied species of a Player's species, in terms of lexicographical order
-        :param list_of_species: a Player's species boards
-        :return: list of largest Species
-        """
-        sorted_species = cls.sort_lex(list_of_species)
-        largest = sorted_species[0]
-        largest_species = [species for species in sorted_species
-                           if species.population == largest.population
-                           and species.food == largest.food
-                           and species.body == largest.body]
-        return largest_species
-
-    @classmethod
-    def sort_lex(cls, list_of_species):
-        """
-        Returns the largest species in a list based on a lexicographic manner
-        :param list_of_species: a list of Species
-        :return: the largest Species
-        """
-        return sorted(list_of_species, cmp=cls.is_larger, reverse=True)
-
-
-    @classmethod
-    def is_larger(cls, species_1, species_2):
-        """
-        Determines which of the two given species are larger based on a lexicographic manner
-        :param species_1: first species to compare
-        :param species_2: second species to compare
-        :return: 1 if the first species is larger, -1 if the second is larger, 0 if they are equal
-        """
-        if species_1.population > species_2.population:
-            return 1
-        elif species_1.population == species_2.population:
-            if species_1.food > species_2.food:
-                return 1
-            elif species_1.food == species_2.food:
-                if species_1.body > species_2.body:
-                    return 1
-                elif species_1.body == species_2.body:
-                    return 0
-        return -1
-
-    @classmethod
-    def largest_fatty_need(cls, list_of_species):
-        """
-        Determines which species has a greater need for fat-tissue food
-        :param list_of_species: list of Species with the fat-tissue trait
-        :return: Species with greatest fat-tissue need
-        """
-        if len(list_of_species) == 1:
-            return list_of_species[0]
-        else:
-            max_need = max([species.population - species.food for species in list_of_species])
-
-        highest_needers = [species for species in list_of_species
-                           if species.population - species.food == max_need]
-        largest_needers = cls.largest_tied_species(highest_needers)
-        if len(largest_needers) > 1:
-            positions = [list_of_species.index(species) for species in largest_needers]
-            return largest_needers[positions.index(min(positions))]
-        else:
-            return largest_needers[0]
-
-
+        return [trait_card.trait for trait_card in self.traits]

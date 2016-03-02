@@ -1,6 +1,9 @@
-from feeding import player_state
-from feeding import species
-from feeding import traitcard
+from feeding.player_state import PlayerState
+from feeding.species import Species
+from feeding.traitcard import TraitCard
+from feeding.globals import *
+
+
 
 
 class Convert(object):
@@ -12,69 +15,69 @@ class Convert(object):
 
     @classmethod
     def json_to_feeding(cls, json_feeding):
-        assert(len(json_feeding) == 3)
-        player = cls.json_to_player(json_feeding[0])
-        wh_food = json_feeding[1]
-        assert(wh_food >= 1)
-        other_players = []
-        for op in json_feeding[2]:
-            other_players.append(cls.json_to_player(op))
+        assert(len(json_feeding) == FEEDING_LENGTH)
+        [json_player, wh_food, json_lop] = json_feeding
+        assert(wh_food > MIN_WATERING_HOLE)
+        player = cls.json_to_player(json_player)
+        other_players = [cls.json_to_player(op) for op in json_lop]
         return [player, wh_food, other_players]
 
     @classmethod
     def json_to_player(cls, json_player):
-        assert(len(json_player) == 3)
-        player_id = json_player[0][1]
-        food_bag = json_player[2][1]
-        assert(player_id >= 1 and food_bag >= 0)
-        player_species = []
-        for json_species in json_player[1][1]:
-            player_species.append(cls.json_to_species(json_species))
-        player_obj = player_state.PlayerState(name=player_id, food_bag=food_bag, species=player_species)
+        assert(len(json_player) == PLAYER_LENGTH)
+        [[globals()[ID], player_id], [globals()[SPECIES], json_los], [globals()[BAG], food_bag]] = json_player
+        assert(all([player_id >= MIN_PLAYER_ID, food_bag >= MIN_FOOD_BAG,
+               isinstance(player_id, int), isinstance(food_bag,int)]))
+        player_species = [cls.json_to_species(json_species) for json_species in json_los]
+        player_obj = PlayerState(name=player_id, food_bag=food_bag, species=player_species)
         return player_obj
 
     @classmethod
     def player_to_json(cls, player):
-        assert(player.name >= 1 and player.food_bag >= 0)
-        json_species = []
-        for species_obj in player.species:
-            json_species.append(cls.species_to_json(species_obj))
-        return [["id", player.name], ["species", json_species], ["bag", player.food_bag]]
+        assert(player.name >= MIN_PLAYER_ID and player.food_bag >= MIN_FOOD_BAG)
+        json_species = [cls.species_to_json(species_obj) for species_obj in player.species]
+        return [[ID, player.name], [SPECIES, json_species], [BAG, player.food_bag]]
 
 
     @classmethod
     def json_to_species(cls, json_species):
-        assert(len(json_species) == 4 or len(json_species) == 5)
-        species_food = json_species[0][1]
-        species_body = json_species[1][1]
-        species_pop = json_species[2][1]
-        assert(all([species_food >= 0, species_body >= 0, species_pop >= 1]))
-        species_traits = []
-        for trait in json_species[3][1]:
-            species_traits.append(cls.json_to_trait(trait))
-        species_obj = species.Species(species_pop, species_food, species_body, species_traits)
-        if len(json_species) == 5:
-            fat_food = json_species[4][1]
-            assert(fat_food >= 0)
-            species_obj.fat_storage = fat_food
+        if len(json_species) == SPECIES_LENGTH:
+            [[globals()[FOOD], species_food], [globals()[BODY], species_body],
+             [globals()[POPULATION], species_pop], [globals()[TRAITS], json_species_traits]] = json_species
+            fat_food = None
+        elif len(json_species) == SPECIES_FAT_LENGTH:
+            [[globals()[FOOD], species_food], [globals()[BODY], species_body],
+             [globals()[POPULATION], species_pop], [globals()[TRAITS], json_species_traits],
+             [globals()[FATFOOD], fat_food]] = json_species
+            assert(species_body >= fat_food >= MIN_FATFOOD)
+        else:
+            raise AssertionError
+
+        assert(all([MAX_FOOD >= species_food >= MIN_FOOD,
+                    MAX_BODY >= species_body >= MIN_BODY,
+                    MAX_POP >= species_pop >= MIN_POP]))
+
+        species_traits = [cls.json_to_trait(trait) for trait in json_species_traits]
+        species_obj = Species(species_pop, species_food, species_body, species_traits, fat_food)
         return species_obj
 
     @classmethod
     def species_to_json(cls, species_obj):
-        assert(all([species_obj.population >= 1, species_obj.food >= 0, species_obj.body >= 0]))
-        json_traits = []
-        for trait in species_obj.traits:
-            json_traits.append(cls.trait_to_json(trait))
-        json_species = [["food", species_obj.food], ["body", species_obj.body],
-                        ["population", species_obj.population], ["traits", json_traits]]
-        if species_obj.fat_storage is not None:
-            assert(species_obj.fat_storage >= 0)
-            json_species.append(["fat-food", species_obj.fat_storage])
+        assert(all([MAX_FOOD >= species_obj.food >= MIN_FOOD,
+                    MAX_BODY >= species_obj.body >= MIN_BODY,
+                    MAX_POP >= species_obj.population >= MIN_POP]))
+        json_traits = [cls.trait_to_json(trait) for trait in species_obj.traits]
+
+        json_species = [[FOOD, species_obj.food], [BODY, species_obj.body],
+                        [POPULATION, species_obj.population], [TRAITS, json_traits]]
+        if species_obj.fat_storage:
+            assert(species_obj.body >= species_obj.fat_storage >= MIN_FATFOOD)
+            json_species.append([FATFOOD, species_obj.fat_storage])
         return json_species
 
     @classmethod
     def json_to_trait(cls, json_trait):
-        return traitcard.TraitCard(json_trait)
+        return TraitCard(json_trait)
 
     @classmethod
     def trait_to_json(cls, trait_card):

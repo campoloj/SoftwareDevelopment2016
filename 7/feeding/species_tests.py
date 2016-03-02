@@ -1,13 +1,14 @@
 import unittest
 from species import Species
 from traitcard import TraitCard
+from globals import *
 
 
 class TestSpecies(unittest.TestCase):
 
     def setUp(self):
         self.attacker = Species()
-        self.attacker.traits = [TraitCard("carnivore")]
+        self.attacker.traits = [TraitCard(CARNIVORE)]
         self.defender = Species()
         self.left_neighbor = Species()
         self.right_neighbor = Species()
@@ -21,7 +22,7 @@ class TestSpecies(unittest.TestCase):
 
     def test_trait_names(self):
         self.assertEqual(self.defender.trait_names(), [])
-        self.assertEqual(self.attacker.trait_names(), ["carnivore"])
+        self.assertEqual(self.attacker.trait_names(), [CARNIVORE])
 
     def test_attackable(self):
         self.assertTrue(self.defender.is_attackable(self.attacker))
@@ -31,20 +32,20 @@ class TestSpecies(unittest.TestCase):
         self.assertFalse(self.defender.is_attackable(self.attacker))
 
     def test_burrowing(self):
-        self.defender.traits = [TraitCard("burrowing")]
+        self.defender.traits = [TraitCard(BURROWING)]
         self.defender.population, self.defender.food = (4, 4)
         self.assertFalse(self.defender.is_attackable(self.attacker))
         self.defender.food = 3
         self.assertTrue(self.defender.is_attackable(self.attacker))
 
     def test_climbing(self):
-        self.defender.traits = [TraitCard("climbing")]
+        self.defender.traits = [TraitCard(CLIMBING)]
         self.assertFalse(self.defender.is_attackable(self.attacker))
-        self.attacker.traits.append(TraitCard("climbing"))
+        self.attacker.traits.append(TraitCard(CLIMBING))
         self.assertTrue(self.defender.is_attackable(self.attacker))
 
     def test_hard_shell(self):
-        self.defender.traits = [TraitCard("hard-shell")]
+        self.defender.traits = [TraitCard(HARDSHELL)]
         self.defender.body = 3
         self.attacker.body = 6
         self.assertFalse(self.defender.is_attackable(self.attacker))
@@ -52,7 +53,7 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.defender.is_attackable(self.attacker))
 
     def test_herding(self):
-        self.defender.traits = [TraitCard("herding")]
+        self.defender.traits = [TraitCard(HERDING)]
         self.defender.population = 4
         self.attacker.population = 3
         self.assertFalse(self.defender.is_attackable(self.attacker))
@@ -60,7 +61,7 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.defender.is_attackable(self.attacker))
 
     def test_symbiosis(self):
-        self.defender.traits = [TraitCard("symbiosis")]
+        self.defender.traits = [TraitCard(SYMBIOSIS)]
         self.defender.body = 3
         self.right_neighbor.body = 5
         self.assertFalse(self.defender.is_attackable(self.attacker, right_neighbor=self.right_neighbor))
@@ -68,11 +69,11 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.defender.is_attackable(self.attacker, right_neighbor=self.right_neighbor))
 
     def test_warning_call(self):
-        self.left_neighbor.traits = [TraitCard("warning-call")]
-        self.right_neighbor.traits = [TraitCard("warning-call")]
+        self.left_neighbor.traits = [TraitCard(WARNINGCALL)]
+        self.right_neighbor.traits = [TraitCard(WARNINGCALL)]
         self.assertFalse(self.defender.is_attackable(self.attacker, left_neighbor=self.left_neighbor))
         self.assertFalse(self.defender.is_attackable(self.attacker, right_neighbor=self.right_neighbor))
-        self.attacker.traits.append(TraitCard("ambush"))
+        self.attacker.traits.append(TraitCard(AMBUSH))
         self.assertTrue(self.defender.is_attackable(self.attacker, left_neighbor=self.left_neighbor))
 
 if __name__ == '__main__':

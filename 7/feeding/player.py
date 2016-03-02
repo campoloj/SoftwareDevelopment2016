@@ -33,21 +33,21 @@ class Player(object):
         :return: Feeding for the next species to feed
         """
         hungry_fatties = [species for species in player.species
-                          if "fat-tissue" in species.trait_names()
+                          if FATTISSUE in species.trait_names()
                           and species.fat_storage < species.body]
         if hungry_fatties:
             feeding = cls.feed_fatty(hungry_fatties, food_available)
             return [player.species.index(feeding[0]), feeding[1]]
 
         hungry_herbivores = [species for species in player.species
-                             if "carnivore" not in species.trait_names()
+                             if CARNIVORE not in species.trait_names()
                              and species.food < species.population]
         if hungry_herbivores:
             feeding = cls.feed_herbivores(hungry_herbivores)
             return player.species.index(feeding)
 
         hungry_carnivores = [species for species in player.species
-                             if "carnivore" in species.trait_names()
+                             if CARNIVORE in species.trait_names()
                              and species.food < species.population]
         if hungry_carnivores:
             feeding = cls.feed_carnivore(hungry_carnivores, player, list_of_players)
