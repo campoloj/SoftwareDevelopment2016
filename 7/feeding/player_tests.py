@@ -20,10 +20,20 @@ class TestPlayer(unittest.TestCase):
         self.player_2 = PlayerState(species=[self.species_1])
         self.player_3 = PlayerState(species=[self.species_2, self.species_3, self.species_7])
 
+    def test_sort_largest(self):
+        sorted_list = [self.species_2, self.species_1, self.species_3, self.species_4, self.species_5]
+        self.assertEqual(Player.sort_by_size(self.species_list), sorted_list)
+        self.assertNotEqual(Player.sort_by_size(self.species_list), self.species_list)
+
+    def test_largest_fatty_need(self):
+        self.species_1.traits = self.species_2.traits = self.species_4.traits = [TraitCard("fat-tissue")]
+        self.species_1.fat_storage = self.species_2.fat_storage = self.species_4.fat_storage = 0
+        self.assertEqual(Player.largest_fatty_need([self.species_1, self.species_4]), self.species_4)
+        self.assertEqual(Player.largest_fatty_need([self.species_1, self.species_2]), self.species_1)
+
     def test_feed_fatty(self):
-        self.species_4.traits = [TraitCard("fat-tissue")]
-        self.species_1.traits = [TraitCard("fat-tissue")]
-        self.species_5.traits = [TraitCard("fat-tissue")]
+        self.species_4.traits = self.species_1.traits = self.species_5.traits = [TraitCard("fat-tissue")]
+        self.species_4.fat_storage = self.species_1.fat_storage = self.species_5.fat_storage = 0
         self.assertEqual(Player.feed_fatty([self.species_4, self.species_1, self.species_5], 10),
                          [self.species_5, 3])
         self.assertEqual(Player.feed_fatty([self.species_4, self.species_1, self.species_5], 1),
@@ -80,7 +90,7 @@ class TestPlayer(unittest.TestCase):
 
     def test_next_feeding(self):
         self.species_4.traits = [TraitCard("carnivore")]
-        self.species_5.traits = [TraitCard("fat-tissue")]
+        self.species_5.traits, self.species_5.fat_storage = ([TraitCard("fat-tissue")], 0)
         # Test if fat_tissue_species
         self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_2, self.player_3]), [1, 3])
         # Test if hungry_herbivores
@@ -91,11 +101,7 @@ class TestPlayer(unittest.TestCase):
         self.species_6.traits = [TraitCard("carnivore")]
         self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_2, self.player_3]), [0, 0, 0])
         # Test no attackable species
-        self.assertEqual(Player.next_feeding(self.player_1, 10, [self.player_1]), False)
-        # Test exception
-        with self.assertRaises(Exception):
-            Player.next_feeding(self.player_2, 10, [self.player_1])
-
+        self.assertEqual(Player.next_feeding(self.player_1, 10, []), False)
 
 if __name__ == '__main__':
     unittest.main()

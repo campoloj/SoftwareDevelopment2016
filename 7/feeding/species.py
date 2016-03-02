@@ -12,12 +12,15 @@ class Species(object):
     """
     A data representation of a Species in the Evolution game
     """
-    def __init__(self, population=1, food=0, body=0, traits=[], fat_storage=None):
+    def __init__(self, population=1, food=0, body=0, traits=[]):
         self.population = population
         self.food = food
         self.body = body
         self.traits = traits
-        self.fat_storage = fat_storage
+        if "fat-tissue" in self.trait_names():
+            self.fat_storage = 0
+        else:
+            self.fat_storage = None
 
     def __str__(self):
         return "Species(pop=%d, food=%d, body=%d, traits=%s" \

@@ -20,3 +20,25 @@ class PlayerState(object):
                     self.food_bag == other.food_bag,
                     self.hand == other.hand,
                     self.species == other.species])
+
+    @classmethod
+    def get_left_neighbor(cls, species, list_of_species):
+        """
+        Gets the left neighbor of the given Species in the given list of species
+        :param species: Species of which to find neighbor
+        :param list_of_species: An ordered list of Species
+        :return: The Species to the left of the given Species
+        """
+        species_index = list_of_species.index(species)
+        return False if species_index == 0 else list_of_species[species_index - 1]
+
+    @classmethod
+    def get_right_neighbor(cls, species, list_of_species):
+        """
+        Gets the right neighbor of the given Species in the given list of species
+        :param species: Species of which to find neighbor
+        :param list_of_species: An ordered list of Species
+        :return: The Species to the right of the given Species
+        """
+        species_index = list_of_species.index(species)
+        return False if species_index == len(list_of_species) - 1 else list_of_species[species_index + 1]

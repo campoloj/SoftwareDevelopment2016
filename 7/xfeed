@@ -9,6 +9,7 @@ import json
 from convert import Convert
 from feeding import player
 
+
 def main():
     message = sys.stdin.readlines()
     json_feeding = ""
@@ -18,9 +19,11 @@ def main():
     try:
         feeding = Convert.json_to_feeding(json_feeding)
         feed = player.Player.next_feeding(feeding[0], feeding[1], feeding[2])
+        if feed is None:
+            sys.exit(0)
         print json.dumps(feed)
     except AssertionError:
-        pass
+        sys.exit(0)
 
 
 if __name__ == "__main__":
