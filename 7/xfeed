@@ -21,7 +21,7 @@ def main():
         feed = player.Player.next_feeding(feeding[0], feeding[1], feeding[2])
         if feed is None:
             sys.exit(0)
-        print json.dumps(feed)
+        sys.stdout.write(json.dumps(feed))
     except AssertionError:
         sys.exit(0)
 
