@@ -32,23 +32,18 @@ class Player(object):
         :param list_of_players: the PlayerStates of other players in the game
         :return: Feeding for the next species to feed
         """
-        hungry_fatties = [species for species in player.species
-                          if FATTISSUE in species.trait_names()
-                          and species.fat_storage < species.body]
+        hungry_fatties = player.get_needy_fats()
+
         if hungry_fatties:
             feeding = cls.feed_fatty(hungry_fatties, food_available)
             return [player.species.index(feeding[0]), feeding[1]]
 
-        hungry_herbivores = [species for species in player.species
-                             if CARNIVORE not in species.trait_names()
-                             and species.food < species.population]
+        hungry_herbivores = player.get_hungry_species(carnivores=False)
         if hungry_herbivores:
             feeding = cls.feed_herbivores(hungry_herbivores)
             return player.species.index(feeding)
 
-        hungry_carnivores = [species for species in player.species
-                             if CARNIVORE in species.trait_names()
-                             and species.food < species.population]
+        hungry_carnivores = player.get_hungry_species(carnivores=True)
         if hungry_carnivores:
             feeding = cls.feed_carnivore(hungry_carnivores, player, list_of_players)
             if feeding:
@@ -98,8 +93,8 @@ class Player(object):
             targets = []
             for player in list_of_player:
                 for defender in player.species:
-                    left_neighbor = PlayerState.get_left_neighbor(defender, player.species)
-                    right_neighbor = PlayerState.get_right_neighbor(defender, player.species)
+                    left_neighbor = player.get_left_neighbor(defender)
+                    right_neighbor = player.get_right_neighbor(defender)
                     if defender.is_attackable(carnivore, left_neighbor, right_neighbor):
                         targets.append(defender)
             if targets:
@@ -112,8 +107,8 @@ class Player(object):
                 if carnivore == defender:
                     continue
                 if defender.is_attackable(carnivore,
-                                          PlayerState.get_left_neighbor(defender, player_state.species),
-                                          PlayerState.get_right_neighbor(defender, player_state.species)):
+                                          player_state.get_left_neighbor(defender),
+                                          player_state.get_right_neighbor(defender)):
                     return False
 
         return None

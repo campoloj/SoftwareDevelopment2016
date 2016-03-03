@@ -4,8 +4,9 @@
 A test harness for the Player next_feeding method
 """
 
-import sys
 import json
+import sys
+
 from convert import Convert
 from feeding import player
 

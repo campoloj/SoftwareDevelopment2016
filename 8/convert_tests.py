@@ -1,8 +1,9 @@
 import unittest
-from feeding import species
-from feeding import traitcard
-from feeding import player_state
+
 from convert import Convert
+from dealer import player_state
+from dealer import species
+from dealer import traitcard
 
 
 class TestConvert(unittest.TestCase):
@@ -57,9 +58,9 @@ class TestConvert(unittest.TestCase):
         self.assertNotEqual(Convert.trait_to_json(self.t_1), self.jt_2)
 
     def test_json_to_species(self):
-        self.assertEqual(Convert.json_to_species(self.jSpecies_1), self.species_1)
-        self.assertEqual(Convert.json_to_species(self.jSpecies_2), self.species_2)
-        self.assertNotEqual(Convert.json_to_species(self.jSpecies_1), self.species_2)
+        self.assertTrue(Convert.json_to_species(self.jSpecies_1).equal_attributes(self.species_1))
+        self.assertTrue(Convert.json_to_species(self.jSpecies_2).equal_attributes(self.species_2))
+        self.assertFalse(Convert.json_to_species(self.jSpecies_1).equal_attributes(self.species_2))
         self.jSpecies_1[0][1] = -1
         self.assertRaises(AssertionError, Convert.json_to_species, self.jSpecies_1)
 
@@ -70,7 +71,7 @@ class TestConvert(unittest.TestCase):
         self.assertRaises(AssertionError, Convert.species_to_json, self.species_1)
 
     def test_json_to_player(self):
-        self.assertEqual(Convert.json_to_player(self.jPlayer_1), self.player_1)
+        self.assertTrue(Convert.json_to_player(self.jPlayer_1), self.player_1)
         self.assertNotEqual(Convert.json_to_player(self.jPlayer_1), self.player_2)
         self.jPlayer_1[0][1] = -1
         self.assertRaises(AssertionError, Convert.json_to_player, self.jPlayer_1)

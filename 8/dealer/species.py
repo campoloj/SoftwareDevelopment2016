@@ -23,14 +23,6 @@ class Species(object):
         return "Species(pop=%d, food=%d, body=%d, traits=%s" \
                % (self.population, self.food, self.body, self.traits)
 
-    def __eq__(self, other):
-        return all([isinstance(other, Species),
-                    self.population == other.population,
-                    self.food == other.food,
-                    self.body == other.body,
-                    self.traits == other.traits,
-                    self.fat_storage == other.fat_storage])
-
     def is_attackable(self, attacker, left_neighbor=False, right_neighbor=False):
         """
         Determines if this species is attackable by the attacker species, given its two neighbors
@@ -60,3 +52,16 @@ class Species(object):
         :return: a list of trait names
         """
         return [trait_card.trait for trait_card in self.traits]
+
+    def equal_attributes(self, other):
+        """
+        Return True if this species and the given species have the same attributes.
+        :param other: The other species
+        :return: Boolean
+        """
+        return all([isinstance(other, Species),
+                    self.population == other.population,
+                    self.food == other.food,
+                    self.body == other.body,
+                    self.traits == other.traits,
+                    self.fat_storage == other.fat_storage])

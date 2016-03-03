@@ -1,0 +1,117 @@
+from globals import *
+from player import Player
+from player_state import PlayerState
+
+
+class Dealer(object):
+
+    def __init__(self, list_of_players, watering_hole, deck):
+        self.list_of_players = list_of_players
+        self.watering_hole = watering_hole
+        self.deck = deck
+
+    def feed1(self, player):
+        """
+        Deals with one step in the feeding cycle.
+        - Decides whether it can transfer a token of food (or several) from the watering hole to the current player
+        automatically or whether it is necessary to query the next player;
+
+        - Transfers food, by interpreting the answer from a player if necessary;
+
+        - Removes the player from the sequence or rotate the sequence of players, as needed.
+
+        Will be called  as long as there is food in the watering hole and species that may wish to take additional food.
+        :param player: The player who is feeding
+        :returns: self: and updated self
+        """
+        feed_result = None
+
+        if self.watering_hole == MIN_WATERING_HOLE:
+            return
+
+        hungry_herbivores = player.get_hungry_species(carnivores=False)
+        hungry_carnivores = player.get_hungry_species(carnivores=True)
+        needy_fats = player.get_needy_fats()
+        carnivores_can_attack = self.any_attackers(hungry_carnivores)
+        if not hungry_herbivores and not needy_fats and not carnivores_can_attack:
+            return
+
+        if len(hungry_herbivores) == 1 and not carnivores_can_attack and not needy_fats:
+            feed_result = player.species.index(hungry_herbivores[0])
+
+        if feed_result is None:
+            public_players = self.get_public_players(exclude_id=player.id)
+            feed_result = Player.next_feeding(player, self.watering_hole, public_players)
+
+        self.handle_feed_result(feed_result, player)
+
+    def handle_feed_result(self, feed_result, feeding_player):
+        """
+        Updates dealer configuration based on feeding result.
+        :param feed_result: The result from the feeding_players feeding
+        :param feeding_player: The player feeding
+        :return:
+        """
+        if feed_result is False:
+            feeding_player.active = False
+        player_index = self.list_of_players.index(feeding_player)
+
+        if isinstance(feed_result, int):
+            assert(feeding_player.species[feed_result] in feeding_player.get_hungry_species(carnivores=False))
+            self.list_of_players[player_index].species[feed_result].food += 1
+            self.watering_hole -= 1
+
+        elif isinstance(feed_result, list) and len(feed_result) == 2:
+            fat_index = feed_result[0]
+            fat_tokens = feed_result[1]
+            fat_species = feeding_player.species[fat_index]
+            assert(fat_species in feeding_player.get_needy_fats() and
+                   fat_tokens <= min(fat_species.body - fat_species.fat_storage, self.watering_hole))
+            self.list_of_players[player_index].species[fat_index].fat_storage += fat_tokens
+            self.watering_hole -= fat_tokens
+
+        elif isinstance(feed_result, list) and len(feed_result) == 3:
+            attacker_index = feed_result[0]
+            attacker = feeding_player.species[attacker_index]
+            defending_player_index = feed_result[1]
+            defending_player = self.list_of_players[defending_player_index]
+            defender_index = feed_result[2]
+            defender = defending_player.species[defender_index]
+            assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
+                   defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
+                                          defending_player.get_right_neighbor(defender)))
+            self.list_of_players[player_index].species[attacker_index].food += 1
+            self.watering_hole -= 1
+            defender.population -= 1
+            if defender.population == 0:
+                defending_player.species.remove(defender)
+
+    def any_attackers(self, hungry_carnivores):
+        """
+        Returns true of any of the give carnivores and attack any species on the board.
+        :param hungry_carnivores: A list of hungry sprecies with the Carnivore trait
+        :return: True if any can attack else False
+        """
+
+        for attacker in hungry_carnivores:
+            for player in self.list_of_players:
+                for defender in player.species:
+                    if defender == attacker:
+                        continue
+                    if defender.is_attackable(attacker, player.get_left_neighbor(defender), player.get_right_neighbor(defender)):
+                        return True
+        return False
+
+    def get_public_players(self, exclude_id=0):
+        """
+        Produce a copy of the list of players excluding the given player id.
+        Each copies player in the list will have no food_bag and no hand so that when
+        given for a feeding the player feeding won't have that information.
+        :param exclude_id: Id of player to exclude from the list
+        :return: List of Player_States,
+        """
+        result = []
+        for player in self.list_of_players:
+            if exclude_id != player.id:
+                result += PlayerState(name=player.id, food_bag=None, species=player.species)
+        return result

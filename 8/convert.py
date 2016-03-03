@@ -1,9 +1,7 @@
-from feeding.player_state import PlayerState
-from feeding.species import Species
-from feeding.traitcard import TraitCard
-from feeding.globals import *
-
-
+from dealer.globals import *
+from dealer.player_state import PlayerState
+from dealer.species import Species
+from dealer.traitcard import TraitCard
 
 
 class Convert(object):

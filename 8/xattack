@@ -4,8 +4,9 @@
 A test harness for the Species is_attackable method
 """
 
-import sys
 import json
+import sys
+
 from feeding import species
 from feeding import traitcard
 
