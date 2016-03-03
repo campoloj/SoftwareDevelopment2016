@@ -40,7 +40,7 @@ class Dealer(object):
             feed_result = player.species.index(hungry_herbivores[0])
 
         if feed_result is None:
-            public_players = self.get_public_players(exclude_id=player.id)
+            public_players = self.get_public_players(exclude_id=player.name)
             feed_result = Player.next_feeding(player, self.watering_hole, public_players)
 
         self.handle_feed_result(feed_result, player)
@@ -56,7 +56,7 @@ class Dealer(object):
             feeding_player.active = False
         player_index = self.list_of_players.index(feeding_player)
 
-        if isinstance(feed_result, int):
+        if isinstance(feed_result, int):#
             assert(feeding_player.species[feed_result] in feeding_player.get_hungry_species(carnivores=False))
             self.list_of_players[player_index].species[feed_result].food += 1
             self.watering_hole -= 1
@@ -70,7 +70,7 @@ class Dealer(object):
             self.list_of_players[player_index].species[fat_index].fat_storage += fat_tokens
             self.watering_hole -= fat_tokens
 
-        elif isinstance(feed_result, list) and len(feed_result) == 3:
+        elif isinstance(feed_result, list) and len(feed_result) == 3:#
             attacker_index = feed_result[0]
             attacker = feeding_player.species[attacker_index]
             defending_player_index = feed_result[1]
@@ -79,7 +79,7 @@ class Dealer(object):
             defender = defending_player.species[defender_index]
             assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
                    defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
-                                          defending_player.get_right_neighbor(defender)))
+                            defending_player.get_right_neighbor(defender)))
             self.list_of_players[player_index].species[attacker_index].food += 1
             self.watering_hole -= 1
             defender.population -= 1
@@ -112,6 +112,6 @@ class Dealer(object):
         """
         result = []
         for player in self.list_of_players:
-            if exclude_id != player.id:
-                result += PlayerState(name=player.id, food_bag=None, species=player.species)
+            if exclude_id != player.name:
+                result.append(PlayerState(name=player.name, food_bag=None, species=player.species))
         return result

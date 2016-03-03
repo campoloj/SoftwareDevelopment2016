@@ -20,7 +20,9 @@ class PlayerState(object):
     def __eq__(self, other):
         species_equal = True
         for spec in self.species:
-            if not other.species[self.species.index(spec)].equal_attributes(spec):
+            if len(self.species) != len(other.species):
+                return False
+            elif not other.species[self.species.index(spec)].equal_attributes(spec):
                 species_equal = False
         return all([isinstance(other, PlayerState),
                     self.name == other.name,
