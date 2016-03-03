@@ -65,3 +65,10 @@ class Species(object):
                     self.body == other.body,
                     self.traits == other.traits,
                     self.fat_storage == other.fat_storage])
+
+    def is_hungry(self):
+        """
+        Return True if this species is hungry
+        :return: boolean
+        """
+        return self.population > self.food

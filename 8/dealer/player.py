@@ -92,6 +92,8 @@ class Player(object):
         for carnivore in sorted_carnivores:
             targets = []
             for player in list_of_player:
+                if player == player_state:
+                    continue
                 for defender in player.species:
                     left_neighbor = player.get_left_neighbor(defender)
                     right_neighbor = player.get_right_neighbor(defender)

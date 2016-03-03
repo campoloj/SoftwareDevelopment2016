@@ -15,14 +15,18 @@ class TestDealer(unittest.TestCase):
         self.carnivore_trait = TraitCard(CARNIVORE, 3)
         self.burrowing_trait = TraitCard(BURROWING, 2)
         self.fattissue_trait = TraitCard(FATTISSUE, 4)
+        self.foraging_trait = TraitCard(FORAGING, 2)
+        self.horns_trait = TraitCard(HORNS, 6)
+        self.cooperation_trait = TraitCard(COOPERATION, 1)
+        self.scavenger_trait = TraitCard(SCAVENGER, 2)
 
-        self.species1 = Species(1, 0, 2, [])
+        self.species1 = Species(1, 0, 2, [self.cooperation_trait])
         self.species2 = Species(6, 2, 1, [self.carnivore_trait])
         self.species3 = Species(3, 3, 3, [self.fattissue_trait], 0)
         self.species4 = Species(5, 5, 5, [self.burrowing_trait])
-        self.species5 = Species(5, 3, 4, [])
-        self.species6 = Species(2, 1, 7, [self.carnivore_trait, self.fattissue_trait], 0)
-        self.species7 = Species(7, 1, 6, [])
+        self.species5 = Species(5, 3, 4, [self.foraging_trait])
+        self.species6 = Species(2, 1, 7, [self.carnivore_trait, self.fattissue_trait, self.scavenger_trait], 0)
+        self.species7 = Species(7, 1, 6, [self.horns_trait])
 
         self.player1_species = [self.species1, self.species2]
         self.player2_species = [self.species3, self.species4, self.species5]
@@ -41,9 +45,9 @@ class TestDealer(unittest.TestCase):
         self.dealer1 = Dealer(self.list_of_players, 10, [])
 
     def test_public_players(self):
-        self.assertEquals(self.dealer1.get_public_players(1), [self.public_player2, self.public_player3])
-        self.assertEquals(self.dealer1.get_public_players(2), [self.public_player1, self.public_player3])
-        self.assertEquals(self.dealer1.get_public_players(3), [self.public_player1, self.public_player2])
+        self.assertEquals(self.dealer1.get_public_players(1), [self.player1, self.public_player2, self.public_player3])
+        self.assertEquals(self.dealer1.get_public_players(2), [self.public_player1, self.player2, self.public_player3])
+        self.assertEquals(self.dealer1.get_public_players(3), [self.public_player1, self.public_player2, self.player3])
         self.assertEquals(self.dealer1.get_public_players(),
                           [self.public_player1, self.public_player2, self.public_player3])
 
@@ -62,22 +66,31 @@ class TestDealer(unittest.TestCase):
         # Herbivore Feeding
         self.assertEquals(self.species1.food, 0)
         self.assertEquals(self.dealer1.watering_hole, 10)
+        self.assertEquals(self.species2.food, 2)
         self.dealer1.handle_feed_result(0, self.player1)
         self.assertEquals(self.species1.food, 1)
-        self.assertEquals(self.dealer1.watering_hole, 9)
-        # Carnivore Feeding
-        self.assertEquals(self.species2.food, 2)
-        self.assertEquals(self.species3.population, 3)
-        self.dealer1.handle_feed_result([1, 1, 0], self.player1)
-        self.assertEquals(self.species2.food, 3)
         self.assertEquals(self.dealer1.watering_hole, 8)
+        self.assertEquals(self.species2.food, 3)
+        # Carnivore Feeding
+        self.assertEquals(self.species2.food, 3)
+        self.assertEquals(self.species3.population, 3)
+        self.assertEquals(self.species6.food, 1)
+        self.dealer1.handle_feed_result([1, 1, 0], self.player1)
+        # Scavenger
+        self.assertEquals(self.species6.food, 2)
+        self.assertEquals(self.species2.food, 4)
+        self.assertEquals(self.dealer1.watering_hole, 6)
+        # Cooperation
         self.assertEquals(self.species3.population, 2)
         # Check extinction
         self.assertEquals(self.species1.population, 1)
         self.assertTrue(self.species1 in self.player1.species)
+        self.assertEquals(self.species6.food, 2)
         self.dealer1.handle_feed_result([1, 0, 0], self.player1)
-        self.assertEquals(self.species2.food, 4)
-        self.assertEquals(self.dealer1.watering_hole, 7)
+        self.assertEquals(self.species2.food, 5)
+        # Scavenger
+        self.assertEquals(self.dealer1.watering_hole, 5)
+        self.assertEquals(self.species6.food, 2)
         self.assertFalse(self.species1 in self.player1.species)
         # Fat Feeding
         self.assertEquals(self.species3.food, 3)
@@ -87,20 +100,30 @@ class TestDealer(unittest.TestCase):
         self.assertEquals(self.species3.food, 3)
         self.assertEquals(self.species3.fat_storage, 2)
         self.assertEquals(self.species3.population, 2)
-        self.assertEquals(self.dealer1.watering_hole, 5)
+        self.assertEquals(self.dealer1.watering_hole, 3)
+        # Foraging
+        self.assertEquals(self.species5.food, 3)
+        self.dealer1.handle_feed_result(2, self.player2)
+        self.assertEquals(self.species5.food, 5)
 
     def test_feed1(self):
         self.assertEquals(self.dealer1.watering_hole, 10)
         self.assertEquals(self.species1.food, 0)
         self.dealer1.feed1(self.player1)
         self.assertEquals(self.species1.food, 1)
-        self.assertEquals(self.dealer1.watering_hole, 9)
-        self.assertEquals(self.species2.food, 2)
-        self.assertEquals(self.species7.population, 7)
-        self.dealer1.feed1(self.player1)
-        self.assertEquals(self.species2.food, 3)
         self.assertEquals(self.dealer1.watering_hole, 8)
+        # Cooperation
+        self.assertEquals(self.species2.food, 3)
+        self.assertEquals(self.species7.population, 7)
+        self.assertEquals(self.species2.population, 6)
+        self.assertEquals(self.species6.food, 1)
+        self.dealer1.feed1(self.player1)
+        self.assertEquals(self.species2.food, 4)
+        self.assertEquals(self.species6.food, 2)
+        self.assertEquals(self.dealer1.watering_hole, 6)
         self.assertEquals(self.species7.population, 6)
+        # Horns
+        self.assertEquals(self.species2.population, 5)
 
 
 
