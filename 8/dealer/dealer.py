@@ -24,8 +24,6 @@ class Dealer(object):
         :param player: The player who is feeding
         :returns: self: and updated self
         """
-        feed_result = None
-
         if self.watering_hole == MIN_WATERING_HOLE:
             return
 
@@ -36,6 +34,7 @@ class Dealer(object):
         if not hungry_herbivores and not needy_fats and not carnivores_can_attack:
             return
 
+        feed_result = None
         if len(hungry_herbivores) == 1 and not carnivores_can_attack and not needy_fats:
             feed_result = player.species.index(hungry_herbivores[0])
 
@@ -43,48 +42,99 @@ class Dealer(object):
             public_players = self.get_public_players(exclude_id=player.name)
             feed_result = Player.next_feeding(player, self.watering_hole, public_players)
 
-        self.handle_feed_result(feed_result, player)
+        tracked_player = self.list_of_players[self.list_of_players.index(player)]
+        self.handle_feed_result(feed_result, tracked_player)
 
     def handle_feed_result(self, feed_result, feeding_player):
         """
         Updates dealer configuration based on feeding result.
         :param feed_result: The result from the feeding_players feeding
         :param feeding_player: The player feeding
-        :return:
         """
         if feed_result is False:
             feeding_player.active = False
-        player_index = self.list_of_players.index(feeding_player)
+            return
 
-        if isinstance(feed_result, int):#
-            assert(feeding_player.species[feed_result] in feeding_player.get_hungry_species(carnivores=False))
-            self.list_of_players[player_index].species[feed_result].food += 1
-            self.watering_hole -= 1
+        if isinstance(feed_result, int):
+            self.handle_herbivore_feeding(feed_result, feeding_player)
 
         elif isinstance(feed_result, list) and len(feed_result) == 2:
-            fat_index = feed_result[0]
-            fat_tokens = feed_result[1]
-            fat_species = feeding_player.species[fat_index]
-            assert(fat_species in feeding_player.get_needy_fats() and
-                   fat_tokens <= min(fat_species.body - fat_species.fat_storage, self.watering_hole))
-            self.list_of_players[player_index].species[fat_index].fat_storage += fat_tokens
-            self.watering_hole -= fat_tokens
+            self.handle_fat_feeding(feed_result, feeding_player)
 
-        elif isinstance(feed_result, list) and len(feed_result) == 3:#
-            attacker_index = feed_result[0]
-            attacker = feeding_player.species[attacker_index]
-            defending_player_index = feed_result[1]
-            defending_player = self.list_of_players[defending_player_index]
-            defender_index = feed_result[2]
-            defender = defending_player.species[defender_index]
-            assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
-                   defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
-                            defending_player.get_right_neighbor(defender)))
-            self.list_of_players[player_index].species[attacker_index].food += 1
-            self.watering_hole -= 1
-            defender.population -= 1
-            if defender.population == 0:
-                defending_player.species.remove(defender)
+        elif isinstance(feed_result, list) and len(feed_result) == 3:
+            self.handle_herbivore_feeding(feed_result, feeding_player)
+
+    def handle_herbivore_feeding(self, feed_result, feeding_player):
+        """
+        Updates dealer configuration by feeding an herbivore
+        :param feed_result: Nat, the index of the herbivore to feed
+        :param feeding_player: The player feeding
+        """
+        herbivore = feeding_player.species[feed_result]
+        assert(herbivore in feeding_player.get_hungry_species(carnivores=False))
+        self.feed_species(herbivore, feeding_player)
+
+    def handle_fat_feeding(self, feed_result, feeding_player):
+        """
+        Updates dealer configuration by storing fat on a fat-tissue Species
+        :param feed_result: [Nat, Nat] where the first Nat is the index of the fat-tissue Species and
+                                       the second is the amount of food requested
+        :param feeding_player: The player feeding
+        """
+        fat_index = feed_result[0]
+        fat_tokens = feed_result[1]
+        fat_species = feeding_player.species[fat_index]
+        assert(fat_species in feeding_player.get_needy_fats() and
+               fat_tokens <= min(fat_species.body - fat_species.fat_storage, self.watering_hole))
+        fat_species.fat_storage += fat_tokens
+        self.watering_hole -= fat_tokens
+
+    def handle_carnivore_feeding(self, feed_result, feeding_player):
+        """
+        Updates dealer configuration by feeding a carnivore and decrementing the defender's population
+        :param feed_result: [Nat, Nat, Nat] where the first Nat is the index of the carnivore,
+                                            the second is the index of the defending player,
+                                            and the third is the index of the defending Species
+        :param feeding_player: The player feeding
+        """
+        attacker = feeding_player.species[feed_result[0]]
+        defending_player = self.list_of_players[feed_result[1]]
+        defender = defending_player.species[feed_result[2]]
+        assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
+               defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
+                                      defending_player.get_right_neighbor(defender)))
+        defender.population -= 1
+        if defender.population == 0:
+            defending_player.species.remove(defender)
+        if HORNS in defender.trait_names():
+            attacker.population -= 1
+            if attacker.population == 0:
+                feeding_player.species.remove(attacker)
+                return
+        self.feed_species(attacker, feeding_player)
+        self.handle_scavenging()
+
+    def handle_scavenging(self):
+        """
+        Feeds any Species with the Scavenger trait after a Carnivore attack
+        """
+        for player in self.list_of_players:
+            for species in player.species:
+                if SCAVENGER in species.trait_names():
+                    self.feed_species(species, player)
+
+    def feed_species(self, species, player):
+        """
+        Feed given species and handle auto-feeding
+        :param species: The Species being fed
+        :param player: The PlayerState who owns the Species
+        """
+        species.food += (2 if FORAGING in species.trait_names() else 1)
+        self.watering_hole -= (2 if FORAGING in species.trait_names() else 1)
+        if COOPERATION in species.trait_names():
+            right_neighbor = player.get_right_neighbor(species)
+            if right_neighbor:
+                self.feed_species(right_neighbor, player)
 
     def any_attackers(self, hungry_carnivores):
         """
@@ -92,13 +142,13 @@ class Dealer(object):
         :param hungry_carnivores: A list of hungry sprecies with the Carnivore trait
         :return: True if any can attack else False
         """
-
         for attacker in hungry_carnivores:
             for player in self.list_of_players:
                 for defender in player.species:
                     if defender == attacker:
                         continue
-                    if defender.is_attackable(attacker, player.get_left_neighbor(defender), player.get_right_neighbor(defender)):
+                    if defender.is_attackable(attacker, player.get_left_neighbor(defender),
+                                              player.get_right_neighbor(defender)):
                         return True
         return False
 
