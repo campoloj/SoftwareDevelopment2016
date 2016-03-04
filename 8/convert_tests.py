@@ -1,7 +1,7 @@
 import unittest
 
 from convert import Convert
-from dealer.player import PlayerState
+from dealer.player_state import PlayerState
 from dealer.species import Species
 from dealer.traitcard import TraitCard
 from dealer.globals import *
