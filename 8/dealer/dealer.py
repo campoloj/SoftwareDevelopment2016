@@ -58,10 +58,10 @@ class Dealer(object):
         if isinstance(feed_result, int):
             self.handle_herbivore_feeding(feed_result, feeding_player)
 
-        elif isinstance(feed_result, list) and len(feed_result) == 2:
+        elif isinstance(feed_result, list) and len(feed_result) == HERB_FEED_LENGTH:
             self.handle_fat_feeding(feed_result, feeding_player)
 
-        elif isinstance(feed_result, list) and len(feed_result) == 3:
+        elif isinstance(feed_result, list) and len(feed_result) == CARN_FEED_LENGTH:
             self.handle_carnivore_feeding(feed_result, feeding_player)
 
     def handle_herbivore_feeding(self, feed_result, feeding_player):
@@ -81,8 +81,7 @@ class Dealer(object):
                                        the second is the amount of food requested
         :param feeding_player: The player feeding
         """
-        fat_index = feed_result[0]
-        fat_tokens = feed_result[1]
+        [fat_index, fat_tokens] = feed_result
         fat_species = feeding_player.species[fat_index]
         assert(fat_species in feeding_player.get_needy_fats() and
                fat_tokens <= min(fat_species.body - fat_species.fat_storage, self.watering_hole))
@@ -97,24 +96,39 @@ class Dealer(object):
                                             and the third is the index of the defending Species
         :param feeding_player: The player feeding
         """
+        [attacker_index, defending_player_index, defender_index] = feed_result
         public_players = self.get_public_players(feeding_player.name)
-        defending_player_id = public_players[feed_result[1]].name
-        attacker = feeding_player.species[feed_result[0]]
+
+        attacker = feeding_player.species[attacker_index]
+        defending_player_id = public_players[defending_player_index].name
         defending_player = next(player for player in self.list_of_players if player.name == defending_player_id)
-        defender = defending_player.species[feed_result[2]]
+        defender = defending_player.species[defender_index]
         assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
                                       defending_player.get_right_neighbor(defender)))
-        defender.population -= 1
-        if defender.population == 0:
-            defending_player.species.remove(defender)
-        if HORNS in defender.trait_names():
-            attacker.population -= 1
-            if attacker.population == 0:
-                feeding_player.species.remove(attacker)
-                return
+
+        Dealer.handle_attack(attacker, defender, feeding_player, defending_player)
+        if attacker.population < MIN_POP:
+            return
         self.feed_species(attacker, feeding_player)
         self.handle_scavenging()
+
+    @classmethod
+    def handle_attack(cls, attacker, defender, feeding_player, defending_player):
+        """
+        Reduces defender population (and attacker if necessary), removing extinct species
+        :param attacker: attacking Species
+        :param defender: defending Species
+        :param feeding_player: attacking Player
+        :param defending_player: defending Player
+        """
+        defender.population -= KILL_QUANTITY
+        if defender.population < MIN_POP:
+            defending_player.species.remove(defender)
+        if HORNS in defender.trait_names():
+            attacker.population -= KILL_QUANTITY
+            if attacker.population < MIN_POP:
+                feeding_player.species.remove(attacker)
 
     def handle_scavenging(self):
         """
@@ -131,13 +145,13 @@ class Dealer(object):
         :param species: The Species being fed
         :param player: The PlayerState who owns the Species
         """
-        species.food += 1
-        self.watering_hole -= 1
+        species.food += FEED_QUANTITY
+        self.watering_hole -= FEED_QUANTITY
         forage = (FORAGING in species.trait_names() and species.is_hungry())
-        if forage and self.watering_hole > 0:
-            species.food += 1
-            self.watering_hole -= 1
-        if COOPERATION in species.trait_names() and self.watering_hole > 0:
+        if forage and self.watering_hole > MIN_WATERING_HOLE:
+            species.food += FEED_QUANTITY
+            self.watering_hole -= FEED_QUANTITY
+        if COOPERATION in species.trait_names() and self.watering_hole > MIN_WATERING_HOLE:
             right_neighbor = player.get_right_neighbor(species)
             if right_neighbor and right_neighbor.is_hungry():
                 self.feed_species(right_neighbor, player)

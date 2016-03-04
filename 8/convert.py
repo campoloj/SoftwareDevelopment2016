@@ -116,7 +116,7 @@ class Convert(object):
         if isinstance(json_trait, basestring):
             trait = json_trait
             food = None
-        elif isinstance(json_trait, list) and len(json_trait) == SPECIES_CARD_LENGTH:
+        elif isinstance(json_trait, list) and len(json_trait) == CARD_LENGTH:
             [food, trait] = json_trait
             assert(CARN_FOOD_MIN <= food <= CARN_FOOD_MAX if trait == CARNIVORE
                    else HERB_FOOD_MIN <= food <= HERB_FOOD_MAX)

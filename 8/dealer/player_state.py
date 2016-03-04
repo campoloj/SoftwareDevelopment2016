@@ -1,5 +1,6 @@
 from globals import *
 
+
 class PlayerState(object):
     """
     Represents data about the player that is kept track of by the dealer

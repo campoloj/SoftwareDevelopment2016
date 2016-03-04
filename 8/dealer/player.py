@@ -1,13 +1,3 @@
-import os
-import sys
-
-from player_state import PlayerState
-globals_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "..%s" % os.sep)
-sys.path.append(globals_path)
-
-from globals import *
-
 
 class Player(object):
     """
@@ -35,21 +25,22 @@ class Player(object):
         hungry_fatties = player.get_needy_fats()
 
         if hungry_fatties:
-            feeding = cls.feed_fatty(hungry_fatties, food_available)
-            return [player.species.index(feeding[0]), feeding[1]]
+            [fatty, food_requested] = cls.feed_fatty(hungry_fatties, food_available)
+            return [player.species.index(fatty), food_requested]
 
         hungry_herbivores = player.get_hungry_species(carnivores=False)
         if hungry_herbivores:
-            feeding = cls.feed_herbivores(hungry_herbivores)
-            return player.species.index(feeding)
+            herb = cls.feed_herbivores(hungry_herbivores)
+            return player.species.index(herb)
 
         hungry_carnivores = player.get_hungry_species(carnivores=True)
         if hungry_carnivores:
             feeding = cls.feed_carnivore(hungry_carnivores, player, list_of_players)
             if feeding:
-                attacking_species_index = player.species.index(feeding[0])
-                defending_player_index = list_of_players.index(feeding[1])
-                defending_species_index = feeding[1].species.index(feeding[2])
+                [attacker, defending_player, defender] = feeding
+                attacking_species_index = player.species.index(attacker)
+                defending_player_index = list_of_players.index(defending_player)
+                defending_species_index = defending_player.species.index(defender)
                 return [attacking_species_index, defending_player_index, defending_species_index]
             else:
                 return feeding
@@ -135,11 +126,7 @@ class Player(object):
         :param list_of_species: list of Species with the fat-tissue trait
         :return: Species with greatest fat-tissue need (highest population - food)
         """
-        if len(list_of_species) == 1:
-            return list_of_species[0]
-        else:
-            max_need = max([species.population - species.food for species in list_of_species])
-
+        max_need = max([species.population - species.food for species in list_of_species])
         highest_needers = [species for species in list_of_species
                            if species.population - species.food == max_need]
         return cls.sort_by_size(highest_needers)[0]
