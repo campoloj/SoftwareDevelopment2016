@@ -20,9 +20,9 @@ def main():
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate()
         dealer.feed1(dealer.list_of_players[0])
-        dealer = Convert.dealer_to_json(dealer)
-        sys.stdout.write(json.dumps(dealer))
-    except AssertionError:
+        json_dealer = Convert.dealer_to_json(dealer)
+        sys.stdout.write(json.dumps(json_dealer))
+    except:
         sys.exit(0)
 
 

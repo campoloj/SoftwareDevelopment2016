@@ -1,6 +1,9 @@
+import random
+
 from globals import *
 from player import Player
 from player_state import PlayerState
+from traitcard import TraitCard
 
 
 class Dealer(object):
@@ -187,6 +190,39 @@ class Dealer(object):
             else:
                 result.append(PlayerState(name=player.name, food_bag=None, species=player.species))
         return result
+
+    def validate(self):
+        """
+        Validates game constraints for Dealer and Players
+        """
+        total_deck = Dealer.make_deck()
+        for card in self.deck:
+            total_deck.remove(card)
+
+        for player in self.list_of_players:
+            for card in player.hand:
+                total_deck.remove(card)
+
+            for species in player.species:
+                assert(len(species.trait_names()) == len(set(species.trait_names())))
+                for card in species.traits:
+                    total_deck.remove(card)
+
+        assert(not total_deck)
+
+    @classmethod
+    def make_deck(cls):
+        """
+        Makes a full, shuffled deck of TraitCards
+        :return: list of TraitCards
+        """
+        deck = []
+        for trait in TRAITS_LIST:
+            food_range = (CARN_FOOD_MAX if trait == CARNIVORE else HERB_FOOD_MAX)
+            for food_val in range(-food_range, food_range):
+                deck.append(TraitCard(trait, food_val))
+        random.shuffle(deck)
+        return deck
 
     def equal_attributes(self, other):
         """
