@@ -16,7 +16,7 @@ class Convert(object):
     def json_to_dealer(cls, json_config):
         assert(len(json_config) == CONFIG_LENGTH)
         [json_lop, wh_food, json_deck] = json_config
-        assert(all([LOP_MIN <= len(json_lop) <= LOP_MAX, wh_food >= MIN_WATERING_HOLE, json_deck <= LOC_MAX]))
+        assert(all([LOP_MIN <= len(json_lop) <= LOP_MAX, wh_food >= MIN_WATERING_HOLE, len(json_deck) <= LOC_MAX]))
         lop = [cls.json_to_player(json_player) for json_player in json_lop]
         deck = [cls.json_to_trait(trait_card) for trait_card in json_deck]
         dealer = Dealer(lop, wh_food, deck)
@@ -26,7 +26,7 @@ class Convert(object):
     def dealer_to_json(cls, dealer):
         assert(all([LOP_MIN <= len(dealer.list_of_players) <= LOP_MAX,
                     dealer.watering_hole >= MIN_WATERING_HOLE,
-                    dealer.deck <= LOC_MAX]))
+                    len(dealer.deck) <= LOC_MAX]))
         json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
         json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
         return [json_players, dealer.watering_hole, json_deck]
@@ -115,19 +115,21 @@ class Convert(object):
     def json_to_trait(cls, json_trait):
         if isinstance(json_trait, basestring):
             trait = json_trait
-            food = 0
+            food = None
         elif isinstance(json_trait, list) and len(json_trait) == SPECIES_CARD_LENGTH:
             [food, trait] = json_trait
             assert(CARN_FOOD_MIN <= food <= CARN_FOOD_MAX if trait == CARNIVORE
                    else HERB_FOOD_MIN <= food <= HERB_FOOD_MAX)
         else:
             raise AssertionError
-        assert(json_trait in TRAITS_LIST)
+        assert(trait in TRAITS_LIST)
         return TraitCard(trait, food)
 
     @classmethod
     def trait_to_json(cls, trait_card):
-        assert(all([(CARN_FOOD_MIN <= trait_card.food_points <= CARN_FOOD_MAX if trait_card.trait == CARNIVORE
-                     else HERB_FOOD_MIN <= trait_card.food_points <= HERB_FOOD_MAX),
-                    trait_card.trait in TRAITS_LIST]))
-        return trait_card.trait
+        assert(trait_card.trait in TRAITS_LIST)
+        if trait_card.food_points is None:
+            return trait_card.trait
+        assert(CARN_FOOD_MIN <= trait_card.food_points <= CARN_FOOD_MAX if trait_card.trait == CARNIVORE
+               else HERB_FOOD_MIN <= trait_card.food_points <= HERB_FOOD_MAX)
+        return [trait_card.food_points, trait_card.trait]

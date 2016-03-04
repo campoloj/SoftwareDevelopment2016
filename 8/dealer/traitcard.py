@@ -2,7 +2,7 @@ class TraitCard(object):
     """
     A Trait Card of the Evolution game
     """
-    def __init__(self, trait, food_points=0):
+    def __init__(self, trait, food_points=None):
         self.trait = trait
         self.food_points = food_points
 

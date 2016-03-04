@@ -173,3 +173,14 @@ class Dealer(object):
             else:
                 result.append(PlayerState(name=player.name, food_bag=None, species=player.species))
         return result
+
+    def equal_attributes(self, other):
+        """
+        Return True if this dealer and the given dealer have the same attributes.
+        :param other: The other species
+        :return: Boolean
+        """
+        return all([isinstance(other, Dealer),
+                    self.list_of_players == other.list_of_players,
+                    self.watering_hole == other.watering_hole,
+                    self.deck == other.deck])
