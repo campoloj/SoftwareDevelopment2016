@@ -88,6 +88,7 @@ class Dealer(object):
         fat_species = feeding_player.species[fat_index]
         assert(fat_species in feeding_player.get_needy_fats() and
                fat_tokens <= min(fat_species.body - fat_species.fat_storage, self.watering_hole))
+
         fat_species.fat_storage += fat_tokens
         self.watering_hole -= fat_tokens
 
@@ -128,6 +129,7 @@ class Dealer(object):
         defender.population -= KILL_QUANTITY
         if defender.population < MIN_POP:
             defending_player.species.remove(defender)
+
         if HORNS in defender.trait_names():
             attacker.population -= KILL_QUANTITY
             if attacker.population < MIN_POP:
@@ -150,10 +152,12 @@ class Dealer(object):
         """
         species.food += FEED_QUANTITY
         self.watering_hole -= FEED_QUANTITY
+
         forage = (FORAGING in species.trait_names() and species.is_hungry())
         if forage and self.watering_hole > MIN_WATERING_HOLE:
             species.food += FEED_QUANTITY
             self.watering_hole -= FEED_QUANTITY
+
         if COOPERATION in species.trait_names() and self.watering_hole > MIN_WATERING_HOLE:
             right_neighbor = player.get_right_neighbor(species)
             if right_neighbor and right_neighbor.is_hungry():
@@ -181,7 +185,7 @@ class Dealer(object):
         will have no food_bag and no hand so that when given for a feeding the player
         feeding won't have that information
         :param player_id: Id of player to maintain private fields
-        :return: List of Player_States
+        :return: List of PlayerStates
         """
         result = []
         for player in self.list_of_players:
@@ -194,6 +198,7 @@ class Dealer(object):
     def validate(self):
         """
         Validates game constraints for Dealer and Players
+        Raises ValueError if duplicate cards exist, AssertionError if species have duplicate traits
         """
         total_deck = Dealer.make_deck()
         for card in self.deck:
@@ -207,8 +212,6 @@ class Dealer(object):
                 assert(len(species.trait_names()) == len(set(species.trait_names())))
                 for card in species.traits:
                     total_deck.remove(card)
-
-        assert(not total_deck)
 
     @classmethod
     def make_deck(cls):

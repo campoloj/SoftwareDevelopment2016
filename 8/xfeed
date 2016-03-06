@@ -8,7 +8,7 @@ import json
 import sys
 
 from convert import Convert
-from feeding import player
+from dealer import player
 
 
 def main():

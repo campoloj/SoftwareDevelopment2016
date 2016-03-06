@@ -23,7 +23,6 @@ class Player(object):
         :return: Feeding for the next species to feed
         """
         hungry_fatties = player.get_needy_fats()
-
         if hungry_fatties:
             [fatty, food_requested] = cls.feed_fatty(hungry_fatties, food_available)
             return [player.species.index(fatty), food_requested]
@@ -126,8 +125,8 @@ class Player(object):
         :param list_of_species: list of Species with the fat-tissue trait
         :return: Species with greatest fat-tissue need (highest population - food)
         """
-        max_need = max([species.population - species.food for species in list_of_species])
+        max_need = max([species.body - species.fat_storage for species in list_of_species])
         highest_needers = [species for species in list_of_species
-                           if species.population - species.food == max_need]
+                           if species.body - species.fat_storage == max_need]
         return cls.sort_by_size(highest_needers)[0]
 
