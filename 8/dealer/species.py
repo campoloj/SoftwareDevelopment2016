@@ -17,7 +17,10 @@ class Species(object):
         self.food = food
         self.body = body
         self.traits = traits if traits else []
-        self.fat_storage = fat_storage
+        if fat_storage:
+            self.fat_storage = fat_storage
+        else:
+            self.fat_storage = (0 if FATTISSUE in self.trait_names() else None)
 
     def __str__(self):
         return "Species(pop=%d, food=%d, body=%d, traits=%s" \
