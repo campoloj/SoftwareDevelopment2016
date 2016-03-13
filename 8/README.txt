@@ -1,61 +1,70 @@
-The purpose of this project was to update the Evolution API to return indices rather than Player
-and Species objects.
+The purpose of this project was to complete the feeding phase of Evolution by implementing
+the dealer and a feed1 method which updates the game state after one player chooses a feeding.
 
-Streaming/compile.py: a script to compile python files, exits with 0
-Streaming/xstream.py: echo program for accepting JSON messages
+_____________________________________________________________________________________________
 
-feeding/player.py: the Player object with the next_feeding method and necessary helpers
-feeding/player_state.py: the data representation of the player
-feeding/player_tests.py: unit tests for a player object
-feeding/species.py: the Species object
-feeding/species_tests.py: unit tests for a species object
-feeding/traitcard.py: the TraitCard object
+dealer/dealer.py: the Dealer object with the feed1 method and necessary helpers
+dealer_tests.py: unit tests for a Dealer object
+dealer/globals.py: global variables for Evolution rules and objects
+dealer/player.py: the Player object with the next_feeding method and necessary helpers
+dealer/player_state.py: the PlayerState object
+dealer/player_tests.py: unit tests for a Player object
+dealer/species.py: the Species object
+dealer/species_tests.py: unit tests for a Species object
+dealer/traitcard.py: the TraitCard object
 
 xattack_tests/*: json input and output files to check bug fixes in xattack
 xfeed_tests/*: json input and output files for xfeed
+xstep_tests/*: json input and output files for xstep
 
+compile: executable to "compile" xstep (just exits with status 0 because Python)
 convert.py: methods to convert between json and python objects
 convert_tests.py: unit tests for convert.py methods
-globals.py: global variables for Evolution
-xattack.py: updated attack tests for is_attackable method for regression testing
-xfeed: executable for testing next_feeding method
+xattack: executable for testing is_attackable method and regression testing
+xfeed: executable for testing next_feeding method and regression testing
+xstep: executable for testing feed1 method
 
 __________________________________________________________________________________________
 
-to run Streaming/compile:
+to run compile:
 
 ./compile
-
-to run Streaming/xstream:
-
-./xstream
-
-** xstream accepts json input from stdin and on linux machines exits with ^C
-
-to run xfeed:
-
-./xfeed < input.json > output.json
 
 to run xattack:
 
 ./xattack < input.json > output.json
 
+to run xfeed:
+
+./xfeed < input.json > output.json
+
+to run xstep:
+
+./xstep < input.json > output.json
+
 __________________________________________________________________________________________
 
 Read the following files (from top to bottom) in order below:
-- Streaming/xstream
 
+In 8/dealer:
 - traitcard.py
 - species.py
 - species_tests.py
 - player_state.py
 - player.py
 - player_tests.py
+- dealer.py
+- dealer_tests.py
+
+In 8:
+- xattack
+- xattack_tests/*
+
 - xfeed
 - xfeed_tests/*
 
-- xattack
-- xattack_tests/*
+- xstep
+- xstep_tests/*
 
 - convert.py
 - convert_tests.py
