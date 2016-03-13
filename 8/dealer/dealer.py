@@ -150,6 +150,9 @@ class Dealer(object):
         :param species: The Species being fed
         :param player: The PlayerState who owns the Species
         """
+        if not species.is_hungry() or self.watering_hole <= MIN_WATERING_HOLE:
+            return
+
         species.food += FEED_QUANTITY
         self.watering_hole -= FEED_QUANTITY
 

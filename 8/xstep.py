@@ -11,11 +11,7 @@ from convert import Convert
 
 
 def main():
-    message = sys.stdin.readlines()
-    json_config = ""
-    for line in message:
-        json_config += line.rstrip('\n')
-    json_config = json.loads(json_config)
+    json_config = json.loads(sys.stdin.read())
     try:
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate()
