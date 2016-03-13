@@ -115,7 +115,7 @@ class Dealer(object):
         if attacker.population < MIN_POP:
             return
         self.feed_species(attacker, feeding_player)
-        self.handle_scavenging()
+        self.handle_scavenging(feeding_player)
 
     @classmethod
     def handle_attack(cls, attacker, defender, feeding_player, defending_player):
@@ -135,11 +135,14 @@ class Dealer(object):
             if attacker.population < MIN_POP:
                 feeding_player.species.remove(attacker)
 
-    def handle_scavenging(self):
+    def handle_scavenging(self, feeding_player):
         """
         Feeds any Species with the Scavenger trait after a Carnivore attack
+        :param feeding_player: attacking Player
         """
-        for player in self.list_of_players:
+        feeding_player_index = self.list_of_players.index(feeding_player)
+        for x in range(feeding_player_index, feeding_player_index + len(self.list_of_players)):
+            player = self.list_of_players[x % len(self.list_of_players)]
             for species in player.species:
                 if SCAVENGER in species.trait_names() and species.is_hungry() and self.watering_hole > 0:
                     self.feed_species(species, player)
@@ -214,6 +217,8 @@ class Dealer(object):
             for species in player.species:
                 assert(len(species.trait_names()) == len(set(species.trait_names())))
                 for card in species.traits:
+                    if card.food_points is None:
+                        continue
                     total_deck.remove(card)
 
     @classmethod
