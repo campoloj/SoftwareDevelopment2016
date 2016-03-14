@@ -1,0 +1,45 @@
+choose_wh_card(player_state):
+"""
+player_state is a Player_State
+Select TraitCard from hand to place on the Watering Hole Board as a food card.
+
+This happens in step 2 of a turn when every player must place one card,
+face down, on the watering hole board.
+
+Signature: List-of-TraitCards -> TraitCard
+"""
+
+
+play_cards(player_state):
+"""
+player_state is a Player_State
+Select Cards to play from the TraitCards in the hand
+Given their hand and their species, returns a list of actions which specify
+which of the players cards are being used for what purpose and on which species.
+
+This happens when in step 3 of a turn when:
+each player may supplement any of his species with additional face-up cards, up to three;
+may place a face-down card on top of a card already associated with a species;
+or may exchange cards for: additional species boards, growing the body size, or increased population sizes.
+Specifically, one card is worth one of the following:
+    one new species board,
+    one additional body size (for one specific species, or one additional animal also for one specific species.)
+
+An Action is one of:
+# Add selected TraitCards to selected Species (up to three cards per species).
+{"supplement-species": (Species, List-of-TraitCard)},
+
+# Place face-down TraitCard (first) on top of face-up TraitCard (second) to replace it on selected Species
+{"replace-trait": (Species, TraitCard, TraitCard)},
+
+# Trade in a TraitCard to add a new species on the "left" or "right" side of their current species boards
+{"add-species": (TraitCard, String)},
+
+# Trade in a TraitCard to increase the body size of the selected Species
+{"grow-body": (TraitCard, Species)},
+
+# Trade in a TraitCard to increase the population size of the selected Species
+{"increase-population": (TraitCard, Species)}
+
+Signature: List-of-TraitCards, List-of-Species -> List-of-Actions
+"""

@@ -23,6 +23,7 @@ convert_tests.py: unit tests for convert.py methods
 xattack: executable for testing is_attackable method and regression testing
 xfeed: executable for testing next_feeding method and regression testing
 xstep: executable for testing feed1 method
+rest.txt: wishlist for the rest of the player to complete the game.
 
 __________________________________________________________________________________________
 
