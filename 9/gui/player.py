@@ -130,3 +130,11 @@ class Player(object):
                            if species.body - species.fat_storage == max_need]
         return cls.sort_by_size(highest_needers)[0]
 
+    @classmethod
+    def display(cls, player_state):
+        """
+        Displays the configuration of the given PlayerState for a Player in a graphical window
+        :param player_state: The PlayerState object representing this Player's configuration
+        """
+        player_state.display()
+

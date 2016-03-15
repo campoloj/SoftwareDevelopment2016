@@ -1,3 +1,4 @@
+import gui
 from globals import *
 
 
@@ -71,4 +72,11 @@ class PlayerState(object):
         return [species for species in self.species
                 if FATTISSUE in species.trait_names() and
                 species.fat_storage < species.body]
+
+    def display(self):
+        """
+        Displays this PlayerState configuration in a graphical window
+        """
+        display = gui.player_display(self)
+        gui.main(display)
 
