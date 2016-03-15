@@ -46,7 +46,8 @@ class Convert(object):
             [[globals()[ID], player_id], [globals()[SPECIES], json_los], [globals()[BAG], food_bag]] = json_player
             cards = []
         elif len(json_player) == PLAYER_PLUS_LENGTH:
-            [[globals()[ID], player_id], [globals()[SPECIES], json_los], [globals()[BAG], food_bag], globals()[CARDS], cards] = json_player
+            [[globals()[ID], player_id], [globals()[SPECIES], json_los],
+             [globals()[BAG], food_bag], [globals()[CARDS], cards]] = json_player
         else:
             raise AssertionError
 
