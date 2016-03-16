@@ -8,7 +8,7 @@ class PlayerState(object):
     the dealer only sends the minimum amount of data needed for the player to make
     choices
     """
-    def __init__(self, name=None, food_bag=0, hand=None, species=None, active=True):
+    def __init__(self, name=0, food_bag=0, hand=None, species=None, active=True):
         self.name = name
         self.food_bag = food_bag
         self.hand = hand if hand else []
