@@ -56,6 +56,8 @@ def render_species(species_boards):
     :param species_boards: a List of Species
     :return: String representing the species_boards "[food, body, pop, traits, fat-storage]"
     """
+    if not species_boards:
+        return '        None'
     species_strings = [species_template % (species.food, species.body, species.population,
                                            "[%s]" % ", ".join(species.trait_names()), str(species.fat_storage))
                        for species in species_boards]

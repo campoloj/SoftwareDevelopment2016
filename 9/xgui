@@ -1,0 +1,27 @@
+#! /usr/bin/env python
+
+"""
+A test harness for the Dealer display method
+"""
+
+import json
+import sys
+from gui import gui
+
+from convert import Convert
+
+
+def main():
+    json_config = json.loads(sys.stdin.read())
+    try:
+        dealer = Convert.json_to_dealer(json_config)
+        dealer.validate()
+        dealer.display()
+        dealer.list_of_players[0].display()
+        sys.exit(0)
+    except:
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
