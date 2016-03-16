@@ -1,4 +1,5 @@
 import random
+import gui
 
 from globals import *
 from player import Player
@@ -245,3 +246,10 @@ class Dealer(object):
                     self.list_of_players == other.list_of_players,
                     self.watering_hole == other.watering_hole,
                     self.deck == other.deck])
+
+    def display(self):
+        """
+        Displays this Dealer's current configuration in a graphical window
+        """
+        display = gui.dealer_display(self)
+        gui.main(display)
