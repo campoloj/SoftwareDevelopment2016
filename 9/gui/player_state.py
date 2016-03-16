@@ -77,6 +77,6 @@ class PlayerState(object):
         """
         Displays this PlayerState configuration in a graphical window
         """
-        display = gui.player_display(self)
-        gui.main(display)
+        text = gui.player_display(self)
+        gui.display(text)
 
