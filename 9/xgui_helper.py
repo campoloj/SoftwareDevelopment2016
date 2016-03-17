@@ -9,4 +9,4 @@ from gui import gui
 
 
 if __name__ == "__main__":
-    gui.display(sys.argv[1].replace("\\n", "\n"))
+    gui.display(sys.argv[1])
