@@ -32,8 +32,6 @@ class PlayerState(object):
                     self.hand == other.hand,
                     species_equal])
 
-
-
     def get_left_neighbor(self, species):
         """
         Gets the left neighbor of the given Species in the list of species for this player
@@ -42,7 +40,6 @@ class PlayerState(object):
         """
         species_index = self.species.index(species)
         return False if species_index == 0 else self.species[species_index - 1]
-
 
     def get_right_neighbor(self, species):
         """
@@ -77,6 +74,6 @@ class PlayerState(object):
         """
         Displays this PlayerState configuration in a graphical window
         """
-        text = gui.player_display(self)
+        text = gui.render_player(self)
         gui.display(text)
 

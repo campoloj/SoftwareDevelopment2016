@@ -251,5 +251,5 @@ class Dealer(object):
         """
         Displays this Dealer's current configuration in a graphical window
         """
-        text = gui.dealer_display(self)
+        text = gui.render_dealer(self)
         gui.display(text)

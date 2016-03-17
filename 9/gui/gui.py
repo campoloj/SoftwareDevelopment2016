@@ -14,7 +14,31 @@ dealer_template = """Dealer Configuration:
 %s"""
 
 
-def dealer_display(dealer):
+def display(text):
+    """
+    Displays the given string of text in a GUI display window
+    :param text: String of text to be displayed
+    """
+    root = Tk()
+
+    xscroll = Scrollbar(root, orient=HORIZONTAL)
+    xscroll.pack(side=BOTTOM, fill=X)
+    yscroll = Scrollbar(root)
+    yscroll.pack(side=RIGHT, fill=Y)
+
+    text_window = Text(root, wrap=NONE,
+                       xscrollcommand=xscroll.set,
+                       yscrollcommand=yscroll.set)
+    text_window.pack(expand=True)
+
+    xscroll.config(command=text_window.xview)
+    yscroll.config(command=text_window.yview)
+
+    text_window.insert(END, text)
+    mainloop()
+
+
+def render_dealer(dealer):
     """
     Return a string representing the given dealer
     :param dealer: a Dealer
@@ -22,16 +46,6 @@ def dealer_display(dealer):
     """
     return dealer_template % (dealer.watering_hole, render_traitcards(dealer.deck),
                               render_players(dealer.list_of_players))
-
-
-def player_display(player_state):
-    """
-    Return a string representing the given player state
-    :param player_state: a PlayerState
-    :return: String representing the player
-    """
-    return player_template % (player_state.name, render_species(player_state.species),
-                              player_state.food_bag, render_traitcards(player_state.hand))
 
 
 def render_players(list_of_players):
@@ -42,12 +56,22 @@ def render_players(list_of_players):
     """
     player_text = ""
     for player in list_of_players:
-        player_display_list = ["        " + line for line in player_display(player).split('\n')]
+        player_display_list = ["        " + line for line in render_player(player).split('\n')]
         player_text += "\n".join(player_display_list)
         if player is not list_of_players[-1]:
             player_text += "\n"
 
     return player_text
+
+
+def render_player(player_state):
+    """
+    Return a string representing the given player state
+    :param player_state: a PlayerState
+    :return: String representing the player
+    """
+    return player_template % (player_state.name, render_species(player_state.species),
+                              player_state.food_bag, render_traitcards(player_state.hand))
 
 
 def render_species(species_boards):
@@ -72,23 +96,3 @@ def render_traitcards(trait_cards):
     """
     trait_card_strings = [card_template % (card.food_points, card.trait) for card in trait_cards]
     return "[%s]" % ", ".join(trait_card_strings)
-
-
-def display(text):
-    root = Tk()
-
-    xscroll = Scrollbar(root, orient=HORIZONTAL)
-    xscroll.pack(side=BOTTOM, fill=X)
-    yscroll = Scrollbar(root)
-    yscroll.pack(side=RIGHT, fill=Y)
-
-    text_window = Text(root, wrap=NONE,
-                       xscrollcommand=xscroll.set,
-                       yscrollcommand=yscroll.set)
-    text_window.pack(expand=True)
-
-    xscroll.config(command=text_window.xview)
-    yscroll.config(command=text_window.yview)
-
-    text_window.insert(END, text)
-    mainloop()

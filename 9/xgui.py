@@ -6,6 +6,7 @@ A test harness for the Dealer display method
 
 import json
 import sys
+import subprocess
 from gui import gui
 
 from convert import Convert
@@ -16,10 +17,11 @@ def main():
     try:
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate()
-        dealer.display()
-        dealer.list_of_players[0].display()
+        subprocess.Popen(["xgui_helper.py", gui.render_dealer(dealer)], shell=True)
+        subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0])], shell=True)
         sys.exit(0)
-    except:
+    except Exception as exc:
+        print exc
         sys.exit(0)
 
 
