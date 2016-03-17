@@ -20,6 +20,7 @@ def display(text):
     :param text: String of text to be displayed
     """
     root = Tk()
+    set_geometry(root, text)
 
     xscroll = Scrollbar(root, orient=HORIZONTAL)
     xscroll.pack(side=BOTTOM, fill=X)
@@ -36,6 +37,21 @@ def display(text):
 
     text_window.insert(END, text)
     mainloop()
+
+
+def set_geometry(root, text):
+    """
+    Sets the geometry of a Tk root in order to allow simultaneous viewing of Dealer / Player windows
+    :param root: Tk GUI root
+    :param text: text to be displayed on the root window
+    """
+    x = y = None
+    if "Dealer" in text:
+        x, y = (root.winfo_screenwidth() / 8, root.winfo_screenheight() / 4)
+    elif "Player" in text:
+        x, y = (root.winfo_screenwidth() / 2, root.winfo_screenheight() / 4)
+    if x is not None and y is not None:
+        root.geometry('+%d+%d' % (x, y))
 
 
 def render_dealer(dealer):

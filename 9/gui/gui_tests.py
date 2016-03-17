@@ -33,7 +33,7 @@ class TestGui(unittest.TestCase):
         [3, 3, 4, [], None]
     Bag: 2
     Hand: [[2, carnivore], [3, scavenger]]"""
-        self.assertEquals(gui.player_display(self.player_1), player_1_text)
+        self.assertEquals(gui.render_player(self.player_1), player_1_text)
 
     def test_dealer_display(self):
         dealer_1_text = """Dealer Configuration:
@@ -59,11 +59,11 @@ class TestGui(unittest.TestCase):
                 [4, 4, 4, [], None]
             Bag: 4
             Hand: [[3, foraging]]"""
-        self.assertEquals(gui.dealer_display(self.dealer_1), dealer_1_text)
+        self.assertEquals(gui.render_dealer(self.dealer_1), dealer_1_text)
 
     def test_display(self):
-        gui.display(gui.dealer_display(self.dealer_1))
-        gui.display(gui.player_display(self.player_1))
+        gui.display(gui.render_dealer(self.dealer_1))
+        gui.display(gui.render_player(self.player_1))
 
 if __name__ == '__main__':
     unittest.main()

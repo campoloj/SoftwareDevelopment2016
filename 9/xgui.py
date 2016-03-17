@@ -17,8 +17,8 @@ def main():
     try:
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate()
-        subprocess.Popen(["xgui_helper.py", gui.render_dealer(dealer)], shell=True)
-        subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0])], shell=True)
+        subprocess.Popen(["xgui_helper.py", gui.render_dealer(dealer).replace("\n", "\\n")], shell=True)
+        subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0]).replace("\n", "\\n")], shell=True)
         sys.exit(0)
     except Exception as exc:
         print exc
