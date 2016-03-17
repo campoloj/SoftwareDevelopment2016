@@ -21,8 +21,7 @@ def main():
         subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0]).replace("\n", "\\n")],
                          shell=True)
         sys.exit(0)
-    except Exception as exc:
-        print exc
+    except:
         sys.exit(0)
 
 
