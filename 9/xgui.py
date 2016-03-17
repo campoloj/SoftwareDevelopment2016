@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-A test harness for the Dealer display method
+A test harness for the Dealer and PlayerState display method
 """
 
 import json
@@ -18,7 +18,8 @@ def main():
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate()
         subprocess.Popen(["xgui_helper.py", gui.render_dealer(dealer).replace("\n", "\\n")], shell=True)
-        subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0]).replace("\n", "\\n")], shell=True)
+        subprocess.Popen(["xgui_helper.py", gui.render_player(dealer.list_of_players[0]).replace("\n", "\\n")],
+                         shell=True)
         sys.exit(0)
     except Exception as exc:
         print exc

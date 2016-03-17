@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-A test harness for the Dealer display method
+A helper executable for xgui; creates one GUI display window
 """
 
 import sys
