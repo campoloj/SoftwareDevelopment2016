@@ -112,7 +112,7 @@ class Dealer(object):
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
                                       defending_player.get_right_neighbor(defender)))
 
-        Dealer.handle_attack(attacker, defender, feeding_player, defending_player)
+        self.handle_attack(attacker, defender, feeding_player, defending_player)
         if attacker.population < MIN_POP:
             return
         self.feed_species(attacker, feeding_player)
@@ -163,13 +163,14 @@ class Dealer(object):
         species.food += FEED_QUANTITY
         self.watering_hole -= FEED_QUANTITY
 
+        if FORAGING in species.trait_names() and species.is_hungry() and allow_forage:
+            self.feed_species(species, player, allow_forage=False)
+
         if COOPERATION in species.trait_names() and self.watering_hole > MIN_WATERING_HOLE:
             right_neighbor = player.get_right_neighbor(species)
             if right_neighbor and right_neighbor.is_hungry():
                 self.feed_species(right_neighbor, player)
 
-        if FORAGING in species.trait_names() and species.is_hungry() and allow_forage:
-            self.feed_species(species, player, allow_forage=False)
 
     def any_attackers(self, hungry_carnivores):
         """

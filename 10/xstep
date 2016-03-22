@@ -18,7 +18,8 @@ def main():
         dealer.feed1(dealer.list_of_players[0])
         json_dealer = Convert.dealer_to_json(dealer)
         sys.stdout.write(json.dumps(json_dealer))
-    except:
+    except Exception as exc:
+        print exc
         sys.exit(0)
 
 
