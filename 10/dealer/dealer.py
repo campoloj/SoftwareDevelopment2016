@@ -118,8 +118,7 @@ class Dealer(object):
         self.feed_species(attacker, feeding_player)
         self.handle_scavenging(feeding_player)
 
-    @classmethod
-    def handle_attack(cls, attacker, defender, feeding_player, defending_player):
+    def handle_attack(self, attacker, defender, feeding_player, defending_player):
         """
         Reduces defender population (and attacker if necessary), removing extinct species
         :param attacker: attacking Species
@@ -130,11 +129,15 @@ class Dealer(object):
         defender.population -= KILL_QUANTITY
         if defender.population < MIN_POP:
             defending_player.species.remove(defender)
+            for i in range (CARD_PICKUP_LENGTH):
+                defending_player.hand.append(self.deck.pop(0))
 
         if HORNS in defender.trait_names():
             attacker.population -= KILL_QUANTITY
             if attacker.population < MIN_POP:
                 feeding_player.species.remove(attacker)
+                for i in range (CARD_PICKUP_LENGTH):
+                    feeding_player.hand.append(self.deck.pop(0))
 
     def handle_scavenging(self, feeding_player):
         """
@@ -148,7 +151,7 @@ class Dealer(object):
                 if SCAVENGER in species.trait_names() and species.is_hungry() and self.watering_hole > 0:
                     self.feed_species(species, player)
 
-    def feed_species(self, species, player):
+    def feed_species(self, species, player, allow_forage=True):
         """
         Feed given species and handle auto-feeding
         :param species: The Species being fed
@@ -160,15 +163,13 @@ class Dealer(object):
         species.food += FEED_QUANTITY
         self.watering_hole -= FEED_QUANTITY
 
-        forage = (FORAGING in species.trait_names() and species.is_hungry())
-        if forage and self.watering_hole > MIN_WATERING_HOLE:
-            species.food += FEED_QUANTITY
-            self.watering_hole -= FEED_QUANTITY
-
         if COOPERATION in species.trait_names() and self.watering_hole > MIN_WATERING_HOLE:
             right_neighbor = player.get_right_neighbor(species)
             if right_neighbor and right_neighbor.is_hungry():
                 self.feed_species(right_neighbor, player)
+
+        if FORAGING in species.trait_names() and species.is_hungry() and allow_forage:
+            self.feed_species(species, player, allow_forage=False)
 
     def any_attackers(self, hungry_carnivores):
         """
