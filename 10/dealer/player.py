@@ -79,6 +79,7 @@ class Player(object):
                 None, if no valid targets and is unable to attack own species
         """
         sorted_carnivores = cls.sort_by_size(hungry_carnivores)
+        #TODO ATTACK OTHER PLAYERS IF POSSIBLE
         for carnivore in sorted_carnivores:
             targets = []
             for player in list_of_player:
@@ -93,7 +94,7 @@ class Player(object):
                 target = cls.sort_by_size(targets)[0]
                 target_player = next(player for player in list_of_player if target in player.species)
                 return [carnivore, target_player, target]
-
+        #TODO RETURN FALSE IF POSSIBLE TO ATTACK OUR OWN
         for carnivore in sorted_carnivores:
             for defender in player_state.species:
                 if carnivore == defender:
