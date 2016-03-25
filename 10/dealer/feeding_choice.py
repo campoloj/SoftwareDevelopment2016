@@ -1,8 +1,14 @@
 from globals import *
 
+
 class FeedingChoice(object):
     """
     An abstract class for representing the possible feeding choices a player can make.
+    A FeedingChoice is one of:
+    - NoFeeding
+    - HerbivoreFeeding
+    - FatFeeding
+    - CarnivoreFeeding
     """
     def __init__(self):
         pass
@@ -109,22 +115,14 @@ class CarnivoreFeeding(FeedingChoice):
         :param dealer: the Dealer object
         :param feeding_player: the PlayerState of the Player choosing how to feed
         """
-        public_players = dealer.get_public_players(feeding_player.name)
-
         attacker = feeding_player.species[self.attacker_index]
-        defending_player_id = public_players[self.defending_player_index].name
-        defending_player = next(player for player in dealer.list_of_players if player.name == defending_player_id)
+        defending_player = dealer.list_of_players[self.defending_player_index % len(dealer.list_of_players)]
         defender = defending_player.species[self.defender_index]
         assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
                                       defending_player.get_right_neighbor(defender)))
 
         dealer.handle_attack(attacker, defender, feeding_player, defending_player)
-        if attacker.population < MIN_POP:
-            return
-        dealer.feed_species(attacker, feeding_player)
-        dealer.handle_scavenging(feeding_player)
-
-
-
-
+        if attacker.population >= MIN_POP:
+            dealer.feed_species(attacker, feeding_player)
+            dealer.handle_scavenging(feeding_player)
