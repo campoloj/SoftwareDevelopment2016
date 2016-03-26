@@ -75,3 +75,10 @@ class Species(object):
         :return: boolean
         """
         return self.population > self.food
+
+    def reduce_population(self):
+        """
+        Reduces the population of this species after a carnivore attack
+        """
+        self.population -= KILL_QUANTITY
+        self.food = min(self.population, self.food)

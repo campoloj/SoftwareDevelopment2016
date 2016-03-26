@@ -25,6 +25,48 @@ class Dealer(object):
         self.watering_hole = watering_hole
         self.deck = deck
 
+    def equal_attributes(self, other):
+        """
+        Determines if this Dealer and another dealer have the same attributes for the purpose of testing.
+        :param other: the Dealer to compare this Dealer to
+        :return: True if all attributes are the same, else False
+        """
+        return all([isinstance(other, Dealer),
+                    self.list_of_players == other.list_of_players,
+                    self.watering_hole == other.watering_hole,
+                    self.deck == other.deck])
+
+
+# ======================================  Utility Methods ===========================================
+
+    @classmethod
+    def make_deck(cls):
+        """
+        Makes a full, shuffled deck of TraitCards
+        :return: list of TraitCards
+        """
+        deck = []
+        for trait in TRAITS_LIST:
+            food_range = (CARN_FOOD_MAX if trait == CARNIVORE else HERB_FOOD_MAX)
+            for food_val in range(-food_range, food_range):
+                deck.append(TraitCard(trait, food_val))
+        random.shuffle(deck)
+        return deck
+
+    def deal_cards(self, player, amount):
+        """
+        Deals the given amount of TraitCards from the deck to the given player
+        Stops short if the deck runs out of cards.
+        :param player: the PlayerState of the player being dealt cards
+        :param amount: Natural specifying how many cards to deal
+        """
+        while amount and self.deck:
+            player.hand.append(self.deck.pop(0))
+            amount -= 1
+
+
+# ======================================   Feeding Methods ===========================================
+
     def feed1(self, player):
         """
         This Dealer handles one step in the feeding cycle by modifying its configuration according to
@@ -47,6 +89,7 @@ class Dealer(object):
         :param player: the PlayerState of the feeding player
         :return: a FeedingChoice if player is able to be auto-fed, else False
         """
+        # TODO move this to PlayerState
         if not (player.get_needy_fats() or self.any_attackers(player)):
             hungry_herbivores = player.get_hungry_species(carnivores=False)
             if not hungry_herbivores:
@@ -63,6 +106,7 @@ class Dealer(object):
         :param player: The PlayerState of the player feeding
         :return: True if the Player has a carnivore able to attack, else False
         """
+        # TODO move this to PlayerState / Species
         hungry_carnivores = player.get_hungry_species(carnivores=True)
         for attacker in hungry_carnivores:
             for player in self.list_of_players:
@@ -84,54 +128,9 @@ class Dealer(object):
         return [PlayerState(name=player.name, food_bag=False, hand=False, species=player.species)
                 for player in self.list_of_players if player != feeding_player]
 
-    def handle_attack(self, attacker, defender, feeding_player, defending_player):
-        """
-        Resolves an attack between a carnivorous species and a target species.
-        :param attacker: attacking Species
-        :param defender: defending Species
-        :param feeding_player: PlayerState of attacking player
-        :param defending_player: PlayerState of defending player
-        """
-        self.reduce_population(defender, defending_player)
-        if HORNS in defender.trait_names():
-            self.reduce_population(attacker, feeding_player)
-
-    def reduce_population(self, species, player):
-        """
-        Reduces the population of a species harmed in an attack and removes them from the player in exchange for
-        TraitCards if the given species goes extinct.
-        :param species: a Species harmed in an attack
-        :param player: the PlayerState of the player owning the given Species
-        """
-        species.population -= KILL_QUANTITY
-        if species.population < MIN_POP:
-            player.species.remove(species)
-            self.deal_cards(player, EXTINCTION_CARD_AMOUNT)
-
-    def deal_cards(self, player, amount):
-        """
-        Deals the given amount of TraitCards from the deck to the given player
-        :param player: the PlayerState of the player being dealt cards
-        :param amount: Natural specifying how many cards to deal
-        """
-        for i in range(amount):
-            player.hand.append(self.deck.pop(0))
-
-    def handle_scavenging(self, feeding_player):
-        """
-        Feeds any Species with the Scavenger trait after a carnivore attack, starting from the feeding player
-        :param feeding_player: the PlayerState of the feeding player
-        """
-        feeding_player_index = self.list_of_players.index(feeding_player)
-        for x in range(feeding_player_index, feeding_player_index + len(self.list_of_players)):
-            player = self.list_of_players[x % len(self.list_of_players)]
-            for species in player.species:
-                if SCAVENGER in species.trait_names():
-                    self.feed_species(species, player)
-
     def feed_species(self, species, player, allow_forage=True):
         """
-        Feeds the given species and any others according to its traits.
+        Feeds the given species, and any others if necessary due to its traits.
         :param species: The Species being fed
         :param player: the PlayerState of the player who owns the species
         :param allow_forage: True if this Species has not yet eaten its forage food, else False
@@ -144,19 +143,73 @@ class Dealer(object):
 
         if FORAGING in species.trait_names() and allow_forage:
             self.feed_species(species, player, allow_forage=False)
+
         if COOPERATION in species.trait_names():
             right_neighbor = player.get_right_neighbor(species)
             if right_neighbor:
                 self.feed_species(right_neighbor, player)
 
+
+# -----------------------------------   Carnivore Feed Methods --------------------------------------
+
+    def handle_attack_situation(self, attacker, defender, feeding_player, defending_player):
+        """
+        Resolves an attack between a carnivorous species and a target species.
+        :param attacker: attacking Species
+        :param defender: defending Species
+        :param feeding_player: PlayerState of attacking player
+        :param defending_player: PlayerState of defending player
+        """
+        self.handle_attacked_species(defender, defending_player)
+        if HORNS in defender.trait_names():
+            self.handle_attacked_species(attacker, feeding_player)
+
+    def handle_attacked_species(self, species, player):
+        """
+        Resolves an attack on a target species by modifying their population and checking for extinction
+        :param species: a Species harmed in an attack
+        :param player: the PlayerState of the player owning the given Species
+        """
+        species.reduce_population()
+        self.handle_extinction(species, player)
+
+    def handle_extinction(self, species, player):
+        """
+        Removes the given species from the player in exchange for TraitCards if the species went extinct in an attack.
+        :param species: a Species harmed in an attack
+        :param player: the PlayerState of the player owning the given Species
+        """
+        if species.population < MIN_POP:
+            player.species.remove(species)
+            self.deal_cards(player, EXTINCTION_CARD_AMOUNT)
+
+    def handle_scavenging(self):
+        """
+        Feeds any species with the Scavenger trait after a carnivore attack
+        """
+        for player in self.list_of_players:
+            self.feed_scavengers(player)
+
+    def feed_scavengers(self, player):
+        """
+        Feeds all of the given player's scavenger species after a carnivore attack
+        :param player: the PlayerState of the player to feed scavenger species
+        """
+        for species in player.species:
+            if SCAVENGER in species.trait_names():
+                self.feed_species(species, player)
+
+
+# ======================================   Validation Methods ===========================================
+
     def validate(self):
         """
         Validates game constraints for Dealer and PlayerStates
-        :raise ValueError if duplicate cards exist, AssertionError if species have duplicate traits
+        :raise: ValueError if duplicate cards exist, AssertionError if species have duplicate traits
         """
+        # TODO move validations into respective classes
         total_deck = Dealer.make_deck()
-        for card in self.deck:
-            total_deck.remove(card)
+        Dealer.validate_cards(self.deck, total_deck)
 
         for player in self.list_of_players:
             for card in player.hand:
@@ -169,30 +222,31 @@ class Dealer(object):
                         continue
                     total_deck.remove(card)
 
-    @classmethod
-    def make_deck(cls):
+    def validate_players(self, total_deck):
         """
-        Makes a full, shuffled deck of TraitCards
-        :return: list of TraitCards
+        Validates that each card in the hand and on the species boards of each player is unique and valid
+        by removing them from the given deck of possible cards
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise: ValueError if duplicate cards exist or if card is not valid
         """
-        deck = []
-        for trait in TRAITS_LIST:
-            food_range = (CARN_FOOD_MAX if trait == CARNIVORE else HERB_FOOD_MAX)
-            for food_val in range(-food_range, food_range):
-                deck.append(TraitCard(trait, food_val))
-        random.shuffle(deck)
-        return deck
+        for player in self.list_of_players:
+            Dealer.validate_cards(player.hand, total_deck)
+            self.validate_species(player, total_deck)
 
-    def equal_attributes(self, other):
+    @classmethod
+    def validate_cards(cls, cards, total_deck):
         """
-        Determines if this Dealer and another dealer have the same attributes for the purpose of testing.
-        :param other: the Dealer to compare this Dealer to
-        :return: True if all attributes are the same, else False
+        Validates that each card in the given list of cards is unique and valid by removing them from
+        the given deck of possible cards
+        :param cards: a list of TraitCards to be validated
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise: ValueError if duplicate cards exist or if card is not valid
         """
-        return all([isinstance(other, Dealer),
-                    self.list_of_players == other.list_of_players,
-                    self.watering_hole == other.watering_hole,
-                    self.deck == other.deck])
+        for card in cards:
+            total_deck.remove(card)
+
+
+# ======================================   GUI Methods ===========================================
 
     def display(self):
         """

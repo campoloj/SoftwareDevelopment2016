@@ -122,7 +122,7 @@ class CarnivoreFeeding(FeedingChoice):
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
                                       defending_player.get_right_neighbor(defender)))
 
-        dealer.handle_attack(attacker, defender, feeding_player, defending_player)
+        dealer.handle_attack_situation(attacker, defender, feeding_player, defending_player)
         if attacker.population >= MIN_POP:
             dealer.feed_species(attacker, feeding_player)
-            dealer.handle_scavenging(feeding_player)
+            dealer.handle_scavenging()
