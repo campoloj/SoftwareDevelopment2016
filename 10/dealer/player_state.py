@@ -1,5 +1,6 @@
 import gui
 from globals import *
+from feeding_choice import HerbivoreFeeding, NoFeeding
 
 
 class PlayerState(object):
@@ -31,6 +32,37 @@ class PlayerState(object):
                     self.food_bag == other.food_bag,
                     self.hand == other.hand,
                     species_equal])
+
+    def attempt_auto_feed(self, list_of_players):
+        """
+        Automatically creates a FeedingChoice for this player if they have no needy fat-tissue species, no
+        carnivores that are able to attack, and only one vegetarian.
+        :param list_of_players: List of PlayerStates for all game players
+        :return: a FeedingChoice if player is able to be auto-fed, else False
+        """
+        if self.get_needy_fats() or self.any_attackers(list_of_players):
+            return False
+        else:
+            hungry_herbivores = self.get_hungry_species(carnivores=False)
+            if not hungry_herbivores:
+                return NoFeeding()
+            elif len(hungry_herbivores) == 1:
+                return HerbivoreFeeding(species_index=self.species.index(hungry_herbivores[0]))
+            else:
+                return False
+
+    def any_attackers(self, list_of_players):
+        """
+        Determines if this player has any hungry carnivores able to attack another species,
+        implying that they must make a decision rather than be auto-fed.
+        :param list_of_players: List of PlayerState representing eligible targets for an attack
+        :return: True if the Player has a carnivore able to attack, else False
+        """
+        hungry_carnivores = self.get_hungry_species(carnivores=True)
+        for attacker in hungry_carnivores:
+            if attacker.all_attackable_species(list_of_players):
+                return True
+        return False
 
     def get_left_neighbor(self, species):
         """
@@ -69,6 +101,29 @@ class PlayerState(object):
         return [species for species in self.species
                 if FATTISSUE in species.trait_names() and
                 species.fat_storage < species.body]
+
+    @classmethod
+    def validate_all(cls, list_of_players, total_deck):
+        """
+        Validates all players in the given list.
+        :param list_of_players: a list of PlayerState objects to be validated
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise: ValueError if duplicate cards or invalid cards exist on any player
+                AssertionError if duplicate traits exist on any player's species boards
+        """
+        for player in list_of_players:
+            player.validate(total_deck)
+
+    def validate(self, total_deck):
+        """
+        Validates this player by checking that each card in its hand and on its species boards is unique and valid
+        by removing them from the given deck of possible cards
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise: ValueError if duplicate cards or invalid cards exist on this player
+                AssertionError if duplicate traits exist on any of this player's species boards
+        """
+        TraitCard.validate_all(self.hand, total_deck)
+        Species.validate_all(self.species, total_deck)
 
     def display(self):
         """

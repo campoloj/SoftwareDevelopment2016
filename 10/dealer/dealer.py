@@ -5,7 +5,6 @@ from globals import *
 from player import Player
 from player_state import PlayerState
 from traitcard import TraitCard
-from feeding_choice import HerbivoreFeeding, NoFeeding
 
 
 class Dealer(object):
@@ -75,48 +74,12 @@ class Dealer(object):
         """
         if self.watering_hole == MIN_WATERING_HOLE:
             return
-        feeding_choice = self.attempt_auto_feed(player)
+        feeding_choice = player.attempt_auto_feed(self.list_of_players)
         if not feeding_choice:
             other_players = self.public_players(feeding_player=player)
             feeding_choice = Player.next_feeding(player, self.watering_hole, other_players)
 
         feeding_choice.handle_feeding(self, player)
-
-    def attempt_auto_feed(self, player):
-        """
-        Automatically creates a FeedingChoice for a player if they have no needy fat-tissue species, no
-        carnivores that are able to attack, and only one vegetarian.
-        :param player: the PlayerState of the feeding player
-        :return: a FeedingChoice if player is able to be auto-fed, else False
-        """
-        # TODO move this to PlayerState
-        if not (player.get_needy_fats() or self.any_attackers(player)):
-            hungry_herbivores = player.get_hungry_species(carnivores=False)
-            if not hungry_herbivores:
-                return NoFeeding()
-            elif len(hungry_herbivores) == 1:
-                return HerbivoreFeeding(species_index=player.species.index(hungry_herbivores[0]))
-            else:
-                return False
-
-    def any_attackers(self, player):
-        """
-        Determines if the given Player has any hungry carnivores able to attack another species,
-        implying that they must make a decision rather than be auto-fed.
-        :param player: The PlayerState of the player feeding
-        :return: True if the Player has a carnivore able to attack, else False
-        """
-        # TODO move this to PlayerState / Species
-        hungry_carnivores = player.get_hungry_species(carnivores=True)
-        for attacker in hungry_carnivores:
-            for player in self.list_of_players:
-                for defender in player.species:
-                    if defender == attacker:
-                        continue
-                    if defender.is_attackable(attacker, player.get_left_neighbor(defender),
-                                              player.get_right_neighbor(defender)):
-                        return True
-        return False
 
     def public_players(self, feeding_player):
         """
