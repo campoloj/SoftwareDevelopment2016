@@ -14,25 +14,42 @@ class Convert(object):
 
     @classmethod
     def json_to_dealer(cls, json_config):
+        """
+        Converts a JSON Configuration into a Dealer object
+        :param json_config: A JSON Configuration as specified by the data definition at
+                            http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        :return: a Dealer object
+        """
         assert(len(json_config) == CONFIG_LENGTH)
         [json_lop, wh_food, json_deck] = json_config
-        assert(all([LOP_MIN <= len(json_lop) <= LOP_MAX, wh_food >= MIN_WATERING_HOLE, len(json_deck) <= LOC_MAX]))
         lop = [cls.json_to_player(json_player) for json_player in json_lop]
         deck = [cls.json_to_trait(trait_card) for trait_card in json_deck]
         dealer = Dealer(lop, wh_food, deck)
+        dealer.validate_attributes()
         return dealer
 
     @classmethod
     def dealer_to_json(cls, dealer):
-        assert(all([LOP_MIN <= len(dealer.list_of_players) <= LOP_MAX,
-                    dealer.watering_hole >= MIN_WATERING_HOLE,
-                    len(dealer.deck) <= LOC_MAX]))
+        """
+        Converts a Dealer object into a JSON Configuration
+        :param dealer: a Dealer object
+        :return: a JSON Configuration as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        """
+        dealer.validate_attributes()
         json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
         json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
         return [json_players, dealer.watering_hole, json_deck]
 
     @classmethod
     def json_to_feeding(cls, json_feeding):
+        """
+        Converts a JSON Feeding into a Python representation of a Feeding
+        :param json_feeding: a Feeding as specified by the data definition at
+                             http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
+        :return: [PlayerState, Natural+, [PlayerState,...]] representing the attacking PlayerState,
+                the available watering hole food, and the PlayerStates of other players in the game
+        """
         assert(len(json_feeding) == FEEDING_LENGTH)
         [json_player, wh_food, json_lop] = json_feeding
         assert(wh_food > MIN_WATERING_HOLE)
@@ -42,30 +59,35 @@ class Convert(object):
 
     @classmethod
     def json_to_player(cls, json_player):
+        """
+        Converts a JSON Player+ to a PlayerState
+        :param json_player: a JSON Player+ as specified by the data definition at
+                            http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        :return: a PlayerState object
+        """
+        gdict = globals()
         if len(json_player) == PLAYER_LENGTH:
-            [[globals()[ID], player_id], [globals()[SPECIES], json_los], [globals()[BAG], food_bag]] = json_player
+            [[gdict[ID], player_id], [gdict[SPECIES], json_los], [gdict[BAG], food_bag]] = json_player
             cards = []
-        elif len(json_player) == PLAYER_PLUS_LENGTH:
-            [[globals()[ID], player_id], [globals()[SPECIES], json_los],
-             [globals()[BAG], food_bag], [globals()[CARDS], cards]] = json_player
         else:
-            raise AssertionError
-
-        assert(all([player_id >= MIN_PLAYER_ID, food_bag >= MIN_FOOD_BAG,
-                    isinstance(player_id, int), isinstance(food_bag, int),
-                    isinstance(json_los, list), isinstance(cards, list)]))
+            [[gdict[ID], player_id], [gdict[SPECIES], json_los],
+             [gdict[BAG], food_bag], [gdict[CARDS], cards]] = json_player
 
         player_species = [cls.json_to_species(json_species) for json_species in json_los]
-        if cards:
-            cards = [cls.json_to_trait(trait_card) for trait_card in cards]
-        player_obj = PlayerState(name=player_id, hand=cards, food_bag=food_bag, species=player_species)
+        player_hand = [cls.json_to_trait(trait_card) for trait_card in cards]
+        player_obj = PlayerState(name=player_id, hand=player_hand, food_bag=food_bag, species=player_species)
+        player_obj.validate_attributes()
         return player_obj
 
     @classmethod
     def player_to_json(cls, player):
-        assert(all([player.name >= MIN_PLAYER_ID, player.food_bag >= MIN_FOOD_BAG,
-                    isinstance(player.name, int), isinstance(player.food_bag, int),
-                    isinstance(player.species, list), isinstance(player.hand, list)]))
+        """
+        Converts a PlayerState to a JSON Player+. Does not render empty hands.
+        :param player: a PlayerState object
+        :return: a JSON Player+ as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        """
+        player.validate_attributes()
         json_species = [cls.species_to_json(species_obj) for species_obj in player.species]
         json_hand = [cls.trait_to_json(trait_card) for trait_card in player.hand]
         json_player = [[ID, player.name], [SPECIES, json_species], [BAG, player.food_bag]]
@@ -76,61 +98,67 @@ class Convert(object):
 
     @classmethod
     def json_to_species(cls, json_species):
+        """
+        Converts a JSON Species+ into a Species.
+        :param json_species: a JSON Species+ as specified by the data definition at
+                             http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
+        :return: a Species object
+        """
+        gdict = globals()
         if len(json_species) == SPECIES_LENGTH:
-            [[globals()[FOOD], species_food], [globals()[BODY], species_body],
-             [globals()[POPULATION], species_pop], [globals()[TRAITS], json_species_traits]] = json_species
-            fat_food = None
-        elif len(json_species) == SPECIES_FAT_LENGTH:
-            [[globals()[FOOD], species_food], [globals()[BODY], species_body],
-             [globals()[POPULATION], species_pop], [globals()[TRAITS], json_species_traits],
-             [globals()[FATFOOD], fat_food]] = json_species
-            assert(species_body >= fat_food >= MIN_FATFOOD)
+            [[gdict[FOOD], species_food], [gdict[BODY], species_body], [gdict[POPULATION], species_pop],
+             [gdict[TRAITS], json_species_traits]] = json_species
+            fat_food = False
         else:
-            raise AssertionError
-
-        assert(all([MAX_FOOD >= species_food >= MIN_FOOD,
-                    MAX_BODY >= species_body >= MIN_BODY,
-                    MAX_POP >= species_pop >= MIN_POP,
-                    MAX_TRAITS >= len(json_species_traits)]))
+            [[gdict[FOOD], species_food], [gdict[BODY], species_body], [gdict[POPULATION], species_pop],
+             [gdict[TRAITS], json_species_traits], [gdict[FATFOOD], fat_food]] = json_species
 
         species_traits = [cls.json_to_trait(trait) for trait in json_species_traits]
         species_obj = Species(species_pop, species_food, species_body, species_traits, fat_food)
+        species_obj.validate_attributes()
         return species_obj
 
     @classmethod
     def species_to_json(cls, species_obj):
-        assert(all([MAX_FOOD >= species_obj.food >= MIN_FOOD,
-                    MAX_BODY >= species_obj.body >= MIN_BODY,
-                    MAX_POP >= species_obj.population >= MIN_POP,
-                    MAX_TRAITS >= len(species_obj.traits)]))
+        """
+        Converts a Species object into a JSON Species+. Does not render empty fat-food.
+        :param species_obj: a Species object
+        :return: a JSON Species+ as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
+        """
+        species_obj.validate_attributes()
         json_traits = [cls.trait_to_json(trait) for trait in species_obj.traits]
-
         json_species = [[FOOD, species_obj.food], [BODY, species_obj.body],
                         [POPULATION, species_obj.population], [TRAITS, json_traits]]
         if species_obj.fat_storage:
-            assert(species_obj.body >= species_obj.fat_storage >= MIN_FATFOOD)
             json_species.append([FATFOOD, species_obj.fat_storage])
         return json_species
 
     @classmethod
     def json_to_trait(cls, json_trait):
+        """
+        Converts a JSON Trait or SpeciesCard into a TraitCard
+        :param json_trait: a JSON Trait or SpeciesCard as specified by the data definitions at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/5.html and
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/8.html, respectively.
+        :return: a TraitCard object
+        """
         if isinstance(json_trait, basestring):
-            trait = json_trait
-            food = None
-        elif isinstance(json_trait, list) and len(json_trait) == CARD_LENGTH:
-            [food, trait] = json_trait
-            assert(CARN_FOOD_MIN <= food <= CARN_FOOD_MAX if trait == CARNIVORE
-                   else HERB_FOOD_MIN <= food <= HERB_FOOD_MAX)
+            [food, trait] = [False, json_trait]
         else:
-            raise AssertionError
-        assert(trait in TRAITS_LIST)
-        return TraitCard(trait, food)
+            [food, trait] = json_trait
+        trait_card = TraitCard(trait, food)
+        trait_card.validate_attributes()
+        return trait_card
 
     @classmethod
     def trait_to_json(cls, trait_card):
-        assert(trait_card.trait in TRAITS_LIST)
-        if trait_card.food_points is None:
-            return trait_card.trait
-        assert(CARN_FOOD_MIN <= trait_card.food_points <= CARN_FOOD_MAX if trait_card.trait == CARNIVORE
-               else HERB_FOOD_MIN <= trait_card.food_points <= HERB_FOOD_MAX)
-        return [trait_card.food_points, trait_card.trait]
+        """
+        Converts a TraitCard into a JSON Trait or SpeciesCard
+        :param trait_card: a TraitCard object
+        :return: a JSON Trait or SpeciesCard as specified by the data definitions at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/5.html and
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html, respectively.
+        """
+        trait_card.validate_attributes()
+        return trait_card.trait if trait_card.food_points is False else [trait_card.food_points, trait_card.trait]

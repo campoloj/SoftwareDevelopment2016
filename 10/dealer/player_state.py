@@ -1,6 +1,8 @@
 import gui
 from globals import *
 from feeding_choice import HerbivoreFeeding, NoFeeding
+from traitcard import TraitCard
+from species import Species
 
 
 class PlayerState(object):
@@ -103,27 +105,47 @@ class PlayerState(object):
                 species.fat_storage < species.body]
 
     @classmethod
-    def validate_all(cls, list_of_players, total_deck):
+    def validate_all_cards(cls, list_of_players, total_deck):
         """
-        Validates all players in the given list.
+        Validates the TraitCards of all PlayerStates in the given list
         :param list_of_players: a list of PlayerState objects to be validated
         :param total_deck: a list of TraitCards representing all valid card possibilities
-        :raise: ValueError if duplicate cards or invalid cards exist on any player
-                AssertionError if duplicate traits exist on any player's species boards
+        :raise ValueError if duplicate cards or invalid cards exist on any player
         """
         for player in list_of_players:
-            player.validate(total_deck)
+            player.validate_cards(total_deck)
 
-    def validate(self, total_deck):
+    def validate_cards(self, total_deck):
         """
-        Validates this player by checking that each card in its hand and on its species boards is unique and valid
-        by removing them from the given deck of possible cards
+        Validates that the TraitCards in this PlayerState's hand and on its Species boards are all possible
+        and unique
         :param total_deck: a list of TraitCards representing all valid card possibilities
-        :raise: ValueError if duplicate cards or invalid cards exist on this player
-                AssertionError if duplicate traits exist on any of this player's species boards
+        :raise ValueError if duplicate or invalid cards exist on this player
         """
-        TraitCard.validate_all(self.hand, total_deck)
-        Species.validate_all(self.species, total_deck)
+        TraitCard.validate_all_unique(self.hand, total_deck)
+        Species.validate_all_cards(self.species, total_deck)
+
+    @classmethod
+    def validate_all_attributes(cls, list_of_players):
+        """
+        Validates the attributes of all PlayerStates in the given list
+        :param list_of_players: list of PlayerState objects to be validated
+        :raise AssertionError if any PlayerState has invalid attributes
+        """
+        for player in list_of_players:
+            player.validate_attributes()
+
+    def validate_attributes(self):
+        """
+        Validates the attributes of this PlayerState
+        :raise AssertionError if any attributes are out of bounds
+        """
+        assert(isinstance(self.name, int) and self.name >= MIN_PLAYER_ID)
+        assert(isinstance(self.food_bag, int) and self.food_bag >= MIN_FOOD_BAG)
+        assert(isinstance(self.hand, list))
+        TraitCard.validate_all_attributes(self.hand)
+        assert(isinstance(self.species, list))
+        Species.validate_all_attributes(self.species)
 
     def display(self):
         """

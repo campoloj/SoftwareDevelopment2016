@@ -165,48 +165,25 @@ class Dealer(object):
 
 # ======================================   Validation Methods ===========================================
 
-    def validate(self):
+    def validate_cards(self):
         """
-        Validates game constraints for Dealer and PlayerStates
-        :raise: ValueError if duplicate cards exist, AssertionError if species have duplicate traits
+        Validates that all cards known by this dealer are valid possibilities and unique
+        :raise: ValueError if duplicate or invalid cards exist
         """
-        # TODO move validations into respective classes
         total_deck = Dealer.make_deck()
-        Dealer.validate_cards(self.deck, total_deck)
+        TraitCard.validate_all_unique(self.deck, total_deck)
+        PlayerState.validate_all_cards(self.list_of_players, total_deck)
 
-        for player in self.list_of_players:
-            for card in player.hand:
-                total_deck.remove(card)
-
-            for species in player.species:
-                assert(len(species.trait_names()) == len(set(species.trait_names())))
-                for card in species.traits:
-                    if card.food_points is None:
-                        continue
-                    total_deck.remove(card)
-
-    def validate_players(self, total_deck):
+    def validate_attributes(self):
         """
-        Validates that each card in the hand and on the species boards of each player is unique and valid
-        by removing them from the given deck of possible cards
-        :param total_deck: a list of TraitCards representing all valid card possibilities
-        :raise: ValueError if duplicate cards exist or if card is not valid
+        Validates the attributes of this Dealer
+        :raise AssertionError if any attributes are out of bounds
         """
-        for player in self.list_of_players:
-            Dealer.validate_cards(player.hand, total_deck)
-            self.validate_species(player, total_deck)
-
-    @classmethod
-    def validate_cards(cls, cards, total_deck):
-        """
-        Validates that each card in the given list of cards is unique and valid by removing them from
-        the given deck of possible cards
-        :param cards: a list of TraitCards to be validated
-        :param total_deck: a list of TraitCards representing all valid card possibilities
-        :raise: ValueError if duplicate cards exist or if card is not valid
-        """
-        for card in cards:
-            total_deck.remove(card)
+        assert(isinstance(self.list_of_players, list) and LOP_MAX >= len(self.list_of_players) >= LOP_MIN)
+        PlayerState.validate_all_attributes(self.list_of_players)
+        assert(isinstance(self.watering_hole, int) and self.watering_hole >= MIN_WATERING_HOLE)
+        assert(isinstance(self.deck, list) and LOC_MAX >= len(self.deck))
+        TraitCard.validate_all_attributes(self.deck)
 
 
 # ======================================   GUI Methods ===========================================

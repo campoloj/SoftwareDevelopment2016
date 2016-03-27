@@ -1,4 +1,5 @@
 from globals import *
+from traitcard import TraitCard
 
 
 class Species(object):
@@ -106,3 +107,46 @@ class Species(object):
         """
         self.population -= KILL_QUANTITY
         self.food = min(self.population, self.food)
+
+    @classmethod
+    def validate_all_cards(cls, list_of_species, total_deck):
+        """
+        Validates the TraitCards of all Species in the given list.
+        :param list_of_species: a list of Species objects to be validated
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise ValueError if invalid TraitCards exist on any Species
+        """
+        for species in list_of_species:
+            species.validate_cards(total_deck)
+
+    def validate_cards(self, total_deck):
+        """
+        Validates this species by checking that each of its TraitCards is unique and possible
+        :param total_deck: a list of TraitCards representing all valid card possibilities
+        :raise ValueError if invalid cards exist on any species
+        """
+        TraitCard.validate_all_unique(self.traits, total_deck)
+
+    @classmethod
+    def validate_all_attributes(cls, list_of_species):
+        """
+        Validates the attributes of all Species in the given list
+        :param list_of_species: a list of Species objects to be validated
+        :raise AssertionError if any Species attributes are out of bounds
+        """
+        for species in list_of_species:
+            species.validate_attributes()
+
+    def validate_attributes(self):
+        """
+        Validates the attributes of this Species
+        :raise AssertionError if any attributes are out of bounds
+        """
+        assert(isinstance(self.population, int) and MAX_POP >= self.population >= MIN_POP)
+        assert(isinstance(self.food, int) and MAX_FOOD >= self.food >= MIN_FOOD)
+        assert(isinstance(self.body, int) and MAX_BODY >= self.body >= MIN_BODY)
+        assert(all([isinstance(self.traits, list), MAX_TRAITS >= len(self.traits),
+                    len(self.trait_names()) == len(set(self.trait_names()))]))
+        TraitCard.validate_all_attributes(self.traits)
+        if self.fat_storage is not False:
+            assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
