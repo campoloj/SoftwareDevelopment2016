@@ -9,6 +9,7 @@ class Player(object):
 
     @classmethod
     def next_feeding(cls, player, food_available, list_of_players):
+        #TODO PURPOSE
         """
         Determines a players next Feeding
         A Feeding is one of
@@ -73,49 +74,14 @@ class Player(object):
         """
         sorted_carnivores = cls.sort_by_size(hungry_carnivores)
         for carnivore in sorted_carnivores:
-            targets = cls.get_targets(carnivore, player, list_of_player)
+            targets = carnivore.all_attackable_species(list_of_player)
             if targets:
                 return cls.attack_largest(carnivore, targets, player, list_of_player)
 
-        if cls.any_attackable(sorted_carnivores, player):
-            return NoFeeding()
-
-    @classmethod
-    def any_attackable(cls, sorted_carnivores, player):
-        """
-        Determine if the players species are attackable by any of the sorted_carnivores
-        :param sorted_carnivores: The carnivore species that are attacking
-        :param player: The player that we are looking to attack
-        :return: True if any of the player's species can be attacked by any of the sorted_carnivores
-        """
         for carnivore in sorted_carnivores:
-            for defender in player.species:
-                if carnivore == defender:
-                    continue
-                if defender.is_attackable(carnivore,
-                                          player.get_left_neighbor(defender),
-                                          player.get_right_neighbor(defender)):
-                    return True
+            if carnivore.attackable_species(player):
+                return NoFeeding()
 
-    @classmethod
-    def get_targets(cls, carnivore, player, list_of_player):
-        """
-        Get a list of target attackable species in other players species list.
-        :param carnivore: The attacking species
-        :param player: The player attacking
-        :param list_of_player: The total list of players in the game
-        :return: List of Species that are attackable by the carnivore and not in the players species.
-        """
-        targets = []
-        for other_player in list_of_player:
-            if other_player == player:
-                continue
-            for defender in other_player.species:
-                left_neighbor = other_player.get_left_neighbor(defender)
-                right_neighbor = other_player.get_right_neighbor(defender)
-                if defender.is_attackable(carnivore, left_neighbor, right_neighbor):
-                    targets.append(defender)
-        return targets
 
     @classmethod
     def attack_largest(cls, attacker, targets, player, list_of_player):
