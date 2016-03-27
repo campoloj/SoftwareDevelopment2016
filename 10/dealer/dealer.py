@@ -66,12 +66,12 @@ class Dealer(object):
 
 # ======================================   Feeding Methods ===========================================
 
-    def feed1(self, player):
+    def feed1(self):
         """
         This Dealer handles one step in the feeding cycle by modifying its configuration according to
-        an auto-feeding or the given player's FeedingChoice.
-        :param player: the PlayerState of the feeding player
+        an auto-feeding or the first player's FeedingChoice.
         """
+        player = self.list_of_players[0]
         if self.watering_hole == MIN_WATERING_HOLE:
             return
         feeding_choice = player.attempt_auto_feed(self.list_of_players)

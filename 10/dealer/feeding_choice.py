@@ -116,7 +116,7 @@ class CarnivoreFeeding(FeedingChoice):
         :param feeding_player: the PlayerState of the Player choosing how to feed
         """
         attacker = feeding_player.species[self.attacker_index]
-        defending_player = dealer.list_of_players[self.defending_player_index % len(dealer.list_of_players)]
+        defending_player = dealer.list_of_players[self.defending_player_index + 1 % len(dealer.list_of_players)]
         defender = defending_player.species[self.defender_index]
         assert(attacker in feeding_player.get_hungry_species(carnivores=True) and
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
