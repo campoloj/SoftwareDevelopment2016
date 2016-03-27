@@ -1,3 +1,4 @@
+from feeding_choice import *
 
 class Player(object):
     """
@@ -24,28 +25,19 @@ class Player(object):
         """
         hungry_fatties = player.get_needy_fats()
         if hungry_fatties:
-            [fatty, food_requested] = cls.feed_fatty(hungry_fatties, food_available)
-            return [player.species.index(fatty), food_requested]
+            return cls.feed_fatty(hungry_fatties, food_available, player)
 
         hungry_herbivores = player.get_hungry_species(carnivores=False)
         if hungry_herbivores:
-            herb = cls.feed_herbivores(hungry_herbivores)
-            return player.species.index(herb)
+            return cls.feed_herbivores(hungry_herbivores, player)
 
         hungry_carnivores = player.get_hungry_species(carnivores=True)
         if hungry_carnivores:
-            feeding = cls.feed_carnivore(hungry_carnivores, player, list_of_players)
-            if feeding:
-                [attacker, defending_player, defender] = feeding
-                attacking_species_index = player.species.index(attacker)
-                defending_player_index = list_of_players.index(defending_player)
-                defending_species_index = defending_player.species.index(defender)
-                return [attacking_species_index, defending_player_index, defending_species_index]
-            else:
-                return feeding
+            return cls.feed_carnivore(hungry_carnivores, player, list_of_players)
+
 
     @classmethod
-    def feed_fatty(cls, fat_tissue_species, food_available):
+    def feed_fatty(cls, fat_tissue_species, food_available, player):
         """
         Feeds a species with the fat-tissue trait
         :param fat_tissue_species: species with a fat-tissue trait
@@ -55,23 +47,24 @@ class Player(object):
         fatty = cls.largest_fatty_need(fat_tissue_species)
         food_needed = fatty.body - fatty.fat_storage
         food_requested = (food_needed if food_needed < food_available else food_available)
-        return [fatty, food_requested]
+        return FatFeeding(player.species.index(fatty), food_requested)
 
     @classmethod
-    def feed_herbivores(cls, hungry_herbivores):
+    def feed_herbivores(cls, hungry_herbivores, player):
         """
         Feeds a herbivore species
         :param hungry_herbivores: list of hungry herbivores
         :return: the Species to feed
         """
-        return cls.sort_by_size(hungry_herbivores)[0]
+        herbivore = cls.sort_by_size(hungry_herbivores)[0]
+        return HerbivoreFeeding(player.species.index(herbivore))
 
     @classmethod
-    def feed_carnivore(cls, hungry_carnivores, player_state, list_of_player):
+    def feed_carnivore(cls, hungry_carnivores, player, list_of_player):
         """
         Feeds the largest hungry carnivore
         :param hungry_carnivores: list of hungry carnivores
-        :param player_state: the current player state
+        :param player: the current player state
         :param list_of_player: list of all player states
         :return: One of:
                 [Carnivore, Defending Player, Defending Species] if there is a valid target in list_of_players' species
@@ -79,33 +72,67 @@ class Player(object):
                 None, if no valid targets and is unable to attack own species
         """
         sorted_carnivores = cls.sort_by_size(hungry_carnivores)
-        #TODO ATTACK OTHER PLAYERS IF POSSIBLE
         for carnivore in sorted_carnivores:
-            targets = []
-            for player in list_of_player:
-                if player == player_state:
-                    continue
-                for defender in player.species:
-                    left_neighbor = player.get_left_neighbor(defender)
-                    right_neighbor = player.get_right_neighbor(defender)
-                    if defender.is_attackable(carnivore, left_neighbor, right_neighbor):
-                        targets.append(defender)
+            targets = cls.get_targets(carnivore, player, list_of_player)
             if targets:
-                target = cls.sort_by_size(targets)[0]
-                target_player = next(player for player in list_of_player if target in player.species)
-                return [carnivore, target_player, target]
-        #TODO RETURN FALSE IF POSSIBLE TO ATTACK OUR OWN
+                return cls.attack_largest(carnivore, targets, player, list_of_player)
+
+        if cls.any_attackable(sorted_carnivores, player):
+            return NoFeeding()
+
+    @classmethod
+    def any_attackable(cls, sorted_carnivores, player):
+        """
+        Determine if the players species are attackable by any of the sorted_carnivores
+        :param sorted_carnivores: The carnivore species that are attacking
+        :param player: The player that we are looking to attack
+        :return: True if any of the player's species can be attacked by any of the sorted_carnivores
+        """
         for carnivore in sorted_carnivores:
-            for defender in player_state.species:
+            for defender in player.species:
                 if carnivore == defender:
                     continue
                 if defender.is_attackable(carnivore,
-                                          player_state.get_left_neighbor(defender),
-                                          player_state.get_right_neighbor(defender)):
-                    return False
+                                          player.get_left_neighbor(defender),
+                                          player.get_right_neighbor(defender)):
+                    return True
 
-        return None
+    @classmethod
+    def get_targets(cls, carnivore, player, list_of_player):
+        """
+        Get a list of target attackable species in other players species list.
+        :param carnivore: The attacking species
+        :param player: The player attacking
+        :param list_of_player: The total list of players in the game
+        :return: List of Species that are attackable by the carnivore and not in the players species.
+        """
+        targets = []
+        for other_player in list_of_player:
+            if other_player == player:
+                continue
+            for defender in other_player.species:
+                left_neighbor = other_player.get_left_neighbor(defender)
+                right_neighbor = other_player.get_right_neighbor(defender)
+                if defender.is_attackable(carnivore, left_neighbor, right_neighbor):
+                    targets.append(defender)
+        return targets
 
+    @classmethod
+    def attack_largest(cls, attacker, targets, player, list_of_player):
+        """
+        Return a CarnivoreFeeding by attacking the largest species in the targets.
+        :param attacker: The attacking species
+        :param targets: The target species the attacker can attack
+        :param player: The player that is attacking
+        :param list_of_player: The game's list of players
+        :return:
+        """
+        target = cls.sort_by_size(targets)[0]
+        target_player = next(other_player for other_player in list_of_player if target in other_player.species and
+                             other_player is not player)
+        return CarnivoreFeeding(player.species.index(attacker),
+                                list_of_player.index(target_player),
+                                target_player.species.index(target))
 
     @classmethod
     def sort_by_size(cls, list_of_species):
