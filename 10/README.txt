@@ -3,17 +3,18 @@ that can be displayed from a dealer and player.
 
 _____________________________________________________________________________________________
 
-gui/dealer.py: the Dealer object with the feed1 method and necessary helpers
-gui/dealer_tests.py: unit tests for a Dealer object
-gui/globals.py: global variables for Evolution rules and objects
-gui/gui.py: functions used for the display methods to show gui
-gui/gui_tests.py: the unit tests for a gui functions
-gui/player.py: the Player object with the next_feeding method and necessary helpers
-gui/player_state.py: the PlayerState object
-gui/player_tests.py: unit tests for a Player object
-gui/species.py: the Species object
-gui/species_tests.py: unit tests for a Species object
-gui/traitcard.py: the TraitCard object
+dealer/dealer.py: the Dealer object with the feed1 method and necessary helpers
+dealer/dealer_tests.py: unit tests for a Dealer object
+dealer/globals.py: global variables for Evolution rules and objects
+dealer/gui.py: functions used for the display methods to show gui
+dealer/gui_tests.py: the unit tests for a gui functions
+dealer/player.py: the Player object with the next_feeding method and necessary helpers
+dealer/player_state.py: the PlayerState object
+dealer/player_tests.py: unit tests for a Player object
+dealer/species.py: the Species object
+dealer/species_tests.py: unit tests for a Species object
+dealer/traitcard.py: the TraitCard object
+dealer/feeding_choice.py: the FeedingChoice data representations
 
 xgui_tests/*: json input and output files to check ./xgui functionality
 
