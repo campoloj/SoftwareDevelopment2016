@@ -111,7 +111,11 @@ class TestConvert(unittest.TestCase):
         self.assertRaises(AssertionError, Convert.player_to_json, self.player_1)
 
     def test_json_to_feeding(self):
-        self.assertEqual(Convert.json_to_feeding(self.json_feeding), self.feeding)
+        feeding = Convert.json_to_feeding(self.json_feeding)
+        self.assertTrue(feeding[0].equal_attributes(self.feeding[0]))
+        self.assertEqual(feeding[1], self.feeding[1])
+        for i in range(len(self.feeding[2])):
+            self.assertTrue(feeding[2][i].equal_attributes(self.feeding[2][i]))
 
     def test_json_to_dealer(self):
         self.assertTrue(Convert.json_to_dealer(self.jDealer).equal_attributes(self.dealer1))

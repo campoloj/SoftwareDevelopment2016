@@ -28,15 +28,16 @@ class PlayerState(object):
         self.species = species if species else []
         self.active = active
 
-    def __eq__(self, other):
-        species_equal = True
-        for spec in self.species:
-            if len(self.species) != len(other.species):
-                return False
-            elif not other.species[self.species.index(spec)].equal_attributes(spec):
-                species_equal = False
-        return all([isinstance(other, PlayerState),
-                    self.name == other.name,
+    def equal_attributes(self, other):
+        """
+        Determine if this PlayerState and the given PlayerState have the same attributes for testing purposes.
+        :param other: the PlayerState to compare this PlayerState to
+        :return: True if all attributes are equal, else False
+        """
+        species_equal = isinstance(other, PlayerState) and len(self.species) == len(other.species)
+        for i in range(len(self.species)):
+            species_equal = species_equal and self.species[i].equal_attributes(other.species[i])
+        return all([self.name == other.name,
                     self.food_bag == other.food_bag,
                     self.hand == other.hand,
                     species_equal])

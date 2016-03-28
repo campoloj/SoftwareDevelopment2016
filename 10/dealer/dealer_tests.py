@@ -57,9 +57,9 @@ class TestDealer(unittest.TestCase):
         self.assertEqual([len(self.dealer1.deck), len(self.player1.hand)], [LOC_MAX - 10, 10])
 
     def test_public_players(self):
-        self.assertEquals(self.dealer1.public_players(self.player1), [self.public_player2, self.public_player3])
-        self.assertEquals(self.dealer1.public_players(self.player2), [self.public_player1, self.public_player3])
-        self.assertEquals(self.dealer1.public_players(self.player3), [self.public_player1, self.public_player2])
+        public_players = self.dealer1.public_players(self.player1)
+        self.assertTrue(public_players[0].equal_attributes(self.public_player2))
+        self.assertTrue(public_players[1].equal_attributes(self.public_player3))
 
     def test_feed1(self):
         # Auto-feeding

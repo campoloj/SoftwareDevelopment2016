@@ -30,8 +30,10 @@ class Dealer(object):
         :param other: the Dealer to compare this Dealer to
         :return: True if all attributes are the same, else False
         """
-        return all([isinstance(other, Dealer),
-                    self.list_of_players == other.list_of_players,
+        players_equal = isinstance(other, Dealer) and len(self.list_of_players) == len(other.list_of_players)
+        for i in range(len(self.list_of_players)):
+            players_equal = players_equal and self.list_of_players[i].equal_attributes(other.list_of_players[i])
+        return all([players_equal,
                     self.watering_hole == other.watering_hole,
                     self.deck == other.deck])
 
