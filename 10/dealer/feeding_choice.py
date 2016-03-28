@@ -41,7 +41,7 @@ class NoFeeding(FeedingChoice):
         :param dealer: the Dealer object
         :param feeding_player: the PlayerState of the Player choosing how to feed
         """
-        feeding_player.is_active = False
+        feeding_player.active = False
 
 
 class HerbivoreFeeding(FeedingChoice):

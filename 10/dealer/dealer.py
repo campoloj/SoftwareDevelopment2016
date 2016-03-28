@@ -47,7 +47,7 @@ class Dealer(object):
         deck = []
         for trait in TRAITS_LIST:
             food_range = (CARN_FOOD_MAX if trait == CARNIVORE else HERB_FOOD_MAX)
-            for food_val in range(-food_range, food_range):
+            for food_val in range(-food_range, food_range + 1):
                 deck.append(TraitCard(trait, food_val))
         random.shuffle(deck)
         return deck
@@ -71,9 +71,9 @@ class Dealer(object):
         This Dealer handles one step in the feeding cycle by modifying its configuration according to
         an auto-feeding or the first player's FeedingChoice.
         """
-        player = self.list_of_players[0]
         if self.watering_hole == MIN_WATERING_HOLE:
             return
+        player = self.list_of_players[0]
         feeding_choice = player.attempt_auto_feed(self.list_of_players)
         if not feeding_choice:
             other_players = self.public_players(feeding_player=player)
@@ -89,7 +89,8 @@ class Dealer(object):
         :return: a list of public representations of PlayerStates
         """
         return [PlayerState(name=player.name, food_bag=False, hand=False, species=player.species)
-                for player in self.list_of_players if player != feeding_player]
+                for player in self.list_of_players
+                if player != feeding_player]
 
     def feed_species(self, species, player, allow_forage=True):
         """
