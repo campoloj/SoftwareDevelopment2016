@@ -1,5 +1,6 @@
 from feeding_choice import *
 
+
 class Player(object):
     """
     A data representation of a Player in the Evolution game
@@ -9,20 +10,12 @@ class Player(object):
 
     @classmethod
     def next_feeding(cls, player, food_available, list_of_players):
-        #TODO PURPOSE
         """
-        Determines a players next Feeding
-        A Feeding is one of
-            - None, meaning the Player is unable to feed this turn
-            - False, meaning the Player refuses to attack own species and forgoes feeding this turn
-            - Natural, meaning the index of a herbivore to feed
-            - [Natural, Nat], meaning the index of a fat-tissue species and the food requested
-            - [Natural, Natural, Natural], meaning the index of the carnivore to feed, the index of the defending
-                                           Player, and the index of the defending Species in the defending Player's hand
+        Determines a players next FeedingChoice
         :param player: the PlayerState of the player who is feeding
         :param food_available: the amount of food on the watering hole board
         :param list_of_players: the PlayerStates of other players in the game
-        :return: Feeding for the next species to feed
+        :return: FeedingChoice for the next species to feed
         """
         hungry_fatties = player.get_needy_fats()
         if hungry_fatties:
@@ -36,13 +29,13 @@ class Player(object):
         if hungry_carnivores:
             return cls.feed_carnivore(hungry_carnivores, player, list_of_players)
 
-
     @classmethod
     def feed_fatty(cls, fat_tissue_species, food_available, player):
         """
         Feeds a species with the fat-tissue trait
         :param fat_tissue_species: species with a fat-tissue trait
         :param food_available: food on the watering_hole_board
+        :param player: the current player state
         :return: list of [Species, Nat] where Species is the fat_tissue_species and Nat is the requested food
         """
         fatty = cls.largest_fatty_need(fat_tissue_species)
@@ -55,6 +48,7 @@ class Player(object):
         """
         Feeds a herbivore species
         :param hungry_herbivores: list of hungry herbivores
+        :param player: the current player state
         :return: the Species to feed
         """
         herbivore = cls.sort_by_size(hungry_herbivores)[0]
@@ -81,7 +75,6 @@ class Player(object):
         for carnivore in sorted_carnivores:
             if carnivore.attackable_species(player):
                 return NoFeeding()
-
 
     @classmethod
     def attack_largest(cls, attacker, targets, player, list_of_player):
@@ -131,4 +124,3 @@ class Player(object):
         :param player_state: The PlayerState object representing this Player's configuration
         """
         player_state.display()
-

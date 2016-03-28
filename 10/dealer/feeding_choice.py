@@ -27,6 +27,14 @@ class NoFeeding(FeedingChoice):
     Represents the Player choosing to abstain from feeding for the rest of ths round
     """
 
+    def __eq__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return:
+        """
+        return isinstance(other, NoFeeding)
+
     def handle_feeding(self, dealer, feeding_player):
         """
         Updates dealer configuration by making this player inactive for this round
@@ -49,6 +57,16 @@ class HerbivoreFeeding(FeedingChoice):
         """
         super(HerbivoreFeeding, self).__init__()
         self.species_index = species_index
+
+    def __eq__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return:
+        """
+        if isinstance(other, HerbivoreFeeding):
+            return self.species_index == other.species_index
+        return False
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -75,6 +93,17 @@ class FatFeeding(FeedingChoice):
         super(FatFeeding, self).__init__()
         self.species_index = species_index
         self.fat_request = fat_request
+
+    def __eq__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return:
+        """
+        if isinstance(other, FatFeeding):
+            return all([self.species_index == other.species_index,
+                        self.fat_request == other.fat_request])
+        return False
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -107,6 +136,18 @@ class CarnivoreFeeding(FeedingChoice):
         self.attacker_index = attacker_index
         self.defending_player_index = defending_player_index
         self.defender_index = defender_index
+
+    def __eq__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return:
+        """
+        if isinstance(other, CarnivoreFeeding):
+            return all([self.attacker_index == other.attacker_index,
+                    self.defending_player_index == other.defending_player_index,
+                    self.defender_index == other.defender_index])
+        return False
 
     def handle_feeding(self, dealer, feeding_player):
         """

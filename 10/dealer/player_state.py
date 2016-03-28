@@ -12,15 +12,21 @@ class PlayerState(object):
     the dealer only sends the minimum amount of data needed for the player to make
     choices
     """
-    def __init__(self, name=0, food_bag=0, hand=None, species=None, active=True):
+    def __init__(self, name=0, food_bag=0, hand=False, species=False, active=True):
+        """
+        Creates a PlayerState
+        :param name: The players ID
+        :param food_bag: The amount of food the player has.
+        :param hand: A List of TraitCards the player has.
+        :param species: A List of Species the player has.
+        :param active: Boolean, True if the player is still feeding in the current round.
+        :return:
+        """
         self.name = name
         self.food_bag = food_bag
         self.hand = hand if hand else []
         self.species = species if species else []
         self.active = active
-
-    def __str__(self):
-        return "PlayerState(Food=%d, Hand=%s, Species=%s" % (self.food_bag, self.hand, self.species)
 
     def __eq__(self, other):
         species_equal = True
