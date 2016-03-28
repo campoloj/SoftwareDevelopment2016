@@ -36,7 +36,7 @@ ________________________________________________________________________________
 
 Read the following files (from top to bottom) in order below:
 
-In 9/gui:
+In 10/gui:
 - traitcard.py
 - species.py
 - species_tests.py
@@ -48,7 +48,7 @@ In 9/gui:
 - gui.py
 - gui_tests.py
 
-In 9:
+In 10:
 - xgui
 - xgui_helper.py
 - xgui_tests/*
