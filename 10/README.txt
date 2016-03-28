@@ -1,10 +1,11 @@
-The purpose of this project was to create a gui that can represent the game state as well as a player state
-that can be displayed from a dealer and player.
+The purpose of this project was to refactor our codebase to reduce method length using
+abstraction and helpers, create better unit tests and purpose statements, and pass more testfest tests.
 
 _____________________________________________________________________________________________
 
 dealer/dealer.py: the Dealer object with the feed1 method and necessary helpers
 dealer/dealer_tests.py: unit tests for a Dealer object
+dealer/feeding_choice.py: the FeedingChoice data representations
 dealer/globals.py: global variables for Evolution rules and objects
 dealer/gui.py: functions used for the display methods to show gui
 dealer/gui_tests.py: the unit tests for a gui functions
@@ -14,14 +15,12 @@ dealer/player_tests.py: unit tests for a Player object
 dealer/species.py: the Species object
 dealer/species_tests.py: unit tests for a Species object
 dealer/traitcard.py: the TraitCard object
-dealer/feeding_choice.py: the FeedingChoice data representations
 
-xgui_tests/*: json input and output files to check ./xgui functionality
+homework_8_tests/*: json input and output files to check ./xstep functionality
 
-convert.py: methods to convert between json and python objects
+convert.py: methods to convert between JSON and Python objects
 convert_tests.py: unit tests for convert.py methods
-xgui: executable for displaying a game state and the first player's state
-xgui_helper.py: the helper to display both windows at the the same time in xgui
+xstep: executable to test Dealer feed1 method
 
 __________________________________________________________________________________________
 
@@ -29,31 +28,29 @@ to run compile:
 
 ./compile
 
-to run xgui:
+to run xstep:
 
-./xgui < input.json > output.json
+./xstep < input.json > output.json
 
 __________________________________________________________________________________________
 
 Read the following files (from top to bottom) in order below:
 
 In 10/gui:
-- traitcard.py
-- species.py
-- species_tests.py
-- player_state.py
-- player.py
-- player_tests.py
 - dealer.py
 - dealer_tests.py
+- player.py
+- player_tests.py
+- feeding_choice.py
+- player_state.py
+- species.py
+- species_tests.py
+- traitcard.py
 - gui.py
 - gui_tests.py
 
 In 10:
-- xgui
-- xgui_helper.py
-- xgui_tests/*
-
+- xstep
 - convert.py
 - convert_tests.py
 
