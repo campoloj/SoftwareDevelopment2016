@@ -72,3 +72,7 @@ BODY = "body"
 POPULATION = "population"
 TRAITS = "traits"
 FATFOOD = "fat-food"
+
+### Actions
+GROW_POP_AMOUNT = 1
+GROW_BODY_AMOUNT = 1

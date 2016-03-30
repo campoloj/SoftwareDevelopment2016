@@ -108,6 +108,15 @@ class Species(object):
         self.population -= KILL_QUANTITY
         self.food = min(self.population, self.food)
 
+    def replace_trait(self, traitcard_index, replacement_card):
+        """
+        :effect Replaces the TraitCard at the specified index into this Species's traits with the given
+                replacement TraitCard
+        :param traitcard_index: Nat representing index of TraitCard to replace
+        :param replacement_card: TraitCard to put on this Species
+        """
+        self.traits[traitcard_index] = replacement_card
+
     @classmethod
     def validate_all_cards(cls, list_of_species, total_deck):
         """

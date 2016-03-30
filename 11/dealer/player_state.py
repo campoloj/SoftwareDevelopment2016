@@ -5,6 +5,7 @@ from traitcard import TraitCard
 from species import Species
 
 
+
 class PlayerState(object):
     """
     Represents data about the player that is kept track of by the dealer
@@ -111,6 +112,45 @@ class PlayerState(object):
                 if FATTISSUE in species.trait_names() and
                 species.fat_storage < species.body]
 
+    def grow_attribute(self, grow_action):
+        """
+        :effect Grow the specified attribute in the given GrowAction and removes the card from the players hand.
+        :param grow_action: GrowAction to apply to this player_state
+        """
+        species_to_grow = self.species[grow_action.species_board_index]
+        if grow_action.attribute == POPULATION:
+            species_to_grow.population += GROW_POP_AMOUNT
+        elif grow_action.attribute == BODY:
+            species_to_grow.body += GROW_BODY_AMOUNT
+
+    def add_species(self, add_card_list):
+        """
+        :effect Adds a new species to the right of this Player State's current species
+        :param add_card_list: List of Nat representing indicies of Trait Cards in this Player State's hand to add to the
+                              new species.
+        """
+        trait_list = [self.hand[i] for i in add_card_list]
+        self.species.append(Species(traits=trait_list))
+
+    def replace_trait(self, replace_action):
+        """
+        :effect Replaces the trait on one of this PlayerState's species according to the given ReplaceTraitAction
+        :param replace_action: a ReplaceTraitAction specifying which TraitCards to replace on which Species
+        """
+        species = self.species[replace_action.species_board_index]
+        replacement_card = self.hand[replace_action.replacement_card_index]
+        species.replace_trait(replace_action.card_to_replace_index, replacement_card)
+
+    def discard_all(self, remove_card_list):
+        """
+        :effect Removes each card simultaneously in the list of indecies given
+        :param remove_card_list: List of Nat representing the indicies of the Trait Cards to remove in
+                                 this Player State's Hand.
+        """
+        for i in remove_card_list:
+            self.hand[i] = False
+        self.hand = [card for card in self.hand if card]
+
     @classmethod
     def validate_all_cards(cls, list_of_players, total_deck):
         """
@@ -160,4 +200,6 @@ class PlayerState(object):
         """
         text = gui.render_player(self)
         gui.display(text)
+
+
 
