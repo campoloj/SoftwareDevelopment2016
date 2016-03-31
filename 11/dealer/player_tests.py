@@ -96,5 +96,21 @@ class TestPlayer(unittest.TestCase):
         # Test no attackable species
         self.assertEqual(Player.next_feeding(self.player_1, 10, []), NoFeeding())
 
+    def test_show_changes(self):
+        self.assertEquals(self.player_1.show_changes(self.player_2), 'Species 0: [[food, 3->4], [body, 3->4]]\n,'
+                                                                     ' Species 1: [[population, 3->1], [body, 3->0]]\n,'
+                                                                     ' Species 2: [[population, 4->1], [food, 3->0],'
+                                                                     ' [body, 3->0]]\n')
+        self.player_2.food_bag = 3
+        self.player_2.active = False
+        self.assertEquals(self.player_1.show_changes(self.player_2),
+                          '[food_bag, 0->3], '
+                          'Species 0: [[food, 3->4], [body, 3->4]]\n, '
+                          'Species 1: [[population, 3->1], [body, 3->0]]\n, '
+                          'Species 2: [[population, 4->1], [food, 3->0], [body, 3->0]]\n, '
+                          '[active, True->False]')
+
+
+
 if __name__ == '__main__':
     unittest.main()

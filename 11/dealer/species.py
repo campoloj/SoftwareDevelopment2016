@@ -167,7 +167,7 @@ class Species(object):
             if i >= len(before_species):
                 species_change = Species().show_changes(after_species[i])
             elif i >= len(after_species):
-                species_change = before_species[i].show_shanges(Species())
+                species_change = before_species[i].show_changes(Species())
             else:
                 species_change = before_species[i].show_changes(after_species[i])
             if species_change:
