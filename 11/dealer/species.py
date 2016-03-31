@@ -198,10 +198,10 @@ class Species(object):
             changes.append(CHANGE_TEMPLATE % (BODY, self.body, species2.body))
         trait_changes = TraitCard.show_all_changes(self.traits, species2.traits)
         if trait_changes:
-            changes.append('traits: ' + trait_changes)
+            changes.append('[traits: ' + trait_changes + ']')
         if self.fat_storage != species2.fat_storage:
             changes.append(CHANGE_TEMPLATE % (FATTISSUE, self.fat_storage, species2.fat_storage))
-        return ", ".join(changes)
+        return '[' + ", ".join(changes) + ']' if changes else ''
 
 
 
