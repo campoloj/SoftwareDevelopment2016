@@ -160,12 +160,19 @@ class Species(object):
         if self.fat_storage is not False:
             assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
 
-    # @classmethod
-    # def show_all_changes(cls, before_species, after_species):
-    #     changes = []
-    #     for i in range(max(len(before_species), len(after_species))):
-    #         if i >= len(before_species):
-    #             changes.append("New Species: )
+    @classmethod
+    def show_all_changes(cls, before_species, after_species):
+        changes = []
+        for i in range(max(len(before_species), len(after_species))):
+            if i >= len(before_species):
+                species_change = Species().show_changes(after_species[i])
+            elif i >= len(after_species):
+                species_change = before_species[i].show_shanges(Species())
+            else:
+                species_change = before_species[i].show_changes(after_species[i])
+            if species_change:
+                changes.append("Species %d: %s\n" % (i, species_change))
+        return ", ".join(changes)
 
     def show_changes(self, species2):
         """

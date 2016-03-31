@@ -202,13 +202,18 @@ class PlayerState(object):
         """
         changes = []
         if self.name != other_player.name:
-            changes += CHANGE_TEMPLATE % ("name", str(self.name), str(other_player.name))
+            changes.append(CHANGE_TEMPLATE % ("name", str(self.name), str(other_player.name)))
         if self.food_bag != other_player.food_bag:
-            changes += CHANGE_TEMPLATE % ("food_bag", str(self.food_bag), str(other_player.food_bag))
-        changes += "hand: %s" % TraitCard.show_all_changes(self.hand, other_player.hand)
-
+            changes.append(CHANGE_TEMPLATE % ("food_bag", str(self.food_bag), str(other_player.food_bag)))
+        hand_changes = TraitCard.show_all_changes(self.hand, other_player.hand)
+        if hand_changes:
+            changes.append(hand_changes)
+        species_changes = Species.show_all_changes(self.species, other_player.species)
+        if species_changes:
+            changes.append(species_changes)
         if self.active != other_player.active:
-            changes += CHANGE_TEMPLATE % ("active", self.active, other_player.active)
+            changes.append(CHANGE_TEMPLATE % ("active", self.active, other_player.active))
+        return ", ".join(changes)
 
     def display(self):
         """
