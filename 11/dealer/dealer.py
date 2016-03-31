@@ -68,20 +68,33 @@ class Dealer(object):
 
 # ======================================   Feeding Methods ===========================================
 
+    def step4(self, action4_list):
+        """
+        Execute a round of feeding and applying the actions
+        :param action4_list: The list of actions to apply to the corresponding indicies of players
+        """
+        for action4 in action4_list:
+            action4.apply_all()
+
+        self.foodcard_reveal()
+
+        while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
+            self.feed1()
+
     def feed1(self):
         """
         This Dealer handles one step in the feeding cycle by modifying its configuration according to
         an auto-feeding or the first player's FeedingChoice.
         """
-        if self.watering_hole == MIN_WATERING_HOLE:
-            return
         player = self.list_of_players[0]
-        feeding_choice = player.attempt_auto_feed(self.list_of_players)
-        if not feeding_choice:
-            other_players = self.public_players(feeding_player=player)
-            feeding_choice = Player.next_feeding(player, self.watering_hole, other_players)
+        if player.active:
+            feeding_choice = player.attempt_auto_feed(self.list_of_players)
+            if not feeding_choice:
+                other_players = self.public_players(feeding_player=player)
+                feeding_choice = Player.next_feeding(player, self.watering_hole, other_players)
 
-        feeding_choice.handle_feeding(self, player)
+            feeding_choice.handle_feeding(self, player)
+        self.list_of_players.append(self.list_of_players.pop())
 
     def public_players(self, feeding_player):
         """
@@ -93,6 +106,32 @@ class Dealer(object):
         return [PlayerState(name=player.name, food_bag=False, hand=False, species=player.species)
                 for player in self.list_of_players
                 if player != feeding_player]
+
+    def foodcard_reveal(self):
+        """
+        :effect Adds population to fertile Species and feeds long-neck Species after the food cards
+                on the watering hole have been revealed
+        """
+        self.modify_fertiles()
+        self.feed_long_necks()
+
+    def modify_fertiles(self):
+        """
+        :effect Adds population to all fertile Species
+        """
+        for player in self.list_of_players:
+            for species in player.species:
+                if FERTILE in species.trait_names():
+                    species.population += GROW_POP_AMOUNT
+
+    def feed_long_necks(self):
+        """
+        :effect Feeds all long-neck Species
+        """
+        for player in self.list_of_players:
+            for species in player.species:
+                if LONGNECK in species.trait_names():
+                    self.feed_species(species, player)
 
     def feed_species(self, species, player, allow_forage=True):
         """
