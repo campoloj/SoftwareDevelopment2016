@@ -14,8 +14,12 @@ def main():
     json_array = json.loads(sys.stdin.read())
     try:
         json_config = json_array[0]
+        #sys.stdout.write(json.dumps(json_config))
+        #sys.stdout.write('\n')
         json_step4 = json_array[1]
+        #sys.stdout.write(json.dumps(json_step4))
         action4_list = Convert.json_to_step4(json_step4)
+        sys.stdout.write(str(action4_list))
         dealer = Convert.json_to_dealer(json_config)
         dealer.validate_cards()
         dealer.step4(action4_list)
