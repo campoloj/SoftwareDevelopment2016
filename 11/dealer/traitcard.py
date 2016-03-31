@@ -70,15 +70,14 @@ class TraitCard(object):
         :param traitcards_after: List of TraitCard after modification
         :return: String of attribute changes, or "" if unchanged.
         """
-        change_list = []
         if len(traitcards_before) < len(traitcards_after):
             new_cards = [CARD_TEMPLATE % (card.trait, card.food_value) for card in traitcards_after
                          if card not in traitcards_before]
-            change_list.append("new cards: %s" % ", ".join(new_cards))
+            return "new cards: %s" % ", ".join(new_cards)
         elif len(traitcards_before) > len(traitcards_after):
             removed_cards = [CARD_TEMPLATE % (card.trait, card.food_value) for card in traitcards_before
                              if card not in traitcards_after]
-            change_list.append("removed cards: %s" % ", ".join(removed_cards))
+            return "removed cards: %s" % ", ".join(removed_cards)
         else:
             changed_cards = []
             for i in range(len(traitcards_before)):
@@ -86,5 +85,4 @@ class TraitCard(object):
                 if before != after:
                     changed_cards.append(CHANGE_TEMPLATE % (str(i), CARD_TEMPLATE % (before.trait, before.food_value),
                                                             CARD_TEMPLATE % (after.trait, after.food_value)))
-            change_list.append("changed cards: %s" % ", ".join(changed_cards))
-        return ", ".join(change_list)
+            return "changed cards: %s" % ", ".join(changed_cards)
