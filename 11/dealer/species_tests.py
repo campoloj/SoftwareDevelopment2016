@@ -97,16 +97,18 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.defender.is_attackable(self.attacker, left_neighbor=self.left_neighbor))
 
     def test_show_changes(self):
-        self.assertEquals(self.species_1.show_changes(self.species_3), 'body:4->3')
+        self.assertEquals(self.species_1.show_changes(self.species_3), '[[body, 4->3]]')
         self.assertEquals(self.species_1.show_changes(self.species_2), '')
         self.species_2.traits = [TraitCard(CLIMBING)]
-        self.assertEquals(self.species_1.show_changes(self.species_2), 'traits: new cards: [climbing, 0]')
+        self.assertEquals(self.species_1.show_changes(self.species_2), '[[traits: new cards: [climbing, 0]]]')
         self.species_3.traits = [TraitCard(HERDING)]
-        self.assertEquals(self.species_2.show_changes(self.species_3), 'body:4->3, traits: 0:[climbing, 0]->[herding, 0]')
+        self.assertEquals(self.species_2.show_changes(self.species_3), '[[body, 4->3], [traits: [0, [climbing, 0]->[herding, 0]]]]')
         self.species_3.population = 1
         self.species_3.food = 0
         self.species_3.traits.append(TraitCard(BURROWING))
-        self.assertEquals(self.species_2.show_changes(self.species_3), 'population:4->1, food:4->0, body:4->3, traits: new cards: [herding, 0], [burrowing, 0]')
+        self.assertEquals(self.species_2.show_changes(self.species_3),
+                          '[[population, 4->1], [food, 4->0], [body, 4->3], '
+                          '[traits: new cards: [herding, 0], [burrowing, 0]]]')
 
 
 if __name__ == '__main__':
