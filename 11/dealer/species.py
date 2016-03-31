@@ -161,6 +161,11 @@ class Species(object):
             assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
 
     def show_changes(self, species2):
+        """
+        Shows a string representation of the differences between this Species and the given Species.
+        :param species2: The Species we are comparing to this Species
+        :return: String representing the differences
+        """
 
         changes = ''
         if self.population != species2.population:
