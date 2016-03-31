@@ -168,7 +168,10 @@ class Species(object):
         :return: a JSON Species+ as specified by the data definition at
                  http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
         """
-        json_traits = [trait.trait_to_json() for trait in self.traits]
+        json_traits = '['
+        for trait in self.traits:
+            json_traits += trait.trait_to_json()
+        json_traits += ']'
         json_species_template = '[[%s, %d], [%s, %d], [%s, %d], [%s, %s]]'
         json_species = json_species_template % (FOOD, self.food, BODY, self.body, POPULATION,
                                                 self.population, TRAITS, json_traits)
@@ -200,7 +203,7 @@ class Species(object):
         changes = []
         if self.population != species2.population:
             changes.append(CHANGE_TEMPLATE % (POPULATION, self.population, species2.population))
-        if self.food != species2.population:
+        if self.food != species2.food:
             changes.append(CHANGE_TEMPLATE % (FOOD, self.food, species2.food))
         if self.body != species2.body:
             changes.append(CHANGE_TEMPLATE % (BODY, self.body, species2.body))

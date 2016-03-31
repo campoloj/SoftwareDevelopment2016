@@ -233,7 +233,7 @@ class Dealer(object):
         :param dealer2: The Dealer we are comparing to this Dealer
         :return: String
         """
-        changes = ''
+        changes = []
         old_players = self.players_to_dict()
         new_players = dealer2.players_to_dict()
         for i in range(0, len(self.list_of_players)):
@@ -241,13 +241,13 @@ class Dealer(object):
             old_player = old_players.get(name)
             new_player = new_players.get(name)
             if not old_player.equal_attributes(new_player):
-                changes += 'Player ' + str(name) + ':' + old_player.show_changes(new_player) + ','
+                changes.append('Player ' + str(name) + ':' + old_player.show_changes(new_player))
         if self.watering_hole != dealer2.watering_hole:
-            changes += CHANGE_TEMPLATE % ('watering_hole', self.watering_hole, dealer2.watering_hole)
+            changes.append(CHANGE_TEMPLATE % ('watering_hole', self.watering_hole, dealer2.watering_hole))
         deck_changes = TraitCard.show_all_changes(self.deck, dealer2.deck)
         if deck_changes:
-            changes += 'deck :' + deck_changes
-        return changes
+            changes.append('deck :' + deck_changes)
+        return ", ".join(changes)
 
 
 
