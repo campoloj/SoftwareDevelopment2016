@@ -206,8 +206,9 @@ class PlayerState(object):
         if self.food_bag != other_player.food_bag:
             changes += CHANGE_TEMPLATE % ("food_bag", str(self.food_bag), str(other_player.food_bag))
         changes += "hand: %s" % TraitCard.show_all_changes(self.hand, other_player.hand)
+
         if self.active != other_player.active:
-            changes +=
+            changes += CHANGE_TEMPLATE % ("active", self.active, other_player.active)
 
     def display(self):
         """

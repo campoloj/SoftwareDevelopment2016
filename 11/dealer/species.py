@@ -160,6 +160,13 @@ class Species(object):
         if self.fat_storage is not False:
             assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
 
+    # @classmethod
+    # def show_all_changes(cls, before_species, after_species):
+    #     changes = []
+    #     for i in range(max(len(before_species), len(after_species))):
+    #         if i >= len(before_species):
+    #             changes.append("New Species: )
+
     def show_changes(self, species2):
         """
         Shows a string representation of the differences between this Species and the given Species.
@@ -167,19 +174,19 @@ class Species(object):
         :return: String representing the differences
         """
 
-        changes = ''
+        changes = []
         if self.population != species2.population:
-            changes += CHANGE_TEMPLATE % (POPULATION, self.population, species2.population)
+            changes.append(CHANGE_TEMPLATE % (POPULATION, self.population, species2.population))
         if self.food != species2.population:
-            changes += CHANGE_TEMPLATE % (FOOD, self.food, species2.food)
-        if self.body != species2.population:
-            changes += CHANGE_TEMPLATE % (BODY, self.body, species2.body)
+            changes.append(CHANGE_TEMPLATE % (FOOD, self.food, species2.food))
+        if self.body != species2.body:
+            changes.append(CHANGE_TEMPLATE % (BODY, self.body, species2.body))
         trait_changes = TraitCard.show_all_changes(self.traits, species2.traits)
         if trait_changes:
-            changes += 'traits: ' + trait_changes
+            changes.append('traits: ' + trait_changes)
         if self.fat_storage != species2.fat_storage:
-            changes += CHANGE_TEMPLATE % (FATTISSUE, self.fat_storage, species2.fat_storage)
-        return changes
+            changes.append(CHANGE_TEMPLATE % (FATTISSUE, self.fat_storage, species2.fat_storage))
+        return ", ".join(changes)
 
 
 
