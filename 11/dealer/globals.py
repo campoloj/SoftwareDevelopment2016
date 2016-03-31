@@ -79,3 +79,4 @@ GROW_BODY_AMOUNT = 1
 
 # Changes
 CHANGE_TEMPLATE = "%s:%s->%s,"
+CARD_TEMPLATE = "[%s, %d]"

@@ -60,3 +60,29 @@ class TraitCard(object):
             assert(isinstance(self.food_points, int) and
                    (CARN_FOOD_MIN <= self.food_points <= CARN_FOOD_MAX if self.trait == CARNIVORE
                    else HERB_FOOD_MIN <= self.food_points <= HERB_FOOD_MAX))
+
+    @classmethod
+    def show_all_changes(cls, traitcards_before, traitcards_after):
+        """
+        Creates a string representation of the changed attributes between a list of TraitCards before and after
+        an imperative function is called on it.
+        :param traitcards_before: List of TraitCard before modification
+        :param traitcards_after: List of TraitCard after modification
+        :return: String of attribute changes, or "" if unchanged.
+        """
+        if len(traitcards_before) < len(traitcards_after):
+            new_cards = [CARD_TEMPLATE % (card.trait, card.food_value) for card in traitcards_after
+                         if card not in traitcards_before]
+            return "new cards: %s" % ", ".join(new_cards)
+        elif len(traitcards_before) > len(traitcards_after):
+            removed_cards = [CARD_TEMPLATE % (card.trait, card.food_value) for card in traitcards_before
+                             if card not in traitcards_after]
+            return "removed cards: %s" % ", ".join(removed_cards)
+        else:
+            changed_cards = []
+            for i in range(len(traitcards_before)):
+                before, after = (traitcards_before[i], traitcards_after[i])
+                if before != after:
+                    changed_cards.append(CHANGE_TEMPLATE % (str(i), CARD_TEMPLATE % (before.trait, before.food_value),
+                                                            CARD_TEMPLATE % (after.trait, after.food_value)))
+            return "changed cards: %s" % ", ".join(changed_cards)
