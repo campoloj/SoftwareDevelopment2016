@@ -164,13 +164,14 @@ class Species(object):
     def species_to_json(self):
         """
         Converts a Species object into a JSON Species+. Does not render empty fat-food.
-        :param species_obj: a Species object
         :return: a JSON Species+ as specified by the data definition at
                  http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
         """
         json_traits = '['
         for trait in self.traits:
             json_traits += trait.trait_to_json()
+            if trait != self.traits[-1]:
+                json_traits += ", "
         json_traits += ']'
         json_species_template = '[[%s, %d], [%s, %d], [%s, %d], [%s, %s]]'
         json_species = json_species_template % (FOOD, self.food, BODY, self.body, POPULATION,
