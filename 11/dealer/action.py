@@ -96,7 +96,8 @@ class AddSpeciesAction(Action):
         :return: List of Nat representing indecies of TraitCards that this PlayerState must discard
         """
         player.add_species(self.add_card_list)
-        return self.add_card_list.append(self.trade_card_index)
+        self.add_card_list.append(self.trade_card_index)
+        return self.add_card_list
 
 
 class ReplaceTraitAction(Action):
