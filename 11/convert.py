@@ -3,6 +3,8 @@ from dealer.dealer import Dealer
 from dealer.player_state import PlayerState
 from dealer.species import Species
 from dealer.traitcard import TraitCard
+from dealer.action4 import Action4
+from dealer.action import *
 
 
 class Convert(object):
@@ -40,6 +42,78 @@ class Convert(object):
         json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
         json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
         return [json_players, dealer.watering_hole, json_deck]
+
+    @classmethod
+    def json_to_step4(cls, json_step4):
+        """
+        Converts a JSON step 4 into a List of Action4 Objects.
+        :param json_step4: A JSON Step4 as specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: List of Action4
+        """
+        result = []
+        for json_action4 in json_step4:
+            result.append(cls.json_to_action4(json_action4))
+        return result
+
+    @classmethod
+    def json_to_action4(cls, json_action4):
+        """
+        Converts a JSON action into a Action4 Object.
+        :param json_action4: A JSON Action4 as specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: Action4
+        """
+        food_card_action = FoodCardAction(json_action4[0])
+        actions = [food_card_action]
+        list_of_gp = json_action4[1]
+        list_of_gb = json_action4[2]
+        list_of_bt = json_action4[3]
+        list_of_rt = json_action4[4]
+        actions += (cls.json_to_grow_action(list_of_gp) + cls.json_to_grow_action(list_of_gb) +
+                    cls.json_to_species_action(list_of_bt) + cls.json_to_replace_trait_action(list_of_rt))
+        return Action4(actions)
+
+    @classmethod
+    def json_to_grow_action(cls, list_of_json_grow):
+        """
+        Converts a List of JSON grow actions to a List of GrowActions
+        :param list_of_json_grow: a List of GP or GB specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: List of GrowAction
+        """
+        result = []
+        for json_grow in list_of_json_grow:
+            result.append(GrowAction(json_grow[0], json_grow[1], json_grow[2]))
+        return result
+
+    @classmethod
+    def json_to_species_action(cls, list_of_bt):
+        """
+        Converts a List of JSON bt to a List of AddSpeciesActions
+        :param list_of_bt: a List of BT specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: List of AddSpeciesAction
+        """
+        result = []
+        for bt in list_of_bt:
+            traits = []
+            for i in range(1, len(bt)):
+                traits.append(bt[i])
+            result.append(AddSpeciesAction(bt[0], traits))
+        return result
+
+    @classmethod
+    def json_to_replace_trait_action(cls, list_of_rt):
+        """
+        Converts a List of JSON grow actions to a List of GrowActions
+        :param list_of_rt:
+        :return:
+        """
+        result = []
+        for rt in list_of_rt:
+            result.append(ReplaceTraitAction(rt[0], rt[1], rt[2]))
+        return result
 
     @classmethod
     def json_to_feeding(cls, json_feeding):
