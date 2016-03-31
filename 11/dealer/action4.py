@@ -22,4 +22,5 @@ class Action4(object):
         for action in self.actions:
             discards += action.apply(dealer, self.player)
 
+        dealer.watering_hole = max(0, dealer.watering_hole)
         self.player.discard_all(discards)
