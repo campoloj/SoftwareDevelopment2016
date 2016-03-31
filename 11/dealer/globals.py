@@ -76,3 +76,6 @@ FATFOOD = "fat-food"
 ### Actions
 GROW_POP_AMOUNT = 1
 GROW_BODY_AMOUNT = 1
+
+# Changes
+CHANGE_TEMPLATE = "%s:%s->%s,"
