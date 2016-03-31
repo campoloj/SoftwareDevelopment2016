@@ -1,5 +1,13 @@
+import os
+import sys
+convert_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..%s" % os.sep)
+sys.path.append(convert_path)
+
+from convert import Convert
 from globals import *
 from traitcard import TraitCard
+
+
 
 
 class Species(object):
@@ -165,13 +173,13 @@ class Species(object):
         changes = []
         for i in range(max(len(before_species), len(after_species))):
             if i >= len(before_species):
-                species_change = Species().show_changes(after_species[i])
+                species_change = "New Species: %s" % Convert.species_to_json(after_species[i])
             elif i >= len(after_species):
-                species_change = before_species[i].show_shanges(Species())
+                species_change = "Species removed"
             else:
                 species_change = before_species[i].show_changes(after_species[i])
             if species_change:
-                changes.append("Species %d: %s\n" % (i, species_change))
+                changes.append("Species %d: %s" % (i, species_change))
         return ", ".join(changes)
 
     def show_changes(self, species2):
