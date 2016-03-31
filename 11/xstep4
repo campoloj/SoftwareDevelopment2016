@@ -19,9 +19,8 @@ def main():
         json_step4 = json_array[1]
         #sys.stdout.write(json.dumps(json_step4))
         action4_list = Convert.json_to_step4(json_step4)
-        sys.stdout.write(str(action4_list))
         dealer = Convert.json_to_dealer(json_config)
-        dealer.validate_cards()
+        # dealer.validate_cards()
         dealer.step4(action4_list)
         json_dealer = Convert.dealer_to_json(dealer)
         sys.stdout.write(json.dumps(json_dealer))

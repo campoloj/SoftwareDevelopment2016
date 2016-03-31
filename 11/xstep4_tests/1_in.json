@@ -18,10 +18,10 @@
           ]
         ]
       ],
-      ["bag", 3]],
+      ["bag", 3],
       ["cards",[[2, "carnivore"],
-                [1, "longneck"]]
-      ],
+                [1, "long-neck"]]
+      ]],
     [
       ["id", 2],
       ["species",
@@ -36,7 +36,7 @@
       ],
       ["bag", 4],
       ["cards",[[2, "carnivore"],
-                [1, "longneck"]]
+                [1, "long-neck"]]
       ]
     ],
     [
