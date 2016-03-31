@@ -74,7 +74,7 @@ class Dealer(object):
         :param action4_list: The list of actions to apply to the corresponding indicies of players
         """
         for action4 in action4_list:
-            action4.apply_all()
+            action4.apply_all(self)
 
         self.foodcard_reveal()
 
