@@ -20,6 +20,9 @@ class TraitCard(object):
                     self.trait == other.trait,
                     self.food_points == other.food_points])
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @classmethod
     def validate_all_unique(cls, list_of_traitcard, total_deck):
         """
@@ -60,6 +63,17 @@ class TraitCard(object):
             assert(isinstance(self.food_points, int) and
                    (CARN_FOOD_MIN <= self.food_points <= CARN_FOOD_MAX if self.trait == CARNIVORE
                    else HERB_FOOD_MIN <= self.food_points <= HERB_FOOD_MAX))
+
+    @classmethod
+    def trait_to_json(self):
+        """
+        Converts a TraitCard into a JSON Trait or SpeciesCard
+        :param trait_card: a TraitCard object
+        :return: a JSON Trait or SpeciesCard as specified by the data definitions at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/5.html and
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html, respectively.
+        """
+        return self.trait if self.food_points is False else [self.food_points, self.trait]
 
     @classmethod
     def show_all_changes(cls, traitcards_before, traitcards_after):

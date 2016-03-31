@@ -109,6 +109,11 @@ class TestSpecies(unittest.TestCase):
         self.assertEquals(self.species_2.show_changes(self.species_3),
                           '[[population, 4->1], [food, 4->0], [body, 4->3], '
                           '[traits: new cards: [herding, 0], [burrowing, 0]]]')
+        self.species_2.traits = [TraitCard(CLIMBING)]
+        self.species_3.traits = [TraitCard(CLIMBING)]
+        self.assertEquals(self.species_2.show_changes(self.species_3),
+                          '[[population, 4->1], [food, 4->0], [body, 4->3]]')
+
 
 
 if __name__ == '__main__':

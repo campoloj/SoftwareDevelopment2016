@@ -4,6 +4,7 @@ from traitcard import TraitCard
 from player_state import PlayerState
 from globals import *
 from dealer import Dealer
+import copy
 
 
 class TestDealer(unittest.TestCase):
@@ -162,6 +163,15 @@ class TestDealer(unittest.TestCase):
         self.assertEqual([self.species6.food, self.species7.food, self.dealer1.watering_hole], [4, 1, 7])
         self.dealer1.handle_scavenging()
         self.assertEqual([self.species6.food, self.species7.food, self.dealer1.watering_hole], [6, 3, 3])
+
+    def test_show_changes(self):
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.dealer1.feed1()
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 1:'
+                            'Species 0: [[food, 0->1]], '
+                            'Species 1: [[food, 2->3]],'
+                          '[watering_hole, 10->8]')
 
 
 if __name__ == '__main__':

@@ -97,18 +97,23 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(Player.next_feeding(self.player_1, 10, []), NoFeeding())
 
     def test_show_changes(self):
-        self.assertEquals(self.player_1.show_changes(self.player_2), 'Species 0: [[food, 3->4], [body, 3->4]]\n,'
-                                                                     ' Species 1: [[population, 3->1], [body, 3->0]]\n,'
-                                                                     ' Species 2: [[population, 4->1], [food, 3->0],'
-                                                                     ' [body, 3->0]]\n')
+        self.assertEquals(self.player_1.show_changes(self.player_2), 'Species 0: [[food, 3->4], [body, 3->4]], '
+                                                                     'Species 1: Species removed, '
+                                                                     'Species 2: Species removed')
         self.player_2.food_bag = 3
         self.player_2.active = False
         self.assertEquals(self.player_1.show_changes(self.player_2),
                           '[food_bag, 0->3], '
-                          'Species 0: [[food, 3->4], [body, 3->4]]\n, '
-                          'Species 1: [[population, 3->1], [body, 3->0]]\n, '
-                          'Species 2: [[population, 4->1], [food, 3->0], [body, 3->0]]\n, '
+                          'Species 0: [[food, 3->4], [body, 3->4]], '
+                          'Species 1: Species removed, '
+                          'Species 2: Species removed, '
                           '[active, True->False]')
+        self.assertEquals(self.player_2.show_changes(self.player_1),
+                          "[food_bag, 3->0], "
+                          "Species 0: [[body, 4->3]], "
+                          "Species 1: New Species: [[food, 1], [body, 3], [population, 3], [traits, []]], "
+                          "Species 2: New Species: [[food, 3], [body, 3], [population, 4], [traits, []]], "
+                          "[active, False->True]")
 
 
 

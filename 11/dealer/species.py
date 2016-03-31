@@ -1,13 +1,6 @@
-import os
-import sys
-convert_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..%s" % os.sep)
-sys.path.append(convert_path)
 
-from convert import Convert
 from globals import *
 from traitcard import TraitCard
-
-
 
 
 class Species(object):
@@ -168,12 +161,27 @@ class Species(object):
         if self.fat_storage is not False:
             assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
 
+    def species_to_json(self):
+        """
+        Converts a Species object into a JSON Species+. Does not render empty fat-food.
+        :param species_obj: a Species object
+        :return: a JSON Species+ as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
+        """
+        json_traits = [trait.trait_to_json() for trait in self.traits]
+        json_species_template = '[[%s, %d], [%s, %d], [%s, %d], [%s, %s]]'
+        json_species = json_species_template % (FOOD, self.food, BODY, self.body, POPULATION,
+                                                self.population, TRAITS, json_traits)
+        if self.fat_storage:
+            json_species[:-1] += '[%s, %d]]' % (FATFOOD, self.fat_storage)
+        return json_species
+
     @classmethod
     def show_all_changes(cls, before_species, after_species):
         changes = []
         for i in range(max(len(before_species), len(after_species))):
             if i >= len(before_species):
-                species_change = "New Species: %s" % Convert.species_to_json(after_species[i])
+                species_change = "New Species: %s" % after_species[i].species_to_json()
             elif i >= len(after_species):
                 species_change = "Species removed"
             else:
