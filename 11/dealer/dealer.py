@@ -227,6 +227,39 @@ class Dealer(object):
         assert(isinstance(self.deck, list) and LOC_MAX >= len(self.deck))
         TraitCard.validate_all_attributes(self.deck)
 
+    def show_changes(self, dealer2):
+        """
+        Shows a string representation of the differences between this Dealer and the given Dealer.
+        :param dealer2: The Dealer we are comparing to this Dealer
+        :return: String
+        """
+        changes = ''
+        old_players = self.players_to_dict()
+        new_players = dealer2.players_to_dict()
+        for i in range(0, self.list_of_players):
+            name = self.list_of_players[i].name
+            old_player = old_players.get(name)
+            new_player = new_players.get(name)
+            if not old_player.eqaul_attributes(new_player):
+                changes += 'player ' + name + ':' + old_player.show_changes(new_player) + ','
+        if self.watering_hole != dealer2.watering_hole:
+            changes += CHANGE_TEMPLATE % ('watering_hole', self.watering_hole, dealer2.watering_hole)
+        deck_changes = TraitCard.show_all_changes(self.deck, dealer2.deck)
+        if deck_changes:
+            changes += 'deck :' + deck_changes
+
+
+
+    def players_to_dict(self):
+        """
+        Returns a dictionary of player ID's with their player state.
+        :return: Dictionary {Nat: Player State, .... }
+        """
+        result = {}
+        for player in self.list_of_players:
+            result[player.name] = player
+        return result
+
 
 # ======================================   GUI Methods ===========================================
 

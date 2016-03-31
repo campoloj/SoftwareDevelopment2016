@@ -159,3 +159,22 @@ class Species(object):
         TraitCard.validate_all_attributes(self.traits)
         if self.fat_storage is not False:
             assert(isinstance(self.body, int) and self.body >= self.fat_storage >= MIN_FATFOOD)
+
+    def show_changes(self, species2):
+
+        changes = ''
+        if self.population != species2.population:
+            changes += CHANGE_TEMPLATE % (POPULATION, self.population, species2.population)
+        if self.food != species2.population:
+            changes += CHANGE_TEMPLATE % (FOOD, self.food, species2.food)
+        if self.body != species2.population:
+            changes += CHANGE_TEMPLATE % (BODY, self.body, species2.body)
+        trait_changes = TraitCard.show_all_changes(self.traits, species2.traits)
+        if trait_changes:
+            changes += 'traits: ' + trait_changes
+        if self.fat_storage != species2.fat_storage:
+            changes += CHANGE_TEMPLATE % (FATTISSUE, self.fat_storage, species2.fat_storage)
+        return changes
+
+
+
