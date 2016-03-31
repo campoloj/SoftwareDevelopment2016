@@ -1,6 +1,7 @@
 import unittest
 import copy
 from action import *
+from action4 import Action4
 from traitcard import TraitCard
 from species import Species
 from player_state import PlayerState
@@ -59,6 +60,10 @@ class TestActions(unittest.TestCase):
         self.replace_trait_action2 = ReplaceTraitAction(2, 0, 1)
         self.replace_trait_action3 = ReplaceTraitAction(0, 2, 0)
 
+        # Action4
+        self.action4_1 = Action4(self.player1, [self.food_card_action1])
+        self.action4_2 = Action4(self.player2, [self.food_card_action2, self.grow_action_pop])
+
     def test_food_card_action(self):
         old_dealer = copy.deepcopy(self.dealer1)
         self.food_card_action1.apply(self.dealer1, self.player1)
@@ -108,6 +113,21 @@ class TestActions(unittest.TestCase):
         self.assertEquals(old_dealer.show_changes(self.dealer1),
                           'Player 3:'
                           'Species 0: [[traits: [2, [scavenger, 2]->[burrowing, 2]]]]')
+
+    def test_action4_apply_all(self):
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.action4_1.apply_all(self.dealer1)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 1:'
+                             'removed cards: [fat-tissue, 4], '
+                          '[watering_hole, 10->14]')
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.action4_2.apply_all(self.dealer1)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 2:'
+                             'removed cards: [fat-tissue, 4], [carnivore, 3], '
+                             'Species 0: [[population, 3->4]], '
+                          '[watering_hole, 14->17]' )
 
 
 
