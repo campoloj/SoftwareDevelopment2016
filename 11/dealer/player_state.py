@@ -5,7 +5,6 @@ from traitcard import TraitCard
 from species import Species
 
 
-
 class PlayerState(object):
     """
     Represents data about the player that is kept track of by the dealer
@@ -193,6 +192,23 @@ class PlayerState(object):
         TraitCard.validate_all_attributes(self.hand)
         assert(isinstance(self.species, list))
         Species.validate_all_attributes(self.species)
+
+    def show_changes(self, other_player):
+        """
+        Creates a string representation of the changed attributes between a PlayerState before and after
+        an imperative function is called on it.
+        :param other_player: The PlayerState after it has been modified
+        :return: String of attribute changes, or "" if unchanged.
+        """
+        """
+        changes = ""
+        if self.name != other_player.name:
+            changes += CHANGE_TEMPLATE % ("name", str(self.name), str(other_player.name))
+        if self.food_bag != other_player.food_bag:
+            changes += CHANGE_TEMPLATE % ("food_bag", str(self.food_bag), str(other_player.food_bag))
+        hand =
+        """
+        pass
 
     def display(self):
         """
