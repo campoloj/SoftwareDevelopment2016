@@ -54,6 +54,10 @@ class TestActions(unittest.TestCase):
         self.grow_action_pop = GrowAction(POPULATION, 0, 0)
         self.grow_action_body = GrowAction(BODY, 1, 1)
         self.add_species_action1 = AddSpeciesAction(0, [1])
+        self.add_species_action2 = AddSpeciesAction(0, [])
+        self.replace_trait_action1 = ReplaceTraitAction(0, 0, 0)
+        self.replace_trait_action2 = ReplaceTraitAction(2, 0, 1)
+        self.replace_trait_action3 = ReplaceTraitAction(0, 2, 0)
 
     def test_food_card_action(self):
         old_dealer = copy.deepcopy(self.dealer1)
@@ -82,6 +86,30 @@ class TestActions(unittest.TestCase):
                           "Player 2:"
                           "Species 3: New Species: [[food, 0], [body, 0], [population, 1], "
                                                    "[traits, [[carnivore, 3]]]]")
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.add_species_action2.apply(self.dealer1, self.player3)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 3:'
+                          'Species 2: New Species: [[food, 0], [body, 0], [population, 1], [traits, []]]')
+
+    def test_replace_trait_action(self):
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.replace_trait_action1.apply(self.dealer1, self.player1)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 1:'
+                          'Species 0: [[traits: [0, [cooperation, 1]->[fat-tissue, 4]]]]')
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.replace_trait_action2.apply(self.dealer1, self.player2)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 2:'
+                          'Species 2: [[traits: [0, [foraging, 2]->[carnivore, 3]]]]')
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.replace_trait_action3.apply(self.dealer1, self.player3)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 3:'
+                          'Species 0: [[traits: [2, [scavenger, 2]->[burrowing, 2]]]]')
+
+
 
 
 
