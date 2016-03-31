@@ -200,15 +200,14 @@ class PlayerState(object):
         :param other_player: The PlayerState after it has been modified
         :return: String of attribute changes, or "" if unchanged.
         """
-        """
-        changes = ""
+        changes = []
         if self.name != other_player.name:
             changes += CHANGE_TEMPLATE % ("name", str(self.name), str(other_player.name))
         if self.food_bag != other_player.food_bag:
             changes += CHANGE_TEMPLATE % ("food_bag", str(self.food_bag), str(other_player.food_bag))
-        hand =
-        """
-        pass
+        changes += "hand: %s" % TraitCard.show_all_changes(self.hand, other_player.hand)
+        if self.active != other_player.active:
+            changes +=
 
     def display(self):
         """

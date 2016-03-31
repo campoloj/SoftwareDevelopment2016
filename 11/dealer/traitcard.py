@@ -85,4 +85,4 @@ class TraitCard(object):
                 if before != after:
                     changed_cards.append(CHANGE_TEMPLATE % (str(i), CARD_TEMPLATE % (before.trait, before.food_value),
                                                             CARD_TEMPLATE % (after.trait, after.food_value)))
-            return "changed cards: %s" % ", ".join(changed_cards)
+            return ", ".join(changed_cards) if changed_cards else ""
