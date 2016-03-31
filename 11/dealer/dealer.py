@@ -73,8 +73,8 @@ class Dealer(object):
         Execute a round of feeding and applying the actions
         :param action4_list: The list of actions to apply to the corresponding indicies of players
         """
-        for action4 in action4_list:
-            action4.apply_all(self)
+        for i in range(len(action4_list)):
+            action4_list[i].apply_all(self, self.list_of_players[i])
 
         self.foodcard_reveal()
 
@@ -94,7 +94,7 @@ class Dealer(object):
                 feeding_choice = Player.next_feeding(player, self.watering_hole, other_players)
 
             feeding_choice.handle_feeding(self, player)
-        self.list_of_players.append(self.list_of_players.pop())
+        self.list_of_players.append(self.list_of_players.pop(0))
 
     def public_players(self, feeding_player):
         """
