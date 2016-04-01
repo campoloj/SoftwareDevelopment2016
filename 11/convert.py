@@ -39,6 +39,7 @@ class Convert(object):
                  http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
         """
         dealer.validate_attributes()
+
         json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
         json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
         return [json_players, dealer.watering_hole, json_deck]

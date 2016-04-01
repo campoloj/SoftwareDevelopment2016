@@ -73,6 +73,7 @@ class Dealer(object):
         Execute a round of feeding and applying the actions
         :param action4_list: The list of actions to apply to the corresponding indicies of players
         """
+        first_player_id = self.list_of_players[0].name
         for i in range(len(action4_list)):
             action4_list[i].apply_all(self, self.list_of_players[i])
 
@@ -80,6 +81,16 @@ class Dealer(object):
 
         while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
             self.feed1()
+
+        self.order_players(first_player_id)
+
+    def order_players(self, first_player_id):
+        """
+        :effect Reorders the players based on the given first_player_id
+        :param first_player_id: The name of the Player State that should be first in the list
+        """
+        while self.list_of_players[0].name is not first_player_id:
+            self.list_of_players.append(self.list_of_players.pop(0))
 
     def feed1(self):
         """

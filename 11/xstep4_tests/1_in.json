@@ -5,13 +5,13 @@
       ["species",
         [
           [
-            ["food", 1],
+            ["food", 0],
             ["body", 2],
             ["population", 3],
             ["traits", ["carnivore"]]
           ],
           [
-            ["food", 1],
+            ["food", 0],
             ["body", 3],
             ["population", 1],
             ["traits", ["long-neck"]]
@@ -27,7 +27,7 @@
       ["species",
         [
           [
-            ["food", 2],
+            ["food", 0],
             ["body", 3],
             ["population", 2],
             ["traits", ["burrowing"]]
@@ -51,7 +51,7 @@
     ]
   ],
   10,
-  []
+  [[3, "cooperation"],[2, "horns"]]
 ],
 [[0,[],[["body", 0, 1]],[],[]],
   [0,[["population", 0, 1]],[],[],[]],
