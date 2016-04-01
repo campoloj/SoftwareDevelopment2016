@@ -76,6 +76,7 @@ class Dealer(object):
         first_player_id = self.list_of_players[0].name
         for i in range(len(action4_list)):
             action4_list[i].apply_all(self, self.list_of_players[i])
+        self.validate_attributes()
 
         self.foodcard_reveal()
 
