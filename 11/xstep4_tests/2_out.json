@@ -1,0 +1,52 @@
+[
+  [
+    [
+      ["id", 1],
+      ["species",
+        [
+          [
+            ["food", 0],
+            ["body", 2],
+            ["population", 3],
+            ["traits", ["carnivore"]]
+          ],
+          [
+            ["food", 0],
+            ["body", 3],
+            ["population", 1],
+            ["traits", ["long-neck"]]
+          ]
+        ]
+      ],
+      ["bag", 3],
+      ["cards",[[1, "long-neck"]]
+      ]],
+    [
+      ["id", 2],
+      ["species",
+        [
+          [
+            ["food", 0],
+            ["body", 3],
+            ["population", 2],
+            ["traits", ["burrowing"]]
+          ]
+        ]
+      ],
+      ["bag", 4],
+      ["cards",[[1, "long-neck"]]
+      ]
+    ],
+    [
+      ["id", 3],
+      ["species",
+        []
+      ],
+      ["bag", 5],
+      ["cards",[[1, "fertile"]]
+      ]
+    ]
+  ],
+  0,
+  [[3, "cooperation"],[2, "horns"]]
+]
