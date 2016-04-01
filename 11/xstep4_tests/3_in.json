@@ -1,0 +1,71 @@
+[[
+  [
+    [
+      ["id", 1],
+      ["species",
+        [
+          [
+            ["food", 0],
+            ["body", 5],
+            ["population", 1],
+            ["traits", ["carnivore"]]
+          ],
+          [
+            ["food", 0],
+            ["body", 4],
+            ["population", 4],
+            ["traits", ["long-neck", "foraging"]]
+          ]
+        ]
+      ],
+      ["bag", 3],
+      ["cards",
+        [[2, "carnivore"],
+          [1, "long-neck"]
+        ]
+      ]
+    ],
+    [
+      ["id", 2],
+      ["species",
+        [
+          [
+            ["food", 0],
+            ["body", 3],
+            ["population", 3],
+            ["traits", ["horns"]]
+          ]
+        ]
+      ],
+      ["bag", 4],
+      ["cards", [[2, "carnivore"],
+                 [1, "long-neck"]]
+      ]
+    ],
+    [
+      ["id", 3],
+      ["species",
+        [
+          [
+            ["food", 0],
+            ["body", 2],
+            ["population", 1],
+            ["traits", ["scavenger", "horns"]]
+          ]
+        ]
+      ],
+      ["bag", 5],
+      ["cards",[[-1, "scavenger"],
+                [1, "fertile"],
+                [2, "fertile"]
+               ]
+      ]
+    ]
+  ],
+  10,
+  [[3, "cooperation"],[2, "horns"]]
+],
+[[1,[],[],[],[]],
+  [1,[],[],[],[]],
+ [2,[],[],[],[]]]
+]
