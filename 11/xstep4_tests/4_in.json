@@ -19,7 +19,7 @@
         ]
       ],
       ["bag", 3],
-      ["cards",[[2, "carnivore"],
+      ["cards",[[4, "carnivore"],
                 [1, "long-neck"]]
       ]
     ],
@@ -37,7 +37,7 @@
       ],
       ["bag", 4],
       ["cards", [[2, "carnivore"],
-                 [1, "long-neck"]]
+                 [2, "long-neck"]]
       ]
     ],
     [

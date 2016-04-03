@@ -34,7 +34,7 @@ class Action4(object):
         assert(len(hand_indices) <= len(player.hand))
         assert(len(set(hand_indices)) == len(hand_indices))
         for index in hand_indices:
-            assert(0 <= index < len(hand_indices))
+            assert(0 <= index < len(player.hand))
 
     def requested_hand_indices(self):
         """
