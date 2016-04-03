@@ -24,8 +24,7 @@ def main():
         dealer.step4(action4_list)
         json_dealer = Convert.dealer_to_json(dealer)
         sys.stdout.write(json.dumps(json_dealer))
-    except Exception as exc:
-        print exc
+    except:
         sys.exit(0)
 
 
