@@ -15,13 +15,10 @@ class Action(object):
         """
         return NotImplemented
 
-    def requested_indices(self, list_attr):
+    def requested_hand_indices(self):
         """
-        Returns all the indices into the given list attribute as requested by the PlayerState for this Action
-        :param list_attr: One of:
-                            - "hand"
-                            - "species"
-        :return: List of Nat representing indices into a specified list
+        Returns all the indices into the PlayerState's hand as requested by the player for this Action
+        :return: List of Nat representing indices into the hand
         """
         return NotImplemented
 
@@ -30,41 +27,38 @@ class FoodCardAction(Action):
     """
     Represents an action of submitting a TraitCard to be used as food on the watering hole.
     """
-    def __init__(self, trait_card_index):
+    def __init__(self, trade_card_index):
         """
         Creates a FoodCardAction
-        :param trait_card_index: Natural that represents the index in the players hand of the card to be placed.
+        :param trade_card_index: Natural that represents the index in the players hand of the card to be placed.
         :return: FoodCardAction
         """
         super(FoodCardAction, self).__init__()
-        self.trait_card_index = trait_card_index
+        self.trade_card_index = trade_card_index
 
     def apply(self, dealer, player):
         """
         :effect Adds the food value of the specified Trait Card to the watering hole
         :param dealer: Dealer being modified
         :param player: Player choosing this action
-        :return: List of Nat representing indecies of TraitCards that this PlayerState must discard
+        :return: List of Nat representing indices of TraitCards that this PlayerState must discard
         """
-        dealer.watering_hole += player.hand[self.trait_card_index].food_points
-        return [self.trait_card_index]
+        dealer.watering_hole += player.hand[self.trade_card_index].food_points
+        return self.requested_hand_indices()
 
-    def requested_indices(self, list_attr):
+    def requested_hand_indices(self):
         """
-        Returns all the indices into the given list attribute as requested by the PlayerState for this Action
-        :param list_attr: One of:
-                            - "hand"
-                            - "species"
-        :return: List of Nat representing indices into a specified list
+        Returns all the indices into the PlayerState's hand as requested by the player for this Action
+        :return: List of Nat representing indices into the hand
         """
-        return [self.trait_card_index] if list_attr == "hand" else []
+        return [self.trade_card_index]
 
 
 class GrowAction(Action):
     """
     Represents an action of growing the population of a species in the players hand.
     """
-    def __init__(self, attribute, species_board_index, trait_card_index):
+    def __init__(self, attribute, species_board_index, trade_card_index):
         """
         Creates a GrowPopAction
         :param attribute: One of:
@@ -72,13 +66,13 @@ class GrowAction(Action):
                             - "population"
         :param species_board_index: Natural that represents the index of the species board in the player's Species that
                                     the action is applied to.
-        :param trait_card_index: Natural that represents the index in the players hand of the card to be traded.
+        :param trade_card_index: Natural that represents the index in the players hand of the card to be traded.
         :return: GrowPopAction
         """
         super(GrowAction, self).__init__()
         self.attribute = attribute
         self.species_board_index = species_board_index
-        self.trade_card_index = trait_card_index
+        self.trade_card_index = trade_card_index
 
     def apply(self, dealer, player):
         """
@@ -88,17 +82,14 @@ class GrowAction(Action):
         :return: List of Nat representing indecies of TraitCards that this PlayerState must discard
         """
         player.grow_attribute(self)
-        return [self.trade_card_index]
+        return self.requested_hand_indices()
 
-    def requested_indices(self, list_attr):
+    def requested_hand_indices(self):
         """
-        Returns all the indices into the given list attribute as requested by the PlayerState for this Action
-        :param list_attr: One of:
-                            - "hand"
-                            - "species"
-        :return: List of Nat representing indices into a specified list
+        Returns all the indices into the PlayerState's hand as requested by the player for this Action
+        :return: List of Nat representing indices into the hand
         """
-        return [self.trade_card_index] if list_attr == "hand" else [self.species_board_index]
+        return [self.trade_card_index]
 
 
 class AddSpeciesAction(Action):
@@ -126,19 +117,16 @@ class AddSpeciesAction(Action):
         :return: List of Nat representing indices of TraitCards that this PlayerState must discard
         """
         player.add_species(self.add_card_list)
-        self.add_card_list.append(self.trade_card_index)
-        return self.add_card_list
+        return self.requested_hand_indices()
 
-    def requested_indices(self, list_attr):
+    def requested_hand_indices(self):
         """
-        Returns all the indices into the given list attribute as requested by the PlayerState for this Action
-        :param list_attr: One of:
-                            - "hand"
-                            - "species"
-        :return: List of Nat representing indices into a specified list
+        Returns all the indices into the PlayerState's hand as requested by the player for this Action
+        :return: List of Nat representing indices into the hand
         """
-        self.add_card_list.append(self.trade_card_index)
-        return self.add_card_list if list_attr == "hand" else []
+        hand_indices = [self.trade_card_index]
+        hand_indices += self.add_card_list
+        return hand_indices
 
 
 class ReplaceTraitAction(Action):
@@ -166,14 +154,11 @@ class ReplaceTraitAction(Action):
         :return: List of Nat representing indecies of TraitCards that this PlayerState must discard
         """
         player.replace_trait(self)
-        return [self.replacement_card_index]
+        return self.requested_hand_indices()
 
-    def requested_indices(self, list_attr):
+    def requested_hand_indices(self):
         """
-        Returns all the indices into the given list attribute as requested by the PlayerState for this Action
-        :param list_attr: One of:
-                            - "hand"
-                            - "species"
-        :return: List of Nat representing indices into a specified list
+        Returns all the indices into the PlayerState's hand as requested by the player for this Action
+        :return: List of Nat representing indices into the hand
         """
-        return [self.replacement_card_index] if list_attr == "hand" else [self.species_board_index]
+        return [self.replacement_card_index]
