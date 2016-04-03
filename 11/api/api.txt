@@ -1,0 +1,7 @@
+Start: See Start.png for interaction diagram of the start of a game.
+- game_state = a JSON representation of the information of the game that is public to the player receiving it. Consists
+               of watering_hole, their full player_state, the public instances of the other player states.
+
+Turn: See Turn.png for interaction diagram of a turn.
+
+End: See End.png for interaction diagram of the end of a game.
