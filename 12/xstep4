@@ -1,0 +1,29 @@
+#! /usr/bin/env python
+
+"""
+A test harness for the Dealer feed1 method
+"""
+
+import json
+import sys
+
+from convert import Convert
+
+
+def main():
+    json_array = json.loads(sys.stdin.read())
+    try:
+        json_config = json_array[0]
+        json_step4 = json_array[1]
+        action4_list = Convert.json_to_step4(json_step4)
+        dealer = Convert.json_to_dealer(json_config)
+        dealer.validate_cards()
+        dealer.step4(action4_list)
+        json_dealer = Convert.dealer_to_json(dealer)
+        sys.stdout.write(json.dumps(json_dealer))
+    except:
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
