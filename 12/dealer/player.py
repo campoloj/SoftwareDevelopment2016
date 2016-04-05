@@ -26,17 +26,20 @@ class Player(object):
         """
         hand = self.player_state.hand
         cards_in_order = sorted(hand, key=lambda card: (card.trait, card.food_points))
-        actions = [FoodCardAction(hand.index(cards_in_order[0])),
-                   AddSpeciesAction(hand.index(cards_in_order[1]), hand.index(cards_in_order[2]))]
+        food_action = FoodCardAction(hand.index(cards_in_order[0]))
+        add_species_actions = [AddSpeciesAction(hand.index(cards_in_order[1]), [hand.index(cards_in_order[2])])]
+        grow_pop_actions = []
+        grow_body_actions = []
+        replace_trait_actions = []
         new_spec_index = len(self.player_state.species)
         if len(hand) > 3:
-            actions.append(GrowAction(POPULATION, new_spec_index, hand.index(cards_in_order[4])))
+            grow_pop_actions.append(GrowAction(POPULATION, new_spec_index, hand.index(cards_in_order[3])))
         if len(hand) > 4:
-            actions.append(GrowAction(BODY, new_spec_index, hand.index(cards_in_order[5])))
+            grow_body_actions.append(GrowAction(BODY, new_spec_index, hand.index(cards_in_order[4])))
         if len(hand) > 5:
-            actions.append(ReplaceTraitAction(new_spec_index, 0, hand.index(cards_in_order[6])))
+            replace_trait_actions.append(ReplaceTraitAction(new_spec_index, 0, hand.index(cards_in_order[5])))
 
-        return Action4(actions)
+        return Action4(food_action, grow_pop_actions, grow_body_actions, add_species_actions, replace_trait_actions)
 
     def next_feeding(self, updated_player, food_available, list_of_players):
         """
