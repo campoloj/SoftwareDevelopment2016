@@ -3,6 +3,7 @@ from globals import *
 from feeding_choice import HerbivoreFeeding, NoFeeding
 from traitcard import TraitCard
 from species import Species
+from copy import *
 
 
 class PlayerState(object):
@@ -12,7 +13,7 @@ class PlayerState(object):
     the dealer only sends the minimum amount of data needed for the player to make
     choices
     """
-    def __init__(self, name=0, food_bag=0, hand=False, species=False, active=True):
+    def __init__(self, name=0, food_bag=0, hand=False, species=False, active=True, ext_player=False):
         """
         Creates a PlayerState
         :param name: The players ID
@@ -20,6 +21,7 @@ class PlayerState(object):
         :param hand: A List of TraitCards the player has.
         :param species: A List of Species the player has.
         :param active: Boolean, True if the player is still feeding in the current round.
+        :param extplayer: the Player that this state represents and their strategy
         :return:
         """
         self.name = name
@@ -27,6 +29,7 @@ class PlayerState(object):
         self.hand = hand if hand else []
         self.species = species if species else []
         self.active = active
+        self.ext_player = ext_player
 
     def equal_attributes(self, other):
         """
@@ -41,6 +44,48 @@ class PlayerState(object):
                     self.food_bag == other.food_bag,
                     self.hand == other.hand,
                     species_equal])
+
+    def start(self, new_species, new_cards):
+        """
+        :effect Updates this state by adding the new species board if it exists and adding the new trait cards
+                to the hand. Then gives the new state to the external player.
+        :param new_species: the optional new_species to add to the board.
+        :param new_cards: the appropriate number of cards to add to the had
+        """
+        if new_species:
+            self.species.append(new_species)
+        self.hand += new_cards
+        state_copy = deepcopy(self)
+        self.ext_player.start(state_copy)
+
+    def choose(self, public_players):
+        """
+        :effect Splits the public players into left and right lists of this player_state and gives it to
+                their external player to make a action choice.
+        :param public_players: A list of all the players without their hand or food_bag.
+        :return: the ext_players Action4 for this turn
+        """
+        left_players = []
+        right_players = []
+        list_length = len(public_players)
+        for i in range(0, list_length):
+            if public_players[i].name is self.name:
+                if i + 1 != list_length:
+                    right_players = public_players[i + 1:]
+                if i != 0:
+                    left_players = public_players[:i]
+
+        return self.ext_player.choose(left_players, right_players)
+
+    def next_feeding(self, watering_hole, other_players):
+        """
+        :effect Returns the feeding of this player_state's external player
+        :param watering_hole: Nat the food on the watering_hole
+        :param other_players: List_of_players that have the food_bag and hand wiped out.
+        :return: Feeding_Choice that the external player chooses
+        """
+        state_copy = deepcopy(self)
+        return self.ext_player.next_feeding(state_copy, watering_hole, other_players)
 
     def attempt_auto_feed(self, list_of_players):
         """

@@ -1,95 +1,113 @@
 from feeding_choice import *
+from action import *
+from action4 import Action4
 
 
 class Player(object):
     """
     A data representation of a Player in the Evolution game
     """
-    def __init__(self):
-        pass
+    def __init__(self, player_state=False):
+        self.player_state = player_state
 
-    @classmethod
-    def next_feeding(cls, player, food_available, list_of_players):
+    def start(self, state):
+        """
+        :effect adds the given state to this players player_state
+        :param state: A copy of the current state of the playet
+        """
+        self.player_state = state
+
+    def choose(self, left_players, right_players):
+        """
+        Determines the actions the this player wants to perform for this turn.
+        :param left_players: the players to the left of this player.
+        :param right_players: the players to the right of this player.
+        :return: Action4 for the actions they want to perform
+        """
+        hand = self.player_state.hand
+        cards_in_order = sorted(hand, key=lambda card: (card.trait, card.food_points))
+        actions = [FoodCardAction(hand.index(cards_in_order[0])),
+                   AddSpeciesAction(hand.index(cards_in_order[1]), hand.index(cards_in_order[2]))]
+        new_spec_index = len(self.player_state.species)
+        if len(hand) > 3:
+            actions.append(GrowAction(POPULATION, new_spec_index, hand.index(cards_in_order[4])))
+        if len(hand) > 4:
+            actions.append(GrowAction(BODY, new_spec_index, hand.index(cards_in_order[5])))
+        if len(hand) > 5:
+            actions.append(ReplaceTraitAction(new_spec_index, 0, hand.index(cards_in_order[6])))
+
+        return Action4(actions)
+
+    def next_feeding(self, updated_player, food_available, list_of_players):
         """
         Determines a players next FeedingChoice
-        :param player: the PlayerState of the player who is feeding
+        :param updated_player: the PlayerState that needs to be updated for this player.
         :param food_available: the amount of food on the watering hole board
         :param list_of_players: the PlayerStates of other players in the game
         :return: FeedingChoice for the next species to feed
         """
-        hungry_fatties = player.get_needy_fats()
+        self.player_state = updated_player
+        hungry_fatties = self.player_state.get_needy_fats()
         if hungry_fatties:
-            return cls.feed_fatty(hungry_fatties, food_available, player)
+            return self.feed_fatty(hungry_fatties, food_available)
 
-        hungry_herbivores = player.get_hungry_species(carnivores=False)
+        hungry_herbivores = self.player_state.get_hungry_species(carnivores=False)
         if hungry_herbivores:
-            return cls.feed_herbivores(hungry_herbivores, player)
+            return self.feed_herbivores(hungry_herbivores)
 
-        hungry_carnivores = player.get_hungry_species(carnivores=True)
+        hungry_carnivores = self.player_state.get_hungry_species(carnivores=True)
         if hungry_carnivores:
-            return cls.feed_carnivore(hungry_carnivores, player, list_of_players)
+            return self.feed_carnivore(hungry_carnivores, list_of_players)
 
-    @classmethod
-    def feed_fatty(cls, fat_tissue_species, food_available, player):
+    def feed_fatty(self, fat_tissue_species, food_available):
         """
         Feeds a species with the fat-tissue trait
         :param fat_tissue_species: species with a fat-tissue trait
         :param food_available: food on the watering_hole_board
-        :param player: the current player state
         :return: list of [Species, Nat] where Species is the fat_tissue_species and Nat is the requested food
         """
-        fatty = cls.largest_fatty_need(fat_tissue_species)
+        fatty = self.largest_fatty_need(fat_tissue_species)
         food_needed = fatty.body - fatty.fat_storage
         food_requested = (food_needed if food_needed < food_available else food_available)
-        return FatFeeding(player.species.index(fatty), food_requested)
+        return FatFeeding(self.player_state.species.index(fatty), food_requested)
 
-    @classmethod
-    def feed_herbivores(cls, hungry_herbivores, player):
+    def feed_herbivores(self, hungry_herbivores):
         """
         Feeds a herbivore species
         :param hungry_herbivores: list of hungry herbivores
-        :param player: the current player state
         :return: the Species to feed
         """
-        herbivore = cls.sort_by_size(hungry_herbivores)[0]
-        return HerbivoreFeeding(player.species.index(herbivore))
+        herbivore = self.sort_by_size(hungry_herbivores)[0]
+        return HerbivoreFeeding(self.player_state.species.index(herbivore))
 
-    @classmethod
-    def feed_carnivore(cls, hungry_carnivores, player, list_of_player):
+    def feed_carnivore(self, hungry_carnivores, list_of_players):
         """
         Feeds the largest hungry carnivore
         :param hungry_carnivores: list of hungry carnivores
-        :param player: the current player state
-        :param list_of_player: list of all player states
+        :param list_of_players: list of all player states
         :return: One of:
                 [Carnivore, Defending Player, Defending Species] if there is a valid target in list_of_players' species
                 False, if no valid targets and Player chooses not to attack own Species
                 None, if no valid targets and is unable to attack own species
         """
-        sorted_carnivores = cls.sort_by_size(hungry_carnivores)
+        sorted_carnivores = self.sort_by_size(hungry_carnivores)
         for carnivore in sorted_carnivores:
-            targets = carnivore.all_attackable_species(list_of_player)
+            targets = carnivore.all_attackable_species(list_of_players)
             if targets:
-                return cls.attack_largest(carnivore, targets, player, list_of_player)
+                return self.attack_largest(carnivore, targets, list_of_players)
 
-        for carnivore in sorted_carnivores:
-            if carnivore.attackable_species(player):
-                return NoFeeding()
-
-    @classmethod
-    def attack_largest(cls, attacker, targets, player, list_of_player):
+    def attack_largest(self, attacker, targets, list_of_player):
         """
         Return a CarnivoreFeeding by attacking the largest species in the targets.
         :param attacker: The attacking species
         :param targets: The target species the attacker can attack
-        :param player: The player that is attacking
         :param list_of_player: The game's list of players
         :return:
         """
-        target = cls.sort_by_size(targets)[0]
+        target = self.sort_by_size(targets)[0]
         target_player = next(other_player for other_player in list_of_player if target in other_player.species and
-                             other_player is not player)
-        return CarnivoreFeeding(player.species.index(attacker),
+                             other_player is not self.player_state)
+        return CarnivoreFeeding(self.player_state.species.index(attacker),
                                 list_of_player.index(target_player),
                                 target_player.species.index(target))
 
