@@ -85,6 +85,37 @@ class Dealer(object):
             player.hand.append(self.deck.pop(0))
             amount -= 1
 
+# ======================================  Run Game Methods ==========================================
+
+    def run_turn(self):
+        """
+        Executes a complete Evolution turn and sets up the Player order for the next turn.
+        """
+        DEAL_AMOUNT + len(player.species)
+        self.step1()
+        action4_list = self.step2n3()
+        self.step4(action4_list)
+        self.end_turn()
+        self.list_of_players.append(self.list_of_players.pop(0))
+
+    def game_over(self):
+        """
+        Determines if the game is over because the deck has become too small to hand every player
+        the required number cards at the beginning of a turn
+        :return:
+        """
+        return DEAL_AMOUNT + len(player.species)
+
+    def end_turn(self):
+        """
+        Ends a turn in the game by updating species populations, removing extinct species, and dealing
+        cards to PlayerStates with extinct species
+        """
+        for player in self.list_of_players:
+            extinction_card_amount = player.end_turn()
+            self.deal_cards(player, extinction_card_amount)
+
+
 # ======================================  Step 1 Methods ============================================
 
     def step1(self):
@@ -132,11 +163,12 @@ class Dealer(object):
     def step4(self, action4_list):
         """
         Applies Action4s to the corresponding PlayerStates and executes the feeding cycle.
-        Also reorders the PlayerStates to prepare for the next turn.
-        :param action4_list: The list of actions to apply to the corresponding indicies of players
+        :param action4_list: The list of actions to apply to the corresponding indices of players
         """
         self.step4i(action4_list)
         self.feeding()
+
+# -----------------------------------   Action Methods --------------------------------------
 
     def step4i(self, action4_list):
         """
@@ -156,8 +188,20 @@ class Dealer(object):
         :effect Adds population to fertile Species and feeds long-neck Species after the food cards
                 on the watering hole have been revealed
         """
+        self.move_fat()
         self.modify_fertiles()
         self.feed_long_necks()
+
+    def move_fat(self):
+        """
+        :effect Moves fat food from fat-storage to food
+        """
+        for player in self.list_of_players:
+            for species in player.species:
+                if species.fat_storage:
+                    transfer = min(species.population, species.fat_storage)
+                    species.fat_storage -= transfer
+                    species.food += transfer
 
     def modify_fertiles(self):
         """
@@ -177,15 +221,18 @@ class Dealer(object):
                 if LONGNECK in species.trait_names():
                     self.feed_species(species, player)
 
+# -----------------------------------   Feed Cycle Methods --------------------------------------
+
     def feeding(self):
         """
         Executes a feeding cycle until the watering hole runs out or no Players can still feed
-        :effect: Updates PlayerStates based on auto-feedings or the Player's FeedingChoices
+        :effect: Updates PlayerStates based on auto-feedings or the Player's FeedingChoices.
+                 Reorders players to the original feeding order.
         """
-        next_player_id = self.list_of_players[1].name
+        first_player_id = self.list_of_players[0].name
         while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
             self.feed1()
-        self.order_players(next_player_id)
+        self.order_players(first_player_id)
 
     def feed1(self):
         """

@@ -109,6 +109,17 @@ class Species(object):
         self.population -= KILL_QUANTITY
         self.food = min(self.population, self.food)
 
+    def consolidate_food(self):
+        """
+        Reduces this Species's population based on its food and returns its food value for the PlayerState
+        :effect Population is reduced if necessary, food is reset to 0
+        :return: Natural representing food for the PlayerState's food bag
+        """
+        food = self.food
+        self.population = food
+        self.food = MIN_FOOD
+        return food
+
     def replace_trait(self, traitcard_index, replacement_card):
         """
         :effect Replaces the TraitCard at the specified index into this Species's traits with the given

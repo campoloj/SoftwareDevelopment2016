@@ -140,6 +140,29 @@ class PlayerState(object):
         else:
             return False
 
+    def end_turn(self):
+        """
+        Adjust species populations, remove extinct species, move food from species to food bag of this PlayerState
+        :return: Natural representing amount of cards to be dealt due to extinct species
+        """
+        for species in self.species:
+            self.food_bag += species.consolidate_food()
+        return self.remove_extinct()
+
+    def remove_extinct(self):
+        """
+        Removes extinct species from this PlayerState
+        :return: Natural representing amount of cards to be dealt due to extinct species
+        """
+        card_amount, survivors = 0, []
+        for species in self.species:
+            if species.population == 0:
+                card_amount += EXTINCTION_CARD_AMOUNT
+            else:
+                survivors.append(species)
+        self.species = survivors
+        return card_amount
+
 # ======================================  Species Methods ============================================
 
     def get_left_neighbor(self, species):
