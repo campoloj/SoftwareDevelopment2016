@@ -17,12 +17,12 @@
         ]
       ],
       ["bag", 3],
-      ["cards",[[4, "carnivore"],
-                [1, "long-neck"],
-                [2, "ambush"],
-                [0, "foraging"],
-                [-3, "cooperation"],
-                [-2, "horns"],
+      ["cards",[[3, "carnivore"],
+                [2, "carnivore"],
+                [1, "carnivore"],
+                [0, "long-neck"],
+                [-2, "carnivore"],
+                [-3, "carnivore"],
                 [-4, "carnivore"]]
       ]
     ],

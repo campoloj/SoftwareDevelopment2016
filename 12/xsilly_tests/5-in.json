@@ -17,13 +17,15 @@
         ]
       ],
       ["bag", 3],
-      ["cards",[[4, "carnivore"],
-                [1, "long-neck"],
-                [2, "ambush"],
-                [0, "foraging"],
-                [-3, "cooperation"],
-                [-2, "horns"],
-                [-4, "carnivore"]]
+      ["cards",[[0, "foraging"],
+                [0, "burrowing"],
+                [0, "cooperation"],
+                [0, "long-neck"],
+                [0, "carnivore"],
+                [0, "scavenger"],
+                [0, "climbing"],
+                [0, "horns"],
+                [0, "symbiosis"]]
       ]
     ],
   [

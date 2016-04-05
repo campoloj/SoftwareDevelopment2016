@@ -7,20 +7,11 @@
             ["body", 2],
             ["population", 3],
             ["traits", ["carnivore"]]
-          ],
-          [
-            ["food", 0],
-            ["body", 3],
-            ["population", 1],
-            ["traits", ["long-neck"]]
           ]
         ]
       ],
       ["bag", 3],
-      ["cards",[[4, "carnivore"],
-                [1, "long-neck"],
-                [2, "ambush"],
-                [0, "foraging"],
+      ["cards",[[0, "foraging"],
                 [-3, "cooperation"],
                 [-2, "horns"],
                 [-4, "carnivore"]]
