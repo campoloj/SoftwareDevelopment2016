@@ -1,8 +1,8 @@
 import gui
 
 from globals import *
-from player import Player
 from player_state import PlayerState
+from species import Species
 from traitcard import TraitCard
 
 
@@ -40,22 +40,30 @@ class Dealer(object):
 # ======================================  Utility Methods ===========================================
 
     @classmethod
-    def create_initial(cls, n):
+    def create_initial(cls, loxp):
         """
-        Creates an initial Dealer object with n PlayerStates representing the external Silly Player
+        Creates an initial Dealer object with PlayerStates for each of the given external Players
         and a complete, shuffled deck.
-        :param n: Natural between 3 and 8 representing the number of Players in the game
+        :param loxp: List of Player objects representing external players
         :return: Dealer object ready to begin a game.
         """
+        return Dealer(list_of_players=cls.make_playerstates(loxp), watering_hole=0, deck=cls.make_deck())
+
+    @classmethod
+    def make_playerstates(cls, loxp):
+        """
+        Creates a PlayerState for each of the given external Players
+        :return: List of PlayerState objects representing internal players
+        """
         lop = []
-        for x in range(1, n + 1):
-            lop.append(PlayerState(name=x))
-        return Dealer(list_of_players=lop, watering_hole=0, deck=cls.make_deck())
+        for x in range(len(loxp)):
+            lop.append(PlayerState(name=x + 1, ext_player=loxp[x]))
+        return lop
 
     @classmethod
     def make_deck(cls):
         """
-        Makes a full, shuffled deck of TraitCards
+        Makes a full, sorted deck of TraitCards
         :return: list of TraitCards
         """
         deck = []
@@ -77,59 +85,71 @@ class Dealer(object):
             player.hand.append(self.deck.pop(0))
             amount -= 1
 
+# ======================================  Step 1 Methods ============================================
 
-# ======================================   Feeding Methods ===========================================
+    def step1(self):
+        """
+        The dealer hands each external player the necessary pieces at the beginning of a turn:
+        a species board (if needed) and additional cards to play the turn.
+        :effect: Updates internal PlayerStates with additional TraitCards and possible Species
+        """
+        for player in self.list_of_players:
+            self.start(player)
+
+    def start(self, player):
+        """
+        Handles the start of a turn by dealing cards and a new Species (if necessary) to the given PlayerState
+        :param player: the PlayerState being dealt to
+        :effect: Updates given PlayerState with additional TraitCards and possible Species
+        """
+        new_cards = self.cards_to_deal(player)
+        opt_species = (False if player.species else Species())
+        player.start(opt_species, new_cards)
+
+    def cards_to_deal(self, player):
+        """
+        Gives the necessary amount of cards to deal to the given PlayerState at the beginning of the turn
+        and removes them from the deck.
+        :param player: the PlayerState being dealt to
+        :return: List of TraitCard
+        """
+        amount = DEAL_AMOUNT + len(player.species)
+        cards_to_deal = self.deck[:amount]
+        self.deck = self.deck[amount:]
+        return cards_to_deal
+
+# ======================================  Step 2/3 Methods ==========================================
+
+    def step2n3(self):
+        """
+        Gathers requests from each external Player of how they wish to use the cards in their hands
+        :return: List of Action4 corresponding to the current PlayerState order
+        """
+        return [player.choose(self.public_players(False)) for player in self.list_of_players]
+
+# ======================================  Step 4 Methods ============================================
 
     def step4(self, action4_list):
         """
-        Execute a round of feeding and applying the actions
+        Applies Action4s to the corresponding PlayerStates and executes the feeding cycle.
+        Also reorders the PlayerStates to prepare for the next turn.
         :param action4_list: The list of actions to apply to the corresponding indicies of players
         """
-        first_player_id = self.list_of_players[0].name
+        self.step4i(action4_list)
+        self.feeding()
+
+    def step4i(self, action4_list):
+        """
+        Applies each Action4 to the PlayerState of the Player who chose it. Handles resulting auto
+        feedings.
+        :param action4_list: List of Action4 corresponding to the current PlayerState order
+        :effect: Updates all PlayerStates based on the Actions they choose
+        """
         for i in range(len(action4_list)):
             action4_list[i].validate_hand(self.list_of_players[i])
             action4_list[i].apply_all(self, self.list_of_players[i])
         self.validate_attributes()
         self.foodcard_reveal()
-
-        while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
-            self.feed1()
-
-        self.order_players(first_player_id)
-
-    def order_players(self, first_player_id):
-        """
-        :effect Reorders the players based on the given first_player_id
-        :param first_player_id: The name of the Player State that should be first in the list
-        """
-        while self.list_of_players[0].name is not first_player_id:
-            self.list_of_players.append(self.list_of_players.pop(0))
-
-    def feed1(self):
-        """
-        This Dealer handles one step in the feeding cycle by modifying its configuration according to
-        an auto-feeding or the first player's FeedingChoice.
-        """
-        player = self.list_of_players[0]
-        if player.active:
-            feeding_choice = player.attempt_auto_feed(self.list_of_players)
-            if not feeding_choice:
-                other_players = self.public_players(feeding_player=player)
-                feeding_choice = Player.next_feeding(player, self.watering_hole, other_players)
-
-            feeding_choice.handle_feeding(self, player)
-        self.list_of_players.append(self.list_of_players.pop(0))
-
-    def public_players(self, feeding_player):
-        """
-        Creates a copy of this Dealer's list of players, excluding the specified feeding player, so that
-        the feeding player may choose which player to attack without having access to their private fields.
-        :param feeding_player: The PlayerState of the player feeding
-        :return: a list of public representations of PlayerStates
-        """
-        return [PlayerState(name=player.name, food_bag=False, hand=False, species=player.species)
-                for player in self.list_of_players
-                if player != feeding_player]
 
     def foodcard_reveal(self):
         """
@@ -156,6 +176,50 @@ class Dealer(object):
             for species in player.species:
                 if LONGNECK in species.trait_names():
                     self.feed_species(species, player)
+
+    def feeding(self):
+        """
+        Executes a feeding cycle until the watering hole runs out or no Players can still feed
+        :effect: Updates PlayerStates based on auto-feedings or the Player's FeedingChoices
+        """
+        next_player_id = self.list_of_players[1].name
+        while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
+            self.feed1()
+        self.order_players(next_player_id)
+
+    def feed1(self):
+        """
+        This Dealer handles one step in the feeding cycle by modifying its configuration according to
+        an auto-feeding or the first player's FeedingChoice.
+        """
+        player = self.list_of_players[0]
+        if player.active:
+            other_players = self.public_players(feeding_player=player)
+            feeding_choice = player.next_feeding(self.watering_hole, other_players)
+            feeding_choice.handle_feeding(self, player)
+        self.list_of_players.append(self.list_of_players.pop(0))
+
+    def public_players(self, feeding_player):
+        """
+        Creates a copy of this Dealer's list of players, excluding the specified feeding player, so that
+        the feeding player may choose which player to attack without having access to their private fields.
+        :param feeding_player: The PlayerState of the player feeding
+        :return: a list of public representations of PlayerStates
+        """
+        return [PlayerState(name=player.name, food_bag=False, hand=False, species=player.species)
+                for player in self.list_of_players
+                if player != feeding_player]
+
+    def order_players(self, first_player_id):
+        """
+        :effect Reorders the PlayerStates based on the given first_player_id
+        :param first_player_id: The name of the PlayerState that should be first in the list
+        """
+        while self.list_of_players[0].name is not first_player_id:
+            self.list_of_players.append(self.list_of_players.pop(0))
+
+
+# ======================================   Feeding Methods ==========================================
 
     def feed_species(self, species, player, allow_forage=True):
         """

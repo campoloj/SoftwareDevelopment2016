@@ -1,6 +1,6 @@
 import gui
 from globals import *
-from feeding_choice import HerbivoreFeeding, NoFeeding
+from feeding_choice import *
 from traitcard import TraitCard
 from species import Species
 from copy import *
@@ -45,6 +45,8 @@ class PlayerState(object):
                     self.hand == other.hand,
                     species_equal])
 
+# ======================================  Step 1 Methods ============================================
+
     def start(self, new_species, new_cards):
         """
         :effect Updates this state by adding the new species board if it exists and adding the new trait cards
@@ -57,6 +59,8 @@ class PlayerState(object):
         self.hand += new_cards
         state_copy = deepcopy(self)
         self.ext_player.start(state_copy)
+
+# ======================================  Step 2/3 Methods ==========================================
 
     def choose(self, public_players):
         """
@@ -77,6 +81,8 @@ class PlayerState(object):
 
         return self.ext_player.choose(left_players, right_players)
 
+# ======================================  Step 4 Methods ============================================
+
     def next_feeding(self, watering_hole, other_players):
         """
         :effect Returns the feeding of this player_state's external player
@@ -84,39 +90,57 @@ class PlayerState(object):
         :param other_players: List_of_players that have the food_bag and hand wiped out.
         :return: Feeding_Choice that the external player chooses
         """
-        state_copy = deepcopy(self)
-        return self.ext_player.next_feeding(state_copy, watering_hole, other_players)
+        feeding = self.attempt_auto_feed(watering_hole, other_players)
+        if not feeding:
+            state_copy = deepcopy(self)
+            feeding = self.ext_player.next_feeding(state_copy, watering_hole, other_players)
+        return feeding
 
-    def attempt_auto_feed(self, list_of_players):
+    def attempt_auto_feed(self, watering_hole, other_players):
         """
-        Automatically creates a FeedingChoice for this player if they have no needy fat-tissue species, no
-        carnivores that are able to attack, and only one vegetarian.
-        :param list_of_players: List of PlayerStates for all game players
+        Automatically creates a FeedingChoice for this player
+        It will automatically feed
+            -- a single species with a non-full fat-food trait card
+               (to the max possible)
+            -- a single vegetarian
+            -- a single carnivore that can attack only one species
+               from a different player (no self-attack is allowed).
+        :param other_players: List of PlayerStates for other, attackable Players
         :return: a FeedingChoice if player is able to be auto-fed, else False
         """
-        if self.get_needy_fats() or self.any_attackers(list_of_players):
-            return False
+        fatties = self.get_needy_fats()
+        herbivores = self.get_hungry_species(carnivores=False)
+        carnivores = self.get_hungry_species(carnivores=True)
+        if not fatties and not herbivores and not carnivores:
+            return NoFeeding()
+        elif len(fatties) == 1 and not herbivores and not carnivores:
+            return FatFeeding(self.species.index(fatties[0]), min(fatties[0].fat_storage, watering_hole))
+        elif not fatties and len(herbivores) == 1 and not carnivores:
+            return HerbivoreFeeding(self.species.index(herbivores[0]))
+        elif not fatties and not herbivores and len(carnivores) == 1:
+            return self.carnivore_auto_feeding(carnivores[0], other_players)
         else:
-            hungry_herbivores = self.get_hungry_species(carnivores=False)
-            if not hungry_herbivores:
-                return NoFeeding()
-            elif len(hungry_herbivores) == 1:
-                return HerbivoreFeeding(species_index=self.species.index(hungry_herbivores[0]))
-            else:
-                return False
+            return False
 
-    def any_attackers(self, list_of_players):
+    def carnivore_auto_feeding(self, carnivore, other_players):
         """
-        Determines if this player has any hungry carnivores able to attack another species,
-        implying that they must make a decision rather than be auto-fed.
-        :param list_of_players: List of PlayerState representing eligible targets for an attack
-        :return: True if the Player has a carnivore able to attack, else False
+        Determines the auto-feeding for this PlayerState's single carnivore, if possible
+        :param carnivore: Species with carnivore trait attempting to auto-feed
+        :param other_players: List of PlayerStates for other, attackable Players
+        :return: a FeedingChoice if Carnivore an auto-feed, else False
         """
-        hungry_carnivores = self.get_hungry_species(carnivores=True)
-        for attacker in hungry_carnivores:
-            if attacker.all_attackable_species(list_of_players):
-                return True
-        return False
+        targets = carnivore.all_attackable_species(other_players)
+        if not targets:
+            return NoFeeding()
+        elif len(targets) == 1:
+            def_player = next(player for player in other_players if targets[0] in player.species)
+            return CarnivoreFeeding(self.species.index(carnivore),
+                                    other_players.index(def_player),
+                                    def_player.species.index(targets[0]))
+        else:
+            return False
+
+# ======================================  Species Methods ============================================
 
     def get_left_neighbor(self, species):
         """
@@ -156,6 +180,8 @@ class PlayerState(object):
                 if FATTISSUE in species.trait_names() and
                 species.fat_storage < species.body]
 
+# ======================================  Action Methods ============================================
+
     def grow_attribute(self, grow_action):
         """
         :effect Grow the specified attribute in the given GrowAction and removes the card from the players hand.
@@ -194,6 +220,8 @@ class PlayerState(object):
         for i in remove_card_list:
             self.hand[i] = False
         self.hand = [card for card in self.hand if card]
+
+# ====================================  Validation Methods ==========================================
 
     @classmethod
     def validate_all_cards(cls, list_of_players, total_deck):

@@ -1,4 +1,5 @@
 import sys
+from player import Player
 from dealer.dealer import Dealer
 
 
@@ -9,10 +10,10 @@ def main(n):
     :param n: Natural between 3 and 8 representing the number of Players in the Evolution game
     :effect: Displays the results of the game on stdout
     """
-    dealer = Dealer.create_initial(n)
+    loxp = [Player() for x in xrange(n)]
+    dealer = Dealer.create_initial(loxp)
     results = dealer.run_game()
     print results
-
 
 if __name__ == "__main__":
     main(sys.argv[1])
