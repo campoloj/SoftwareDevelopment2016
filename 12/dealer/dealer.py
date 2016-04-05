@@ -1,4 +1,3 @@
-import random
 import gui
 
 from globals import *
@@ -41,6 +40,19 @@ class Dealer(object):
 # ======================================  Utility Methods ===========================================
 
     @classmethod
+    def create_initial(cls, n):
+        """
+        Creates an initial Dealer object with n PlayerStates representing the external Silly Player
+        and a complete, shuffled deck.
+        :param n: Natural between 3 and 8 representing the number of Players in the game
+        :return: Dealer object ready to begin a game.
+        """
+        lop = []
+        for x in range(1, n + 1):
+            lop.append(PlayerState(name=x))
+        return Dealer(list_of_players=lop, watering_hole=0, deck=cls.make_deck())
+
+    @classmethod
     def make_deck(cls):
         """
         Makes a full, shuffled deck of TraitCards
@@ -51,7 +63,7 @@ class Dealer(object):
             food_range = (CARN_FOOD_MAX if trait == CARNIVORE else HERB_FOOD_MAX)
             for food_val in range(-food_range, food_range + 1):
                 deck.append(TraitCard(trait, food_val))
-        random.shuffle(deck)
+        deck = sorted(deck, key=lambda card: (card.trait, card.food_points))
         return deck
 
     def deal_cards(self, player, amount):
