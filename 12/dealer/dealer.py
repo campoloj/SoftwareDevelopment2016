@@ -170,11 +170,12 @@ class Dealer(object):
     def cards_to_deal(self, player):
         """
         Gives the necessary amount of cards to deal to the given PlayerState at the beginning of the turn
-        and removes them from the deck.
+        and removes them from the deck. Accounts for Players with no Species getting a new Species
+        at the beginning of the turn.
         :param player: the PlayerState being dealt to
         :return: List of TraitCard
         """
-        amount = DEAL_AMOUNT + len(player.species)
+        amount = DEAL_AMOUNT + max(1, len(player.species))
         cards_to_deal = self.deck[:amount]
         self.deck = self.deck[amount:]
         return cards_to_deal
