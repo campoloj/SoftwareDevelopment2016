@@ -92,7 +92,7 @@ class Dealer(object):
         Runs a complete game of Evolution
         :return: String representation of Player scores
         """
-        while not self.game_over():
+        while not self.game_over() and len(self.list_of_players) >= LOP_MIN:
             self.run_turn()
 
         return self.scoreboard()
@@ -103,20 +103,19 @@ class Dealer(object):
         the required number cards at the beginning of a turn
         :return: True if game is over, else False
         """
-        cards_to_deal = 0
-        for player in self.list_of_players:
-            cards_to_deal += DEAL_AMOUNT + len(player.species)
+        cards_to_deal = sum([player.deal_amount() for player in self.list_of_players])
         return len(self.deck) < cards_to_deal
 
     def run_turn(self):
         """
         Executes a complete Evolution turn and sets up the Player order for the next turn.
         """
+        next_player_id = self.list_of_players[1].name
         self.step1()
         action4_list = self.step2n3()
         self.step4(action4_list)
         self.end_turn()
-        self.list_of_players.append(self.list_of_players.pop(0))
+        self.order_players(next_player_id)
 
     def end_turn(self):
         """
@@ -135,10 +134,24 @@ class Dealer(object):
             3 player id: 2 score: 16
         :return: String representation of a scoreboard according to the above example.
         """
-        player_scores = []
-        for player in self.list_of_players:
-            player_scores.append((player.name, player.get_score()))
-        player_scores = sorted(player_scores, key=lambda player_score: player_score[1], reverse=True)
+        player_scores = self.compute_scores()
+        return self.render_scoreboard(player_scores)
+
+    def compute_scores(self):
+        """
+        Maps the ID of each Player in the game to their score and orders them based on descending score order
+        :return: List of (Natural, Natural) representing ordered (Player ID, score) tuples
+        """
+        player_scores = [(player.name, player.get_score()) for player in self.list_of_players]
+        return sorted(player_scores, key=lambda player_score: player_score[1], reverse=True)
+
+    @classmethod
+    def render_scoreboard(cls, player_scores):
+        """
+        Renders Player IDs and scores according to the specified scoreboard format
+        :param player_scores: List of (Natural, Natural) representing ordered (Player ID, score) tuples
+        :return: String representation of a scoreboard
+        """
         scoreboard = []
         for i in range(0, len(player_scores)):
             ps = player_scores[i]
@@ -175,7 +188,7 @@ class Dealer(object):
         :param player: the PlayerState being dealt to
         :return: List of TraitCard
         """
-        amount = DEAL_AMOUNT + max(1, len(player.species))
+        amount = player.deal_amount()
         cards_to_deal = self.deck[:amount]
         self.deck = self.deck[amount:]
         return cards_to_deal
@@ -208,10 +221,16 @@ class Dealer(object):
         :param action4_list: List of Action4 corresponding to the current PlayerState order
         :effect: Updates all PlayerStates based on the Actions they choose
         """
+        cheater_ids = []
         for i in range(len(action4_list)):
-            action4_list[i].validate_hand(self.list_of_players[i])
-            action4_list[i].apply_all(self, self.list_of_players[i])
-        self.validate_attributes()
+            try:
+                player = self.list_of_players[i]
+                action4_list[i].validate_hand(player)
+                action4_list[i].apply_all(self, player)
+                self.validate_attributes()
+            except:
+                cheater_ids.append(player.name)
+        self.list_of_players = [player for player in self.list_of_players if player.name not in cheater_ids]
         self.foodcard_reveal()
 
     def foodcard_reveal(self):
@@ -274,7 +293,11 @@ class Dealer(object):
         if player.active:
             other_players = self.public_players(feeding_player=player)
             feeding_choice = player.next_feeding(self.watering_hole, other_players)
-            feeding_choice.handle_feeding(self, player)
+            try:
+                feeding_choice.handle_feeding(self, player)
+            except:
+                self.list_of_players.pop(0)
+                return
         self.list_of_players.append(self.list_of_players.pop(0))
 
     def public_players(self, feeding_player):
@@ -290,9 +313,14 @@ class Dealer(object):
 
     def order_players(self, first_player_id):
         """
-        :effect Reorders the PlayerStates based on the given first_player_id
+        :effect Reorders the PlayerStates based on the given first_player_id. If that Player has been
+                removed due to cheating, will reorder based on the next Player in the order
         :param first_player_id: The name of the PlayerState that should be first in the list
         """
+        if not self.list_of_players:
+            return
+        if first_player_id not in [player.name for player in self.list_of_players]:
+            self.order_players(first_player_id + 1 % len(self.list_of_players))
         while self.list_of_players[0].name is not first_player_id:
             self.list_of_players.append(self.list_of_players.pop(0))
 
@@ -407,12 +435,12 @@ class Dealer(object):
             old_player = old_players.get(name)
             new_player = new_players.get(name)
             if not old_player.equal_attributes(new_player):
-                changes.append('Player ' + str(name) + ':' + old_player.show_changes(new_player))
+                changes.append('Player ' + str(name) + ': ' + old_player.show_changes(new_player))
         if self.watering_hole != dealer2.watering_hole:
             changes.append(CHANGE_TEMPLATE % ('watering_hole', self.watering_hole, dealer2.watering_hole))
         deck_changes = TraitCard.show_all_changes(self.deck, dealer2.deck)
         if deck_changes:
-            changes.append('deck :' + deck_changes)
+            changes.append('deck: ' + deck_changes)
         return ", ".join(changes)
 
 

@@ -1,4 +1,5 @@
 import unittest
+from player import Player
 from species import Species
 from traitcard import TraitCard
 from player_state import PlayerState
@@ -35,9 +36,9 @@ class TestDealer(unittest.TestCase):
         self.player3_species = [self.species6, self.species7]
 
         # Players (Name, Bag, Hand, Species)
-        self.player1 = PlayerState(1, 0, [self.horns, self.foraging], self.player1_species)
-        self.player2 = PlayerState(2, 3, [self.carnivore, self.fattissue], self.player2_species)
-        self.player3 = PlayerState(3, 6, [self.burrowing], self.player3_species)
+        self.player1 = PlayerState(1, 0, [self.horns, self.foraging], self.player1_species, ext_player=Player())
+        self.player2 = PlayerState(2, 3, [self.carnivore, self.fattissue], self.player2_species, ext_player=Player())
+        self.player3 = PlayerState(3, 6, [self.burrowing], self.player3_species, ext_player=Player())
 
         self.public_player1 = PlayerState(1, False, False, self.player1_species)
         self.public_player2 = PlayerState(2, False, False, self.player2_species)
@@ -49,9 +50,9 @@ class TestDealer(unittest.TestCase):
         self.dealer1 = Dealer(self.list_of_players, 10, [])
 
         # Action
-        self.action4_1 = Action4([FoodCardAction(1), GrowAction(POPULATION, 0, 0)])
-        self.action4_2 = Action4([FoodCardAction(0), ReplaceTraitAction(1, 0, 1)])
-        self.action4_3 = Action4([AddSpeciesAction(0, [])])
+        self.action4_1 = Action4(FoodCardAction(1), [GrowAction(POPULATION, 0, 0)], [], [], [])
+        self.action4_2 = Action4(FoodCardAction(0), [], [], [], [ReplaceTraitAction(1, 0, 1)])
+        self.action4_3 = Action4(FoodCardAction(0), [], [], [], [])
         self.action4_list = [self.action4_1, self.action4_2, self.action4_3]
 
     def test_make_deck(self):
@@ -74,14 +75,14 @@ class TestDealer(unittest.TestCase):
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.step4(self.action4_list)
         self.assertEqual(old_dealer.show_changes(self.dealer1),
-                         'Player 1:removed cards: [horns, 0], [foraging, 2], '
+                         'Player 1: removed cards: [horns, 0], [foraging, 2], '
                          'Species 0: [[population, 1->2], [food, 0->2]], '
-                         'Species 1: [[food, 2->3]], '
-                         'Player 2:removed cards: [carnivore, 3], [fat-tissue, 2], '
+                         'Species 1: [[food, 2->4]], '
+                         'Player 2: removed cards: [carnivore, 3], [fat-tissue, 2], '
+                         'Species 0: [[fat-tissue, 0->1]], '
                          'Species 1: [[traits: [0, [burrowing, 2]->[fat-tissue, 2]]], [fat-tissue, False->5]], '
-                         'Player 3:removed cards: [burrowing, 2], '
+                         'Player 3: removed cards: [burrowing, 2], '
                          'Species 0: [[fat-tissue, 0->7]], '
-                         'Species 2: New Species: [[food, 0], [body, 0], [population, 1], [traits, []]], '
                          '[watering_hole, 10->0]')
 
     # TODO deal with order being rearranged
@@ -150,49 +151,56 @@ class TestDealer(unittest.TestCase):
 
     def test_handle_attack_situation(self):
         # Regular Attack
-        self.assertEqual([self.species3.population, self.species3.food], [3, 3])
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_attack_situation(self.species2, self.species3, self.player1, self.player2)
-        self.assertEqual([self.species3.population, self.species3.food], [2, 2])
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 2: Species 0: [[population, 3->2], [food, 3->2]]')
 
         # Horns
-        self.assertEqual([self.species2.population, self.species7.population], [6, 7])
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_attack_situation(self.species2, self.species7, self.player1, self.player3)
-        self.assertEqual([self.species2.population, self.species7.population], [5, 6])
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 1: Species 1: [[population, 6->5]], Player 3: Species 1: [[population, 7->6]]')
 
         # Double Extinction
         self.species2.population = 1
         self.species7.population = 1
         self.dealer1.deck = [self.foraging, self.scavenger, self.cooperation]
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_attack_situation(self.species2, self.species7, self.player1, self.player3)
-        self.assertEqual([self.species2.population, self.species7.population, self.player1.hand, self.player3.hand,
-                          self.dealer1.deck],
-                         [0, 0, [self.horns, self.foraging, self.cooperation],
-                          [self.burrowing, self.foraging, self.scavenger], []])
-        self.assertFalse(self.species2 in self.player1.species)
-        self.assertFalse(self.species7 in self.player3.species)
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 1: new cards: [cooperation, 1], '
+                          'Species 1: Species removed, '
+                          'Player 3: new cards: [foraging, 2], [scavenger, 2], '
+                          'Species 1: Species removed, '
+                          'deck: removed cards: [foraging, 2], [scavenger, 2], [cooperation, 1]')
 
     def test_handle_scavenging(self):
         # Regular
-        self.assertEqual([self.species6.food, self.dealer1.watering_hole], [1, 10])
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
-        self.assertEqual([self.species6.food, self.dealer1.watering_hole], [2, 9])
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 3: Species 0: [[food, 1->2]], [watering_hole, 10->9]')
 
         # Foraging
         self.species6.population, self.species6.traits[0] = (6, self.foraging)
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
-        self.assertEqual([self.species6.food, self.dealer1.watering_hole], [4, 7])
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 3: Species 0: [[food, 2->4]], [watering_hole, 9->7]')
 
         # Cooperation
         self.species6.traits[1] = self.cooperation
-        self.assertEqual([self.species6.food, self.species7.food, self.dealer1.watering_hole], [4, 1, 7])
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
-        self.assertEqual([self.species6.food, self.species7.food, self.dealer1.watering_hole], [6, 3, 3])
+        self.assertEquals(old_dealer.show_changes(self.dealer1),
+                          'Player 3: Species 0: [[food, 4->6]], Species 1: [[food, 1->3]], [watering_hole, 7->3]')
 
     def test_show_changes(self):
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed1()
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 1:'
+                          'Player 1: '
                             'Species 0: [[food, 0->1]], '
                             'Species 1: [[food, 2->3]], '
                           '[watering_hole, 10->8]')
