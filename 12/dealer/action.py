@@ -36,6 +36,10 @@ class FoodCardAction(Action):
         super(FoodCardAction, self).__init__()
         self.trade_card_index = trade_card_index
 
+    def __eq__(self, other):
+        return all([isinstance(other, FoodCardAction),
+                    self.trade_card_index == other.trade_card_index])
+
     def apply(self, dealer, player):
         """
         :effect Adds the food value of the specified Trait Card to the watering hole
@@ -74,6 +78,11 @@ class GrowAction(Action):
         self.species_board_index = species_board_index
         self.trade_card_index = trade_card_index
 
+    def __eq__(self, other):
+        return all([isinstance(other, GrowAction),
+                    self.species_board_index == other.species_board_index,
+                    self.trade_card_index == other.trade_card_index])
+
     def apply(self, dealer, player):
         """
         :effect Adds 1 to specified attribute of the Species.
@@ -107,6 +116,11 @@ class AddSpeciesAction(Action):
         super(AddSpeciesAction, self).__init__()
         self.trade_card_index = trade_card_index
         self.add_card_list = add_card_list
+
+    def __eq__(self, other):
+        return all([isinstance(other, AddSpeciesAction),
+                    self.add_card_list == other.add_card_list,
+                    self.trade_card_index == other.trade_card_index])
 
     def apply(self, dealer, player):
         """
@@ -145,6 +159,12 @@ class ReplaceTraitAction(Action):
         self.species_board_index = species_board_index
         self.card_to_replace_index = card_to_replace_index
         self.replacement_card_index = replacement_card_index
+
+    def __eq__(self, other):
+        return all([isinstance(other, ReplaceTraitAction),
+                    self.species_board_index == other.species_board_index,
+                    self.card_to_replace_index == other.card_to_replace_index,
+                    self.replacement_card_index == other.replacement_card_index])
 
     def apply(self, dealer, player):
         """

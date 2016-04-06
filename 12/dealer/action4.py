@@ -2,7 +2,7 @@ class Action4(object):
     """
     Represents a players actions for a turn.
     """
-    def __init__(self, food_card, grow_pop, grow_body, add_species, replace_trait):
+    def __init__(self, food_card, grow_pop=False, grow_body=False, add_species=False, replace_trait=False):
         """
         Creates an Action4
         :param food_card: FoodCardAction
@@ -13,10 +13,18 @@ class Action4(object):
         :return: Action4
         """
         self.food_card = food_card
-        self.grow_pop = grow_pop
-        self.grow_body = grow_body
-        self.add_species = add_species
-        self.replace_trait = replace_trait
+        self.grow_pop = grow_pop if grow_pop else []
+        self.grow_body = grow_body if grow_body else []
+        self.add_species = add_species if add_species else []
+        self.replace_trait = replace_trait if replace_trait else []
+
+    def __eq__(self, other):
+        return all([isinstance(other, Action4),
+                    self.food_card == other.food_card,
+                    self.grow_pop == other.grow_pop,
+                    self.grow_body == other.grow_body,
+                    self.add_species == other.add_species,
+                    self.replace_trait == other.replace_trait])
 
     def apply_all(self, dealer, player):
         """
