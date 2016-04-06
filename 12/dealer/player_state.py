@@ -73,6 +73,13 @@ class PlayerState(object):
         state_copy = deepcopy(self)
         self.ext_player.start(state_copy)
 
+    def deal_amount(self):
+        """
+        Determines the number of cards to be dealt to this PlayerState at the start of a turn.
+        :return: Natural
+        """
+        return DEAL_AMOUNT + max(1, len(self.species))
+
 # ======================================  Step 2/3 Methods ==========================================
 
     def choose(self, public_players):
