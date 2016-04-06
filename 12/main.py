@@ -1,5 +1,5 @@
 import sys
-from player import Player
+from dealer.player import Player
 from dealer.dealer import Dealer
 
 

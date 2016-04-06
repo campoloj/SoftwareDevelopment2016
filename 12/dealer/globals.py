@@ -50,6 +50,7 @@ HERB_FEED_LENGTH = 2
 CARN_FEED_LENGTH = 3
 EXTINCTION_CARD_AMOUNT = 2
 DEAL_AMOUNT = 3
+SCORE_TEMPLATE = "%d player id: %d score: %d"
 
 ### JSON messages
 ## Length

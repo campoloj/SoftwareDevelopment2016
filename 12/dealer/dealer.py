@@ -87,24 +87,36 @@ class Dealer(object):
 
 # ======================================  Run Game Methods ==========================================
 
-    def run_turn(self):
+    def run_game(self):
         """
-        Executes a complete Evolution turn and sets up the Player order for the next turn.
+        Runs a complete game of Evolution
+        :return: String representation of Player scores
         """
-        DEAL_AMOUNT + len(player.species)
-        self.step1()
-        action4_list = self.step2n3()
-        self.step4(action4_list)
-        self.end_turn()
-        self.list_of_players.append(self.list_of_players.pop(0))
+        while not self.game_over():
+            self.run_turn()
+
+        return self.scoreboard()
 
     def game_over(self):
         """
         Determines if the game is over because the deck has become too small to hand every player
         the required number cards at the beginning of a turn
-        :return:
+        :return: True if game is over, else False
         """
-        return DEAL_AMOUNT + len(player.species)
+        cards_to_deal = 0
+        for player in self.list_of_players:
+            cards_to_deal += DEAL_AMOUNT + len(player.species)
+        return len(self.deck) < cards_to_deal
+
+    def run_turn(self):
+        """
+        Executes a complete Evolution turn and sets up the Player order for the next turn.
+        """
+        self.step1()
+        action4_list = self.step2n3()
+        self.step4(action4_list)
+        self.end_turn()
+        self.list_of_players.append(self.list_of_players.pop(0))
 
     def end_turn(self):
         """
@@ -114,6 +126,24 @@ class Dealer(object):
         for player in self.list_of_players:
             extinction_card_amount = player.end_turn()
             self.deal_cards(player, extinction_card_amount)
+
+    def scoreboard(self):
+        """
+        Formulates the Players and their scores in descending order. For example:
+            1 player id: 3 score: 22
+            2 player id: 6 score: 17
+            3 player id: 2 score: 16
+        :return: String representation of a scoreboard according to the above example.
+        """
+        player_scores = []
+        for player in self.list_of_players:
+            player_scores.append((player.name, player.get_score()))
+        player_scores = sorted(player_scores, key=lambda player_score: player_score[1], reverse=True)
+        scoreboard = []
+        for i in range(0, len(player_scores)):
+            ps = player_scores[i]
+            scoreboard.append(SCORE_TEMPLATE % (i + 1, ps[0], ps[1]))
+        return "\n".join(scoreboard)
 
 
 # ======================================  Step 1 Methods ============================================
