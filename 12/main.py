@@ -10,10 +10,13 @@ def main(n):
     :param n: Natural between 3 and 8 representing the number of Players in the Evolution game
     :effect: Displays the results of the game on stdout
     """
-    loxp = [Player() for x in xrange(n)]
-    dealer = Dealer.create_initial(loxp)
-    results = dealer.run_game()
-    print results
+    try:
+        loxp = [Player() for x in xrange(n)]
+        dealer = Dealer.create_initial(loxp)
+        results = dealer.run_game()
+        print results
+    except:
+        sys.exit(0)
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(int(sys.argv[1]))
