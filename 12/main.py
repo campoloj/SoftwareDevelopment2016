@@ -13,6 +13,7 @@ def main(n):
     try:
         loxp = [Player() for x in xrange(n)]
         dealer = Dealer.create_initial(loxp)
+        dealer.validate_attributes()
         results = dealer.run_game()
         print results
     except:

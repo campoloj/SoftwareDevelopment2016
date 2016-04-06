@@ -320,9 +320,25 @@ class Dealer(object):
         if not self.list_of_players:
             return
         if first_player_id not in [player.name for player in self.list_of_players]:
-            self.order_players(first_player_id + 1 % len(self.list_of_players))
+            return self.order_players(first_player_id + 1 % LOP_MAX)
         while self.list_of_players[0].name is not first_player_id:
             self.list_of_players.append(self.list_of_players.pop(0))
+
+    def get_next_id(self, first_player_id):
+        ids = [player.name for player in self.list_of_players]
+        differences = []
+        for id in ids:
+            differences.append(first_player_id - id)
+        closest = 100
+        for diff in differences:
+            if diff > 0:
+                closest = min(closest, diff)
+        if closest == 100:
+             closest = max(differences)
+        return ids[differences.index(closest)]
+
+
+
 
 
 # ======================================   Feeding Methods ==========================================

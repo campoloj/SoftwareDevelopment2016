@@ -1,5 +1,6 @@
 import unittest
 from player import Player
+from cheater import Cheater
 from species import Species
 from traitcard import TraitCard
 from player_state import PlayerState
@@ -70,6 +71,11 @@ class TestDealer(unittest.TestCase):
         public_players = self.dealer1.public_players(self.player1)
         self.assertTrue(public_players[0].equal_attributes(self.public_player2))
         self.assertTrue(public_players[1].equal_attributes(self.public_player3))
+
+    def test_cheater(self):
+        dealer = Dealer.create_initial([Player(), Player(), Player(), Cheater(), Player()])
+        result = dealer.run_game()
+        print result
 
     def test_step4(self):
         old_dealer = copy.deepcopy(self.dealer1)
