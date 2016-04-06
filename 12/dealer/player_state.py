@@ -45,6 +45,19 @@ class PlayerState(object):
                     self.hand == other.hand,
                     species_equal])
 
+    def get_score(self):
+        """
+        Determine this players score. A players score is the total of:
+            - (1) food tokens in the food bag,
+            - (2) The population on his existing species, and
+            - (3) number of trait cards associated with these species.
+        :return: Nat representing this players score
+        """
+        score = self.food_bag
+        for spec in self.species:
+            score += spec.population + len(spec.traits)
+        return score
+
 # ======================================  Step 1 Methods ============================================
 
     def start(self, new_species, new_cards):
