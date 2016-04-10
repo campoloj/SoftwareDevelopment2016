@@ -1,17 +1,21 @@
-The purpose of this project was to deal with the entire Step 4 in the Evolution procedure,
-which meant applying Player action choices and running a full feeding cycle. Additionally,
-to plan the protocol between main, Dealer, and internal / external Players.
+The purpose of this project was to run an entire game of evolution,,
+which meant completing each step in the dealer and adding choose functionality in
+the Player. Additionally, to plan the remote protocol between main, Dealer, and
+internal / external Players.
 
 _____________________________________________________________________________________________
 
-api/api.txt: - Descriptions for each protocol
-api/End.png - Image depicting the end game protocol interaction diagram
-api/Start.png - Image depicting the start game protocol interaction diagram
-api/Turn.png - Image depicting the per turn protocol interaction diagram
+main.py: To run a full game with an input of the number of players from 3 to 8.
+
+remote/remote.txt: - Descriptions for each protocol
+remote/End.png - Image depicting the end game remote protocol interaction diagram
+remote/Start.png - Image depicting the start game remote protocol interaction diagram
+remote/Turn.png - Image depicting the per turn protocol remote interaction diagram
 
 dealer/action.py: the Action data representations for different Player actions
 dealer/action4.py: the Action4 data representation for a Player's list of actions
 dealer/action_tests.py: unit tests for Action / Action4 objects
+dealer/cheater: a Player Object that breaks the rules of the game. For testing.
 dealer/dealer.py: the Dealer object with the feed1 method and necessary helpers
 dealer/dealer_tests.py: unit tests for a Dealer object
 dealer/feeding_choice.py: the FeedingChoice data representations
@@ -27,19 +31,24 @@ dealer/species_tests.py: unit tests for a Species object
 dealer/traitcard.py: the TraitCard object
 
 homework_10_tests/*: json input and output files to check ./xstep functionality
-xstep4_tests/*: json input and output files to check ./xstep4 functionality
+xsilly_tests/*: json input and output files to check ./xsilly functionality
 
 compile.py: executable to compile xstep4 (exits with status 0)
 convert.py: methods to convert between JSON and Python objects
 convert_tests.py: unit tests for convert.py methods
 xstep: executable to test Dealer feed1 method
 xstep4: executable to test Dealer step4() method
+xsilly: exectutable to test Player chooce() method
 
 __________________________________________________________________________________________
 
 to run compile:
 
 ./compile
+
+to run main:
+n = number of players
+./main n
 
 to run xstep:
 
@@ -48,6 +57,10 @@ to run xstep:
 to run xstep4:
 
 ./xstep4 < input.json > output.json
+
+to run xsilly:
+
+./xsilly < input.json > output.json
 
 
 __________________________________________________________________________________________
