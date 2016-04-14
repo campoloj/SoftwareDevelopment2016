@@ -91,69 +91,70 @@ class TestDealer(unittest.TestCase):
                          'Species 0: [[fat-tissue, 0->7]], '
                          '[watering_hole, 10->0]')
 
-    # TODO deal with order being rearranged
-    # def test_feed1(self):
-    #     # Auto-feeding
-    #     self.species3.fat_storage = 3
-    #     self.dealer1.list_of_players, self.dealer1.watering_hole = ([self.player2, self.player1, self.player3], 20)
-#
-    #     self.assertEqual([self.species5.food, self.dealer1.watering_hole], [3, 20])
-    #     self.dealer1.feed1()
-    #     self.assertEqual([self.species5.food, self.dealer1.watering_hole], [5, 18])
-#
-    #     # NoFeeding
-    #     self.assertTrue(self.player2.active)
-    #     self.dealer1.feed1()
-    #     self.assertEqual([self.species5.food, self.dealer1.watering_hole, self.player2.active], [5, 18, False])
-#
-    #     # HerbivoreFeeding
-    #     self.species2.traits.pop()
-    #     self.dealer1.list_of_players = [self.player1, self.player2, self.player3]
-    #     self.assertEqual([self.species1.food, self.species2.food, self.dealer1.watering_hole, self.player1.active],
-    #                      [0, 2, 18, True])
-    #     self.dealer1.feed1()
-    #     self.assertEqual([self.species1.food, self.species2.food, self.dealer1.watering_hole, self.player1.active],
-    #                      [0, 3, 17, True])
-#
-    #     # FatFeeding
-    #     self.dealer1.list_of_players = [self.player3, self.player2, self.player1]
-    #     self.assertEqual([self.species6.fat_storage, self.dealer1.watering_hole], [0, 17])
-    #     self.dealer1.feed1()
-    #     self.assertEqual([self.species6.fat_storage, self.dealer1.watering_hole], [7, 10])
-#
-    #     # CarnivoreFeeding
-    #     self.species7.traits.append(self.carnivore)
-    #     self.assertEqual([self.species2.population, self.species7.food, self.species6.food, self.dealer1.watering_hole],
-    #                      [6, 1, 1, 10])
-    #     self.dealer1.feed1()
-    #     self.assertEqual([self.species2.population, self.species7.food, self.species6.food, self.dealer1.watering_hole],
-    #                      [5, 2, 2, 8])
+    def test_auto_feed1(self):
+        # Herbivore
+        self.species2.food = 6
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.dealer1.feed1()
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 1: Species 0: [[food, 0->1]], [watering_hole, 10->9]')
+
+        # Fat-tissue
+        self.species5.food = 5
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.dealer1.feed1()
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 2: Species 0: [[fat-tissue, 0->3]], [watering_hole, 9->6]')
+
+        # Carnivore
+        self.species7.food, self.species6.fat_storage = (7, 7)
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.dealer1.feed1()
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 3: Species 0: [[food, 1->2]], '
+                         'Player 1: Species 1: [[population, 6->5], [food, 6->5]], '
+                         '[watering_hole, 6->5]')
+
+        # NoFeeding
+        old_dealer = copy.deepcopy(self.dealer1)
+        self.dealer1.feed1()
+        self.assertEqual(old_dealer.show_changes(self.dealer1), 'Player 1: [active, True->False]')
 
     def test_feed_species(self):
         # Regular Feeding
-        self.assertEqual([self.species2.food, self.dealer1.watering_hole], [2, 10])
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed_species(self.species2, self.player1)
-        self.assertEqual([self.species2.food, self.dealer1.watering_hole], [3, 9])
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 1: Species 1: [[food, 2->3]], '
+                         '[watering_hole, 10->9]')
 
         # Cooperation Feeding
-        self.assertEqual(self.species1.food, 0)
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed_species(self.species1, self.player1)
-        self.assertEqual([self.species1.food, self.species2.food, self.dealer1.watering_hole], [1, 4, 7])
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 1: Species 0: [[food, 0->1]], Species 1: [[food, 3->4]], '
+                         '[watering_hole, 9->7]')
 
         # Foraging and Cooperation
         self.species1.population, self.species1.food = (3, 0)
         self.species1.traits.append(self.foraging)
 
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed_species(self.species1, self.player1)
-        self.assertEqual([self.species1.food, self.species2.food, self.dealer1.watering_hole], [2, 6, 3])
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 1: Species 0: [[food, 0->2]], Species 1: [[food, 4->6]], '
+                         '[watering_hole, 7->3]')
 
         # Cooperation Chain / Watering Hole runs out
         self.player1.species.append(self.species5)
+        self.player2.species.remove(self.species5)
         self.species2.food, self.species2.traits, self.dealer1.watering_hole = (4, [self.cooperation, self.foraging], 4)
 
+        old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed_species(self.species1, self.player1)
-        self.assertEqual([self.species1.food, self.species2.food, self.species5.food, self.dealer1.watering_hole],
-                         [3, 6, 4, 0])
+        self.assertEqual(old_dealer.show_changes(self.dealer1),
+                         'Player 1: Species 0: [[food, 2->3]], Species 1: [[food, 4->6]], Species 2: [[food, 3->4]], '
+                         '[watering_hole, 4->0]')
 
     def test_handle_attack_situation(self):
         # Regular Attack
@@ -186,29 +187,30 @@ class TestDealer(unittest.TestCase):
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 3: Species 0: [[food, 1->2]], [watering_hole, 10->9]')
+                          'Player 3: Species 0: [[food, 1->2]], '
+                          '[watering_hole, 10->9]')
 
         # Foraging
         self.species6.population, self.species6.traits[0] = (6, self.foraging)
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 3: Species 0: [[food, 2->4]], [watering_hole, 9->7]')
+                          'Player 3: Species 0: [[food, 2->4]], '
+                          '[watering_hole, 9->7]')
 
         # Cooperation
         self.species6.traits[1] = self.cooperation
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.handle_scavenging()
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 3: Species 0: [[food, 4->6]], Species 1: [[food, 1->3]], [watering_hole, 7->3]')
+                          'Player 3: Species 0: [[food, 4->6]], Species 1: [[food, 1->3]], '
+                          '[watering_hole, 7->3]')
 
     def test_show_changes(self):
         old_dealer = copy.deepcopy(self.dealer1)
         self.dealer1.feed1()
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 1: '
-                            'Species 0: [[food, 0->1]], '
-                            'Species 1: [[food, 2->3]], '
+                          'Player 1: Species 0: [[food, 0->1]], Species 1: [[food, 2->3]], '
                           '[watering_hole, 10->8]')
 
 

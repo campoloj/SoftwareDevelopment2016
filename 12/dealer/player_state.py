@@ -43,6 +43,7 @@ class PlayerState(object):
         return all([self.name == other.name,
                     self.food_bag == other.food_bag,
                     self.hand == other.hand,
+                    self.active == other.active,
                     species_equal])
 
     def get_score(self):
@@ -134,7 +135,8 @@ class PlayerState(object):
         if not fatties and not herbivores and not carnivores:
             return NoFeeding()
         elif len(fatties) == 1 and not herbivores and not carnivores:
-            return FatFeeding(self.species.index(fatties[0]), min(fatties[0].fat_storage, watering_hole))
+            return FatFeeding(self.species.index(fatties[0]),
+                              min(fatties[0].body - fatties[0].fat_storage, watering_hole))
         elif not fatties and len(herbivores) == 1 and not carnivores:
             return HerbivoreFeeding(self.species.index(herbivores[0]))
         elif not fatties and not herbivores and len(carnivores) == 1:
