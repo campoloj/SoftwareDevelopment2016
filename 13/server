@@ -7,28 +7,10 @@ from player_proxy import Player_Proxy
 import time
 from dealer.dealer import Dealer
 from globals import *
+from convert import *
 
-
-decoder = json.JSONDecoder()
 player_proxies = []
 started = False
-
-
-def json_parser(buffer):
-    """
-    Searches for full JSON messages and adds incomplete messages to a buffer
-    :param buffer: the previous lines of incomplete JSON messages
-    :return: a tuple of (list-of-correct_JSON_messages, current buffer)
-    """
-    decoded_json = []
-    try:
-        while True:
-            (json_obj, end_index) = decoder.raw_decode(buffer)
-            decoded_json.append(json_obj)
-            buffer = buffer[end_index:]
-    except:
-        return (decoded_json, buffer)
-
 
 def main():
     # Port 0 means to select an arbitrary unused port
@@ -74,7 +56,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         decoded_json = []
         while not decoded_json:
             buffer += self.request.recv(1024).strip()
-            (decoded_json, buffer) = json_parser(data)
+            (decoded_json, buffer) = Convert.json_parser(buffer)
         if decoded_json[0] == "sign-up":
             self.request.sendall("ok")
 

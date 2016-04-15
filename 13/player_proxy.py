@@ -1,20 +1,18 @@
+from convert import *
+
+
 class Player_Proxy(object):
 
     def __init__(self, id, handler):
         self.id = id
         self.handler = handler
 
-    def listen(self):
-        while True:
-            data = self.connection.recv(16)
-            #print >>sys.stderr, 'received "%s"' % data
-            if data:
-                #print >>sys.stderr, 'sending data back to the client'
-                #self.connection.sendall(data)
-                return data
-            else:
-                #print >>sys.stderr, 'no more data from', client_address
-                break
+    def start(self, player_state):
+        json_dealer = Convert.player_to_json()
+        self.handler.request.sendall(json_dealer)
+        response = ""
+        while response == "":
+
 
     def test(self):
         print self.id
