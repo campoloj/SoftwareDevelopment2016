@@ -21,6 +21,14 @@ class FeedingChoice(object):
         """
         return NotImplemented
 
+    def convert_to_json(self):
+        """
+        Converts this FeedingChoice to its respective JSON representation
+        :return JSON FeedingChoice as specified by
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return NotImplemented
+
 
 class NoFeeding(FeedingChoice):
     """
@@ -31,9 +39,17 @@ class NoFeeding(FeedingChoice):
         """
         Compare attributes for testing.
         :param other: The other object we are comparing
-        :return:
+        :return: True if equal, else False
         """
         return isinstance(other, NoFeeding)
+
+    def __ne__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return: True if not equal, else False
+        """
+        return not self.__eq__(other)
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -42,6 +58,13 @@ class NoFeeding(FeedingChoice):
         :param feeding_player: the PlayerState of the Player choosing how to feed
         """
         feeding_player.active = False
+
+    def convert_to_json(self):
+        """
+        Converts this NoFeeding to its respective JSON representation
+        :return False
+        """
+        return False
 
 
 class HerbivoreFeeding(FeedingChoice):
@@ -62,11 +85,19 @@ class HerbivoreFeeding(FeedingChoice):
         """
         Compare attributes for testing.
         :param other: The other object we are comparing
-        :return:
+        :return: True if equal, else False
         """
         if isinstance(other, HerbivoreFeeding):
             return self.species_index == other.species_index
         return False
+
+    def __ne__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return: True if not equal, else False
+        """
+        return not self.__eq__(other)
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -77,6 +108,14 @@ class HerbivoreFeeding(FeedingChoice):
         herbivore = feeding_player.species[self.species_index]
         assert(herbivore in feeding_player.get_hungry_species(carnivores=False))
         dealer.feed_species(herbivore, feeding_player)
+
+    def convert_to_json(self):
+        """
+        Converts this HerbivoreFeeding to its respective JSON representation
+        :return JSON Vegetarian as specified by
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return self.species_index
 
 
 class FatFeeding(FeedingChoice):
@@ -98,12 +137,20 @@ class FatFeeding(FeedingChoice):
         """
         Compare attributes for testing.
         :param other: The other object we are comparing
-        :return:
+        :return: True if equal, else False
         """
         if isinstance(other, FatFeeding):
             return all([self.species_index == other.species_index,
                         self.fat_request == other.fat_request])
         return False
+
+    def __ne__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return: True if not equal, else False
+        """
+        return not self.__eq__(other)
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -117,6 +164,14 @@ class FatFeeding(FeedingChoice):
 
         fat_species.fat_storage += self.fat_request
         dealer.watering_hole -= self.fat_request
+
+    def convert_to_json(self):
+        """
+        Converts this FatFeeding to its respective JSON representation
+        :return JSON FatTissueChoice as specified by
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [self.species_index, self.fat_request]
 
 
 class CarnivoreFeeding(FeedingChoice):
@@ -141,13 +196,21 @@ class CarnivoreFeeding(FeedingChoice):
         """
         Compare attributes for testing.
         :param other: The other object we are comparing
-        :return:
+        :return: True if equal, else False
         """
         if isinstance(other, CarnivoreFeeding):
             return all([self.attacker_index == other.attacker_index,
                     self.defending_player_index == other.defending_player_index,
                     self.defender_index == other.defender_index])
         return False
+
+    def __ne__(self, other):
+        """
+        Compare attributes for testing.
+        :param other: The other object we are comparing
+        :return: True if not equal, else False
+        """
+        return not self.__eq__(other)
 
     def handle_feeding(self, dealer, feeding_player):
         """
@@ -167,3 +230,11 @@ class CarnivoreFeeding(FeedingChoice):
         if attacker.population >= MIN_POP:
             dealer.feed_species(attacker, feeding_player)
             dealer.handle_scavenging()
+
+    def convert_to_json(self):
+        """
+        Converts this CarnivoreFeeding to its respective JSON representation
+        :return JSON CarnivoreChoice as specified by
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [self.attacker_index, self.defending_player_index, self.defender_index]
