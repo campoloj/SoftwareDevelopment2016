@@ -8,48 +8,59 @@ class Dealer_Proxy(object):
         self.player = player
         self.socket = socket
 
-    def run(self):
-        response = ""
-        while not response:
-            response = Convert.listen(self.socket, -1)
-
-        player_state = Convert.json_to_player(json.loads(response))
-        self.start(player_state)
-
-
-
-    def start(self, player_state):
+    def wait_for_start(self):
         """
-        Sends the player_state in json to the proxy dealer
-        :param player_state: Player_State for the external player
+        Waits for the start message with the initial player state. Calls start on our player and gives him the
+        player_state. Then waits for the choice json of all the players and calls choose with that response.
         """
-        json_player = Convert.player_to_rp_json()
-        self.handler.request.sendall(json.dumps(json_player))
+        response = json.loads(Convert.listen(self.socket, -1))
+        player_state = Convert.rp_json_to_player(response)
+        self.player.start(player_state)
+        json_all_players = json.loads(Convert.listen(self.socket, -1))
+        self.choose(json_all_players)
 
-    def choose(self, left_players, right_players):
+    def choose(self, json_all_players):
         """
-        Sends the all_players in json to the proxy dealer for the external player to make their choices.
-        Recieves the JSON response and converts it to an Action4 to send to the internal Dealer.
-        :param player_state: Player_State for the external player
-        :return Action4 representing the players choices
+        Converts the json_all_players to two lists of Player_States. Then asks the player to chose with the
+        information. Converts the Action4 results to json. Sends it. Waits for the next step.
+        :param json_all_players:
+        :return:
         """
-        json_all_players = Convert.players_to_all_json(left_players, right_players)
-        self.handler.request.sendall(json.dumps(json_all_players))
-        response = Convert.listen(self.handler.request)
-        json_action4 = json.loads(response)
-        return Convert.json_to_action4(json_action4)
+        left_players = Convert.json_to_choice_lop(json_all_players[0])
+        right_players = Convert.json_to_choice_lop(json_all_players[1])
+        action4 = self.player.choose(left_players, right_players)
+        json_action4 = Convert.action4_to_json(action4)
+        self.socket.sendall(json.dumps(json_action4))
+        self.wait_for_next_step()
 
-    def next_feeding(self, player_state, watering_hole, all_players):
+    def wait_for_next_step(self):
         """
-        Sends the all_players in json to the proxy dealer and recieves theyre result in json.
-        Converts the json result into a Feeding and returns it to the internal Dealer.
-        :param player_state: Player_State for the external player
-        :param watering_hole: Nat representing the food on the watering hole
-        :param all_players: List of Player_State representing all the players
-        :return Feeding_Choice representing the players feeding choice
+        Waits for the response and then checks where in the game we are.
+        If the response is not a list, -> Game is over
+        If the response is a list of length two -> Choose
+        If the response is a list of length five -> Feed
+        :return:
         """
-        json_game_state = Convert.game_state_to_json(player_state, watering_hole, all_players)
-        self.handler.request.sendall(json.dumps(json_game_state))
-        response = Convert.listen(self.handler.request)
-        json_feeding = json.loads(response)
-        return Convert.json_to_feeding(json_feeding)
+        response = json.loads(Convert.listen(self.socket, -1))
+        if isinstance(response, list):
+            if len(response) == 2:
+                self.choose(response)
+            if len(response) == 5:
+                self.feed(response)
+        print response
+
+    def feed(self, json_state):
+        """
+        Converts the game_state to a list of the information needed to feed. Calls feed on the player with the
+        information. Converts the feeding_choice result into json and sends it. Waits for the next step.
+        :param json_state:
+        :return:
+        """
+        game_state = Convert.json_to_game_state(json_state)
+        updated_player = game_state[0]
+        watering_hole = game_state[1]
+        all_players = game_state[2]
+        feeding = self.player(updated_player, watering_hole, all_players)
+        json_feeding = Convert.feeding_to_json(feeding)
+        self.socket.sendall(json.dumps(json_feeding))
+        self.wait_for_next_step()

@@ -19,7 +19,8 @@ try:
     response = Convert.listen(sock)
 
     if response == "ok":
-        Dealer_Proxy(Player(), sock)
+        dealer_proxy = Dealer_Proxy(Player(), sock)
+        dealer_proxy.wait_for_start()
 
         while True:
             continue
