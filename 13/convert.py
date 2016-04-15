@@ -16,7 +16,7 @@ class Convert(object):
         pass
 
     @classmethod
-    def json_parser(buffer):
+    def json_parser(cls, buffer):
         """
         Searches for full JSON messages and adds incomplete messages to a buffer
         :param buffer: the previous lines of incomplete JSON messages
