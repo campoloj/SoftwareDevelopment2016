@@ -15,10 +15,8 @@ started = False
 def main():
     # Port 0 means to select an arbitrary unused port
     global start_time
-    print "MAIN STARTED"
-    HOST, PORT = "localhost", 9997
 
-    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
+    server = ThreadedTCPServer((HOSTNAME, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
 
     # Start a thread with the server -- that thread will then start one
@@ -42,7 +40,7 @@ def start_game():
     result = dealer.run_game()
 
     for proxy in player_proxies:
-        proxy.handler.request.sendall(result)
+        proxy.handler.request.sendall(json.dumps([result]))
     print result
 
     started = False
@@ -51,21 +49,22 @@ def start_game():
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
-        global PROXY_ID, player_proxies, start_time
+        global PROXY_ID, player_proxies, start_time, started
         buffer = ""
         decoded_json = []
         while not decoded_json:
             buffer += self.request.recv(1024).strip()
             (decoded_json, buffer) = Convert.json_parser(buffer)
         if decoded_json[0] == "sign-up":
-            self.request.sendall("ok")
+            print "player " + str(PROXY_ID) + " signed up"
+            self.request.sendall(json.dumps("ok"))
 
             player_proxies.append(Player_Proxy(PROXY_ID, self))
             PROXY_ID += 1
             if len(player_proxies) == 8:
                 start_game()
 
-            while time.time() - start_time < 30:
+            while time.time() - start_time < 60:
                 continue
 
             start_game()

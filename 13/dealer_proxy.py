@@ -13,10 +13,13 @@ class Dealer_Proxy(object):
         Waits for the start message with the initial player state. Calls start on our player and gives him the
         player_state. Then waits for the choice json of all the players and calls choose with that response.
         """
-        response = json.loads(Convert.listen(self.socket, -1))
+        response = Convert.listen(self.socket, False)
+        self.start(response)
+
+    def start(self, response):
         player_state = Convert.rp_json_to_player(response)
         self.player.start(player_state)
-        json_all_players = json.loads(Convert.listen(self.socket, -1))
+        json_all_players = Convert.listen(self.socket, False)
         self.choose(json_all_players)
 
     def choose(self, json_all_players):
@@ -41,13 +44,14 @@ class Dealer_Proxy(object):
         If the response is a list of length five -> Feed
         :return:
         """
-        response = json.loads(Convert.listen(self.socket, -1))
-        if isinstance(response, list):
-            if len(response) == 2:
-                self.choose(response)
-            if len(response) == 5:
-                self.feed(response)
-        print response
+        response = Convert.listen(self.socket, False)
+        if len(response) == 3:
+            return self.start(response)
+        if len(response) == 5:
+            return self.feed(response)
+        else:
+            print response[0]
+
 
     def feed(self, json_state):
         """
@@ -56,11 +60,11 @@ class Dealer_Proxy(object):
         :param json_state:
         :return:
         """
-        game_state = Convert.json_to_game_state(json_state)
+        game_state = Convert.json_to_gamestate(json_state)
         updated_player = game_state[0]
         watering_hole = game_state[1]
         all_players = game_state[2]
-        feeding = self.player(updated_player, watering_hole, all_players)
-        json_feeding = Convert.feeding_to_json(feeding)
+        feeding = self.player.next_feeding(updated_player, watering_hole, all_players)
+        json_feeding = feeding.convert_to_json()
         self.socket.sendall(json.dumps(json_feeding))
         self.wait_for_next_step()

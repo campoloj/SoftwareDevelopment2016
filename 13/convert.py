@@ -35,7 +35,7 @@ class Convert(object):
             return (decoded_json, buffer)
 
     @classmethod
-    def listen(cls, socket, time_out=TIMEOUT):
+    def listen(cls, socket, time_out=True):
         """
         Waits for the first valid json message from the socket and returns it.
         Throws error if no message is received in the min time allowed.
@@ -44,9 +44,10 @@ class Convert(object):
         buffer = ""
         decoded_json = []
         start_time = time.time()
-        while not decoded_json and (time.time() - start_time < time_out):
+        while not decoded_json and (time.time() - start_time < TIMEOUT if time_out else True):
             buffer += socket.recv(1024).strip()
             (decoded_json, buffer) = Convert.json_parser(buffer)
+        #print "PRINT JSON %s" % decoded_json[0]
         return decoded_json[0]
 
     @classmethod
@@ -146,7 +147,7 @@ class Convert(object):
         """
         result = []
         for grow_action in list_of_grow_actions:
-            result += [grow_action.attribute, grow_action.species_board_index, grow_action.trade_card_index]
+            result.append([grow_action.attribute, grow_action.species_board_index, grow_action.trade_card_index])
         return result
 
     @classmethod
@@ -175,7 +176,7 @@ class Convert(object):
         """
         result = []
         for species_action in list_of_species_actions:
-            result += [species_action.trade_card_index] + species_action.add_card_list
+            result.append([species_action.trade_card_index] + species_action.add_card_list)
         return result
 
     @classmethod
@@ -201,9 +202,9 @@ class Convert(object):
         """
         result = []
         for replace_action in list_of_replace_actions:
-            result += [replace_action.species_board_index,
-                       replace_action.card_to_replace_index,
-                       replace_action.replacement_card_index]
+            result.append([replace_action.species_board_index,
+                           replace_action.card_to_replace_index,
+                           replace_action.replacement_card_index])
         return result
 
     @classmethod
@@ -309,7 +310,7 @@ class Convert(object):
         :return: a PlayerState object
         """
         [food_bag, json_species, json_hand] = rp_json
-        assert(isinstance(int, food_bag) and food_bag > MIN_FOOD_BAG)
+        assert(isinstance(food_bag, int) and food_bag >= MIN_FOOD_BAG)
         species = [cls.json_to_species(jspecies) for jspecies in json_species]
         hand = [cls.json_to_trait(jtrait) for jtrait in json_hand]
         return PlayerState(food_bag=food_bag, hand=hand, species=species)
@@ -344,7 +345,7 @@ class Convert(object):
         :return: [PlayerState, Natural, List of PlayerState]
         """
         player = cls.rp_json_to_player(jstate[:3])
-        watering_hole, jboards = jstate[4:]
+        watering_hole, jboards = jstate[3:]
         assert(isinstance(watering_hole, int) and watering_hole > MIN_WATERING_HOLE)
         other_players = cls.json_to_choice_lop(jboards)
         return [player, watering_hole, other_players]
@@ -362,7 +363,7 @@ class Convert(object):
         assert(isinstance(watering_hole, int) and watering_hole > MIN_WATERING_HOLE)
         state = cls.player_to_rp_json(player)
         other_players = [cls.player_to_json_boards(op) for op in other_players]
-        state.extend([watering_hole, other_players])
+        state += [watering_hole, other_players]
         return state
 
     @classmethod

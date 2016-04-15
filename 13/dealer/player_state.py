@@ -71,7 +71,7 @@ class PlayerState(object):
         if new_species:
             self.species.append(new_species)
         self.hand += new_cards
-        state_copy = deepcopy(self)
+        state_copy = self
         self.ext_player.start(state_copy)
 
     def deal_amount(self):
@@ -113,7 +113,7 @@ class PlayerState(object):
         """
         feeding = self.attempt_auto_feed(watering_hole, other_players)
         if not feeding:
-            state_copy = deepcopy(self)
+            state_copy = self
             feeding = self.ext_player.next_feeding(state_copy, watering_hole, other_players)
         return feeding
 

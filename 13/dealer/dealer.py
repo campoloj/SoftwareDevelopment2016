@@ -99,7 +99,7 @@ class Dealer(object):
         Runs a complete game of Evolution
         :return: String representation of Player scores
         """
-        while not self.game_over() and len(self.list_of_players) >= LOP_MIN:
+        while not self.game_over() and self.list_of_players:
             self.run_turn()
 
         return self.scoreboard()
@@ -117,7 +117,8 @@ class Dealer(object):
         """
         Executes a complete Evolution turn and sets up the Player order for the next turn.
         """
-        next_player_id = self.list_of_players[1].name
+        next_player_id = (self.list_of_players[1].name if len(self.list_of_players) > 1
+                          else self.list_of_players[0].name)
         self.step1()
         action4_list = self.step2n3()
         self.step4(action4_list)
@@ -216,6 +217,8 @@ class Dealer(object):
             except:
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
+        if not self.list_of_players:
+            return []
         return action4_list
 
 # ======================================  Step 4 Methods ============================================
@@ -226,6 +229,8 @@ class Dealer(object):
         :param action4_list: The list of actions to apply to the corresponding indices of players
         """
         self.step4i(action4_list)
+        if not self.list_of_players:
+            return
         self.feeding()
 
 # -----------------------------------   Action Methods --------------------------------------
@@ -298,6 +303,8 @@ class Dealer(object):
         first_player_id = self.list_of_players[0].name
         while self.watering_hole > MIN_WATERING_HOLE and any([player.active for player in self.list_of_players]):
             self.feed1()
+        if not self.list_of_players:
+            return
         self.order_players(first_player_id)
 
     def feed1(self):

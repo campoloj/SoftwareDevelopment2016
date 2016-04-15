@@ -13,7 +13,7 @@ class Player_Proxy(object):
         Sends the player_state in json to the proxy dealer
         :param player_state: Player_State for the external player
         """
-        json_player = Convert.player_to_rp_json()
+        json_player = Convert.player_to_rp_json(player_state)
         self.handler.request.sendall(json.dumps(json_player))
 
     def choose(self, left_players, right_players):
@@ -25,8 +25,7 @@ class Player_Proxy(object):
         """
         json_all_players = Convert.players_to_all_json(left_players, right_players)
         self.handler.request.sendall(json.dumps(json_all_players))
-        response = Convert.listen(self.handler.request)
-        json_action4 = json.loads(response)
+        json_action4 = Convert.listen(self.handler.request)
         return Convert.json_to_action4(json_action4)
 
     def next_feeding(self, player_state, watering_hole, all_players):
@@ -38,8 +37,8 @@ class Player_Proxy(object):
         :param all_players: List of Player_State representing all the players
         :return Feeding_Choice representing the players feeding choice
         """
-        json_game_state = Convert.game_state_to_json(player_state, watering_hole, all_players)
+        print ""
+        json_game_state = Convert.gamestate_to_json(player_state, watering_hole, all_players)
         self.handler.request.sendall(json.dumps(json_game_state))
-        response = Convert.listen(self.handler.request)
-        json_feeding = json.loads(response)
-        return Convert.json_to_feeding(json_feeding)
+        json_feeding = Convert.listen(self.handler.request)
+        return Convert.json_to_feeding_choice(json_feeding)
