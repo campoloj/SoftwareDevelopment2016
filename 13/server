@@ -6,7 +6,7 @@ import threading
 from player_proxy import Player_Proxy
 import time
 from dealer.dealer import Dealer
-from globals import *
+from dealer.globals import *
 from convert import *
 
 player_proxies = []

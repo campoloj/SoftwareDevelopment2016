@@ -2,11 +2,21 @@ from convert import *
 from time import *
 
 
-class Player_Proxy(object):
+class Dealer_Proxy(object):
 
-    def __init__(self, id, handler):
-        self.id = id
-        self.handler = handler
+    def __init__(self, player, socket):
+        self.player = player
+        self.socket = socket
+
+    def run(self):
+        response = ""
+        while not response:
+            response = Convert.listen(self.socket, -1)
+
+        player_state = Convert.json_to_player(json.loads(response))
+        self.start(player_state)
+
+
 
     def start(self, player_state):
         """

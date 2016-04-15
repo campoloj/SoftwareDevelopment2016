@@ -5,7 +5,9 @@ from dealer.species import Species
 from dealer.traitcard import TraitCard
 from dealer.action4 import Action4
 from dealer.action import *
+import time
 import json
+
 
 
 class Convert(object):
@@ -31,6 +33,21 @@ class Convert(object):
                 buffer = buffer[end_index:]
         except:
             return (decoded_json, buffer)
+
+    @classmethod
+    def listen(cls, socket, time_out=TIMEOUT):
+        """
+        Waits for the first valid json message from the socket and returns it.
+        Throws error if no message is received in the min time allowed.
+        :return: String
+        """
+        buffer = ""
+        decoded_json = []
+        start_time = time.time()
+        while not decoded_json and (time.time() - start_time < time_out):
+            buffer += socket.recv(1024).strip()
+            (decoded_json, buffer) = Convert.json_parser(buffer)
+        return decoded_json[0]
 
     @classmethod
     def json_to_dealer(cls, json_config):
