@@ -85,6 +85,13 @@ class Dealer(object):
             player.hand.append(self.deck.pop(0))
             amount -= 1
 
+    def remove_cheaters(self, cheater_ids):
+        """
+        Removes all cheating players from the game
+        :param cheater_ids: List of Natural+ representing IDs of cheating players
+        """
+        self.list_of_players = [player for player in self.list_of_players if player.name not in cheater_ids]
+
 # ======================================  Run Game Methods ==========================================
 
     def run_game(self):
@@ -200,7 +207,16 @@ class Dealer(object):
         Gathers requests from each external Player of how they wish to use the cards in their hands
         :return: List of Action4 corresponding to the current PlayerState order
         """
-        return [player.choose(self.public_players(False)) for player in self.list_of_players]
+        cheater_ids = []
+        action4_list = []
+        all_players = self.public_players(False)
+        for player in self.list_of_players:
+            try:
+                action4_list.append(player.choose(all_players))
+            except:
+                cheater_ids.append(player.name)
+        self.remove_cheaters(cheater_ids)
+        return action4_list
 
 # ======================================  Step 4 Methods ============================================
 
@@ -230,7 +246,7 @@ class Dealer(object):
                 self.validate_attributes()
             except:
                 cheater_ids.append(player.name)
-        self.list_of_players = [player for player in self.list_of_players if player.name not in cheater_ids]
+        self.remove_cheaters(cheater_ids)
         self.foodcard_reveal()
 
     def foodcard_reveal(self):
@@ -292,8 +308,8 @@ class Dealer(object):
         player = self.list_of_players[0]
         if player.active:
             other_players = self.public_players(feeding_player=player)
-            feeding_choice = player.next_feeding(self.watering_hole, other_players)
             try:
+                feeding_choice = player.next_feeding(self.watering_hole, other_players)
                 feeding_choice.handle_feeding(self, player)
             except:
                 self.list_of_players.pop(0)
@@ -323,23 +339,6 @@ class Dealer(object):
             return self.order_players(first_player_id + 1 % LOP_MAX)
         while self.list_of_players[0].name is not first_player_id:
             self.list_of_players.append(self.list_of_players.pop(0))
-
-    def get_next_id(self, first_player_id):
-        ids = [player.name for player in self.list_of_players]
-        differences = []
-        for id in ids:
-            differences.append(first_player_id - id)
-        closest = 100
-        for diff in differences:
-            if diff > 0:
-                closest = min(closest, diff)
-        if closest == 100:
-             closest = max(differences)
-        return ids[differences.index(closest)]
-
-
-
-
 
 # ======================================   Feeding Methods ==========================================
 

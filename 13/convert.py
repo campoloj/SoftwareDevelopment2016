@@ -6,8 +6,8 @@ from dealer.traitcard import TraitCard
 from dealer.action4 import Action4
 from dealer.action import *
 import time
+from dealer.feeding_choice import *
 import json
-
 
 
 class Convert(object):
@@ -222,22 +222,25 @@ class Convert(object):
                        replace_action.replacement_card_index]
         return result
 
-
     @classmethod
-    def json_to_feeding(cls, json_feeding):
+    def json_to_feeding_choice(cls, json_fc):
         """
-        Converts a JSON Feeding into a Python representation of a Feeding
-        :param json_feeding: a Feeding as specified by the data definition at
-                             http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
-        :return: [PlayerState, Natural+, [PlayerState,...]] representing the attacking PlayerState,
-                the available watering hole food, and the PlayerStates of other players in the game
+        Converts a JSON FeedingChoice to a FeedingChoice object
+        :param json_fc: a JSON FeedingChoice as specified at
+                        http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        :return: FeedingChoice object
         """
-        assert(len(json_feeding) == FEEDING_LENGTH)
-        [json_player, wh_food, json_lop] = json_feeding
-        assert(wh_food > MIN_WATERING_HOLE)
-        player = cls.json_to_player(json_player)
-        other_players = [cls.json_to_player(op) for op in json_lop]
-        return [player, wh_food, other_players]
+        if json_fc is False:
+            return NoFeeding()
+        elif isinstance(json_fc, int):
+            return HerbivoreFeeding(json_fc)
+        elif isinstance(json_fc, list):
+            if len(json_fc) == 2:
+                return FatFeeding(json_fc[0], json_fc[1])
+            elif len(json_fc) == 3:
+                return CarnivoreFeeding(json_fc[0], json_fc[1], json_fc[2])
+        else:
+            raise AssertionError
 
     @classmethod
     def json_to_player(cls, json_player):
@@ -277,6 +280,45 @@ class Convert(object):
             json_player.append([CARDS, json_hand])
         return json_player
 
+    @classmethod
+    def player_to_rp_json(cls, player):
+        """
+        Converts a PlayerState to a remote protocol JSON state
+        :param player: a PlayerState object
+        :return: a remote protocol JSON state as specified in
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        player.validate_attributes()
+        json_species = [cls.species_to_json(species_obj) for species_obj in player.species]
+        json_hand = [cls.trait_to_json(trait_card) for trait_card in player.hand]
+        return [player.food_bag, json_species, json_hand]
+
+    @classmethod
+    def player_to_json_boards(cls, player):
+        """
+        Converts a PlayerState to a JSON Boards
+        :param player: a PlayerState object
+        :return: a JSON Boards as specified in
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        player.validate_attributes()
+        return [cls.species_to_json(species_obj) for species_obj in player.species]
+
+    @classmethod
+    def gamestate_to_json(cls, player, watering_hole, other_players):
+        """
+        Converts a public representation of the game state to a JSON State for feeding
+        :param player: feeding PlayerState
+        :param watering_hole: Natural+ representing food available
+        :param other_players: List of PlayerState representing other players in game
+        :return: a JSON State as specified in
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        assert(watering_hole > MIN_WATERING_HOLE)
+        state = cls.player_to_rp_json(player)
+        other_players = [cls.player_to_json_boards(op) for op in other_players]
+        state.extend([watering_hole, other_players])
+        return state
 
     @classmethod
     def json_to_species(cls, json_species):
