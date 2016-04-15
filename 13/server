@@ -1,25 +1,16 @@
 #! /usr/bin/env python
 
-
-
-import os
-import sys
-import socket
 import SocketServer
 import json
 import threading
 from player_proxy import Player_Proxy
-from multiprocessing import Process, Queue
-from time import sleep
+import time
+from dealer.dealer import Dealer
 from globals import *
 
 
 decoder = json.JSONDecoder()
-queue = Queue()
 player_proxies = []
-
-
-name = 1
 started = False
 
 
@@ -38,11 +29,12 @@ def json_parser(buffer):
     except:
         return (decoded_json, buffer)
 
+
 def main():
     # Port 0 means to select an arbitrary unused port
+    global start_time
     print "MAIN STARTED"
-    HOST, PORT = "localhost", 9996
-
+    HOST, PORT = "localhost", 9997
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
@@ -52,49 +44,57 @@ def main():
     server_thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
     server_thread.daemon = True
-
+    start_time = time.time()
     server_thread.run()
 
     server.shutdown()
 
-def start_game(player_proxies):
-    print "START GAME STARTED"
-    while True:
-        print str(len(player_proxies))
-        sleep(2)
-        if len(player_proxies) == 2:
-            print "GOT HERE"
-            for proxy in player_proxies:
-                proxy.handler.request.sendall("Start_Game")
+
+def start_game():
+    global started, player_proxies
+    if started:
+        return
+    started = True
+
+    dealer = Dealer.create_initial(player_proxies)
+    result = dealer.run_game()
+
+    for proxy in player_proxies:
+        proxy.handler.request.sendall(result)
+    print result
+
+    started = False
 
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
-        global PROXY_ID, player_proxies
+        global PROXY_ID, player_proxies, start_time
         buffer = ""
-        data = self.request.recv(1024).strip()
-        #cur_thread = threading.current_thread()
-        (decoded_json, buffer) = json_parser(data)
+        decoded_json = []
+        while not decoded_json:
+            buffer += self.request.recv(1024).strip()
+            (decoded_json, buffer) = json_parser(data)
         if decoded_json[0] == "sign-up":
             self.request.sendall("ok")
 
-            player_proxies.append(PROXY_ID)
+            player_proxies.append(Player_Proxy(PROXY_ID, self))
             PROXY_ID += 1
+            if len(player_proxies) == 8:
+                start_game()
 
-        while True:
-            continue
+            while time.time() - start_time < 30:
+                continue
 
+            start_game()
+
+            while started:
+                continue
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 
-
-
 if __name__ == "__main__":
-     p1 = Process(target = main)
-     p1.start()
-     sleep(15)
-     start_game(player_proxies)
+    main()
