@@ -1,30 +1,24 @@
 #! /usr/bin/env python
 
 import socket
-import sys
 from dealer.player import Player
 from dealer_proxy import Dealer_Proxy
 from convert import *
 from dealer.globals import *
 
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Connect the socket to the port where the server is listening
-server_address = (HOSTNAME, PORT)
-print >>sys.stderr, 'connecting to %s port %s' % server_address
-sock.connect(server_address)
+def main():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((HOSTNAME, PORT))
+    try:
+        sock.sendall(json.dumps(SIGNUP_MSG))
+        response = Convert.listen(sock)
+        if response == SIGNUP_RSP:
+            dealer_proxy = Dealer_Proxy(Player(), sock)
+            dealer_proxy.wait_for_start()
+    finally:
+        sock.close()
 
-try:
-    sock.sendall(json.dumps("sign-up"))
-    print "sign-up sent"
-    response = Convert.listen(sock)
-    print response
 
-    if response == "ok":
-        print "ok received"
-        dealer_proxy = Dealer_Proxy(Player(), sock)
-        dealer_proxy.wait_for_start()
-
-finally:
-    sock.close()
+if __name__ == "__main__":
+    main()
