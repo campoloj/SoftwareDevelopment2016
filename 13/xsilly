@@ -1,0 +1,30 @@
+#! /usr/bin/env python
+
+"""
+A test harness for the Dealer feed1 method
+"""
+
+import json
+import sys
+
+from convert import Convert
+from dealer.player import Player
+
+
+def main():
+    json_choice = json.loads(sys.stdin.read())
+    try:
+        player = Convert.json_to_player(json_choice[0])
+        before_list = Convert.json_to_choice_lop(json_choice[1])
+        after_list = Convert.json_to_choice_lop(json_choice[2])
+        external_player = Player(player)
+        action4 = external_player.choose(before_list, after_list)
+        json_action4 = Convert.action4_to_json(action4)
+        sys.stdout.write(json.dumps(json_action4))
+    except Exception as exc:
+        print exc
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
