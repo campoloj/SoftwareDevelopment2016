@@ -12,6 +12,7 @@ from convert import *
 
 player_proxies = []
 started = False
+server_active = True
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -23,8 +24,8 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         Handle client sign-up requests until game ends
         :effect: Signs up clients, shuts server down upon completion of game
         """
-        global started
-        while started:
+        global server_active
+        while server_active:
             self.handle_request()
         self.shutdown()
 
@@ -76,12 +77,12 @@ def end_game(result):
     Sends game results to each client and messages server to terminate upon game completion
     :param result: String representation of scoreboard
     """
-    global started, player_proxies
+    global started, player_proxies, server_active
     for proxy in player_proxies:
         proxy.handler.request.sendall(json.dumps([result]))
     print result
 
-    started = False
+    started = server_active = False
     os.system("nc %s %d" % (HOSTNAME, PORT))
 
 
