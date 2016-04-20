@@ -5,7 +5,7 @@ import SocketServer
 import json
 import threading
 import time
-from player_proxy import Player_Proxy
+from player_proxy import PlayerProxy
 from dealer.dealer import Dealer
 from dealer.globals import *
 from convert import *
@@ -43,7 +43,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         signup_message = Convert.listen(self.request, time_out=False)
 
         self.request.sendall(json.dumps(SIGNUP_RSP))
-        player_proxies.append(Player_Proxy(signup_message, self))
+        player_proxies.append(PlayerProxy(signup_message, self))
         if len(player_proxies) == LOP_MAX:
             start_game()
 

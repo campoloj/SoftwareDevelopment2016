@@ -2,7 +2,7 @@ from convert import *
 from time import *
 
 
-class Player_Proxy(object):
+class PlayerProxy(object):
 
     def __init__(self, id, handler):
         self.id = id
@@ -37,7 +37,6 @@ class Player_Proxy(object):
         :param all_players: List of Player_State representing all the players
         :return Feeding_Choice representing the players feeding choice
         """
-        print ""
         json_game_state = Convert.gamestate_to_json(player_state, watering_hole, all_players)
         self.handler.request.sendall(json.dumps(json_game_state))
         json_feeding = Convert.listen(self.handler.request)
