@@ -2,9 +2,18 @@ from convert import *
 from time import *
 
 
-class Dealer_Proxy(object):
-
+class DealerProxy(object):
+    """
+    Filters JSON requests from the server to the client
+    Uses external player to generate responses and sends them back to server
+    """
     def __init__(self, player, socket):
+        """
+        Creates a DealerProxy
+        :param player: Player object representing an external player strategy
+        :param socket: Socket on which to listen to and send messages
+        :return: DealerProxy object
+        """
         self.player = player
         self.socket = socket
 
@@ -47,11 +56,8 @@ class Dealer_Proxy(object):
         response = Convert.listen(self.socket, False)
         if len(response) == 3:
             return self.start(response)
-        if len(response) == 5:
+        elif len(response) == 5:
             return self.feed(response)
-        else:
-            print response[0]
-
 
     def feed(self, json_state):
         """

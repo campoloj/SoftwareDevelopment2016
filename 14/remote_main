@@ -3,18 +3,18 @@
 import sys
 import socket
 from dealer.player import Player
-from dealer_proxy import Dealer_Proxy
+from dealer_proxy import DealerProxy
 from convert import *
 from dealer.globals import *
 
 
 def main(username, hostname, port):
     """
-    Connects this client to a TCP server and creates a Dealer Proxy
+    Connects this client to a TCP server and creates a DealerProxy
     :param username: String identifying this client
     :param hostname: String representing the TCP server hostname
     :param port: String representing the TCP server port
-    :effect: Creates a Dealer Proxy which waits for the server to start the game
+    :effect: Creates a DealerProxy which waits for the server to start the game
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((hostname, int(port)))
@@ -22,7 +22,7 @@ def main(username, hostname, port):
         sock.sendall(json.dumps(username))
         response = Convert.listen(sock)
         if response == SIGNUP_RSP:
-            dealer_proxy = Dealer_Proxy(Player(), sock)
+            dealer_proxy = DealerProxy(Player(), sock)
             dealer_proxy.wait_for_start()
     finally:
         sock.close()
