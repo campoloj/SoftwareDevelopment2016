@@ -150,7 +150,7 @@ class Dealer(object):
         Maps the ID of each Player in the game to their score and orders them based on descending score order
         :return: List of (Natural, Natural) representing ordered (Player ID, score) tuples
         """
-        player_scores = [(player.name, player.get_score()) for player in self.list_of_players]
+        player_scores = [(player.ext_player.id, player.get_score()) for player in self.list_of_players]
         return sorted(player_scores, key=lambda player_score: player_score[1], reverse=True)
 
     @classmethod

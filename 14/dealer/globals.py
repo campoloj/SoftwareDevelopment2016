@@ -50,7 +50,7 @@ HERB_FEED_LENGTH = 2
 CARN_FEED_LENGTH = 3
 EXTINCTION_CARD_AMOUNT = 2
 DEAL_AMOUNT = 3
-SCORE_TEMPLATE = "%d player id: %d score: %d"
+SCORE_TEMPLATE = "%d player id: %s score: %d"
 
 ### JSON messages
 ## Length
@@ -86,7 +86,7 @@ CARD_TEMPLATE = "[%s, %d]"
 ### Server / Client
 PROXY_ID = 1
 TIMEOUT = 3
-PORT = 9999
+PORT = 9998
 HOSTNAME = 'localhost'
 SIGNUP_TIME = 60
 SIGNUP_MSG = "sign-up"
