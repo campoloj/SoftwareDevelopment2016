@@ -107,7 +107,7 @@ class HerbivoreFeeding(FeedingChoice):
         """
         herbivore = feeding_player.species[self.species_index]
         assert(herbivore in feeding_player.get_hungry_species(carnivores=False))
-        dealer.feed_species(herbivore, feeding_player)
+        dealer.watering_hole = feeding_player.feed_species(herbivore, dealer.watering_hole)
 
     def convert_to_json(self):
         """
@@ -200,8 +200,8 @@ class CarnivoreFeeding(FeedingChoice):
         """
         if isinstance(other, CarnivoreFeeding):
             return all([self.attacker_index == other.attacker_index,
-                    self.defending_player_index == other.defending_player_index,
-                    self.defender_index == other.defender_index])
+                        self.defending_player_index == other.defending_player_index,
+                        self.defender_index == other.defender_index])
         return False
 
     def __ne__(self, other):
@@ -226,10 +226,42 @@ class CarnivoreFeeding(FeedingChoice):
                defender.is_attackable(attacker, defending_player.get_left_neighbor(defender),
                                       defending_player.get_right_neighbor(defender)))
 
-        dealer.handle_attack_situation(attacker, defender, feeding_player, defending_player)
+        self.handle_attack_situation(attacker, defender, feeding_player, defending_player, dealer)
         if attacker.population >= MIN_POP:
-            dealer.feed_species(attacker, feeding_player)
+            dealer.watering_hole = feeding_player.feed_species(attacker, dealer.watering_hole)
             dealer.feed_trait(SCAVENGER)
+
+    def handle_attack_situation(self, attacker, defender, feeding_player, defending_player, dealer):
+        """
+        Resolves an attack between a carnivorous species and a target species.
+        :param attacker: attacking Species
+        :param defender: defending Species
+        :param feeding_player: PlayerState of attacking player
+        :param defending_player: PlayerState of defending player
+        :param dealer: Dealer running this game
+        """
+        self.handle_attacked_species(defender, defending_player, dealer)
+        if HORNS in defender.trait_names():
+            self.handle_attacked_species(attacker, feeding_player, dealer)
+
+    def handle_attacked_species(self, species, player, dealer):
+        """
+        Resolves an attack on a target species by modifying their population and checking for extinction
+        :param species: a Species harmed in an attack
+        :param player: the PlayerState of the player owning the given Species
+        """
+        species.reduce_population()
+        self.handle_extinction(species, player, dealer)
+
+    def handle_extinction(self, species, player, dealer):
+        """
+        Removes the given species from the player in exchange for TraitCards if the species went extinct in an attack.
+        :param species: a Species harmed in an attack
+        :param player: the PlayerState of the player owning the given Species
+        """
+        if species.population < MIN_POP:
+            player.species.remove(species)
+            dealer.deal_cards(player, EXTINCTION_CARD_AMOUNT)
 
     def convert_to_json(self):
         """
