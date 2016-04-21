@@ -62,7 +62,7 @@ class Species(object):
         warning_call = ((left_neighbor.has_trait(WARNINGCALL) if left_neighbor else False) or
                         (right_neighbor.has_trait(WARNINGCALL) if right_neighbor else False))
         attacker_body = attacker.body + (attacker.population if attacker.has_trait(PACKHUNTING) else 0)
-        return not any([attacker.has_trait(CARNIVORE),
+        return not any([not attacker.has_trait(CARNIVORE),
                         self.has_trait(BURROWING) and self.food == self.population,
                         self.has_trait(CLIMBING) and not attacker.has_trait(CLIMBING),
                         self.has_trait(HARDSHELL) and attacker_body - self.body < HARD_SHELL_DIFF,

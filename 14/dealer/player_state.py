@@ -170,7 +170,7 @@ class PlayerState(object):
         """
         attackable_species = []
         for defender in self.species:
-            if self == defender:
+            if attacker == defender:
                 continue
             if defender.is_attackable(attacker, self.get_left_neighbor(defender), self.get_right_neighbor(defender)):
                 attackable_species.append(defender)
