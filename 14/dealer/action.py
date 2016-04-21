@@ -22,6 +22,12 @@ class Action(object):
         """
         return NotImplemented
 
+    def convert_to_json(self):
+        """
+        Converts this action into its respective JSON representation
+        """
+        return NotImplemented
+
 
 class FoodCardAction(Action):
     """
@@ -57,6 +63,13 @@ class FoodCardAction(Action):
         """
         return [self.trade_card_index]
 
+    def convert_to_json(self):
+        """
+        Convert this FoodCardAction into its respective JSON representation
+        :return: Nat representing the index into the acting PlayerState's hand
+        """
+        return self.trade_card_index
+
 
 class GrowAction(Action):
     """
@@ -64,14 +77,14 @@ class GrowAction(Action):
     """
     def __init__(self, attribute, species_board_index, trade_card_index):
         """
-        Creates a GrowPopAction
+        Creates a GrowAction
         :param attribute: One of:
                             - "body"
                             - "population"
         :param species_board_index: Natural that represents the index of the species board in the player's Species that
                                     the action is applied to.
         :param trade_card_index: Natural that represents the index in the players hand of the card to be traded.
-        :return: GrowPopAction
+        :return: GrowAction
         """
         super(GrowAction, self).__init__()
         self.attribute = attribute
@@ -80,6 +93,7 @@ class GrowAction(Action):
 
     def __eq__(self, other):
         return all([isinstance(other, GrowAction),
+                    self.attribute == other.attribute,
                     self.species_board_index == other.species_board_index,
                     self.trade_card_index == other.trade_card_index])
 
@@ -99,6 +113,13 @@ class GrowAction(Action):
         :return: List of Nat representing indices into the hand
         """
         return [self.trade_card_index]
+
+    def convert_to_json(self):
+        """
+        Convert this GrowAction into its respective JSON representation
+        :return: Nat representing the index into the acting PlayerState's hand
+        """
+        return [self.species_board_index, self.trade_card_index]
 
 
 class AddSpeciesAction(Action):
