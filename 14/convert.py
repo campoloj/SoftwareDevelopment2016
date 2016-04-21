@@ -91,129 +91,68 @@ class Convert(object):
     @classmethod
     def json_to_step4(cls, json_step4):
         """
-        Converts a JSON step 4 into a List of Action4 Objects.
+        Converts a JSON Step4 into a List of Action4 Objects.
         :param json_step4: A JSON Step4 as specified by the data definition at
                            http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: List of Action4
         """
-        result = []
-        for json_action4 in json_step4:
-            result.append(cls.json_to_action4(json_action4))
-        return result
+        return [cls.json_to_action4(json_action4) for json_action4 in json_step4]
 
     @classmethod
     def json_to_action4(cls, json_action4):
         """
         Converts a JSON action into a Action4 Object.
-        :param json_action4: A JSON Action4 as specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :param json_action4: A JSON Action4 as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: Action4
         """
-        food_card_action = FoodCardAction(json_action4[0])
-        list_of_gp = json_action4[1]
-        list_of_gb = json_action4[2]
-        list_of_bt = json_action4[3]
-        list_of_rt = json_action4[4]
-        return Action4(food_card_action, cls.json_to_grow_action(list_of_gp), cls.json_to_grow_action(list_of_gb),
+        [food_card, list_of_gp, list_of_gb, list_of_bt, list_of_rt] = json_action4
+        return Action4(cls.json_to_food_action(food_card), cls.json_to_gp(list_of_gp), cls.json_to_gb(list_of_gb),
                        cls.json_to_species_action(list_of_bt), cls.json_to_replace_trait_action(list_of_rt))
 
     @classmethod
-    def action4_to_json(cls, action4):
+    def json_to_food_action(cls, json_food_card):
         """
-        Converts an Action4 into a JsonAction4 Object.
-        :param action4: an Action4
-        :return: A JSON Action4 as specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        Converts a JSON food card into a FoodCardAction
+        :param json_food_card: Nat representing JSON food card
+        :return: FoodCardAction object
         """
-        return [action4.food_card.trade_card_index,
-                cls.grow_actions_to_json(action4.grow_pop),
-                cls.grow_actions_to_json(action4.grow_body),
-                cls.add_species_to_json(action4.add_species),
-                cls.replace_trait_to_json(action4.replace_trait)]
+        return FoodCardAction(json_food_card)
 
     @classmethod
-    def json_to_grow_action(cls, list_of_json_grow):
+    def json_to_gp(cls, list_of_gp):
         """
-        Converts a List of JSON grow actions to a List of GrowActions
-        :param list_of_json_grow: a List of GP or GB specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
-        :return: List of GrowAction
+        Converts a List of JSON GP into a List of GrowAction
+        :param list_of_gp: List of GP as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: List of GrowAction objects
         """
-        result = []
-        for json_grow in list_of_json_grow:
-            result.append(GrowAction(json_grow[0], json_grow[1], json_grow[2]))
-        return result
-
+        return [GrowAction(POPULATION, gp[1], gp[2]) for gp in list_of_gp]
 
     @classmethod
-    def grow_actions_to_json(cls, list_of_grow_actions):
+    def json_to_gb(cls, list_of_gb):
         """
-        Converts a List of JSON grow actions to a List of GrowActions
-        :param list_of_grow_actions: a List of GrowActions
-        :return: a List of GP or GB specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        Converts a List of JSON GB into a List of GrowAction
+        :param list_of_gb: List of GB as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        :return: List of GrowAction objects
         """
-        result = []
-        for grow_action in list_of_grow_actions:
-            result.append([grow_action.attribute, grow_action.species_board_index, grow_action.trade_card_index])
-        return result
+        return [GrowAction(BODY, gb[1], gb[2]) for gb in list_of_gb]
 
     @classmethod
     def json_to_species_action(cls, list_of_bt):
         """
-        Converts a List of JSON bt to a List of AddSpeciesActions
-        :param list_of_bt: a List of BT specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        Converts a List of JSON BT into a List of AddSpeciesActions
+        :param list_of_bt: a List of BT as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: List of AddSpeciesAction
         """
-        result = []
-        for bt in list_of_bt:
-            traits = []
-            for i in range(1, len(bt)):
-                traits.append(bt[i])
-            result.append(AddSpeciesAction(bt[0], traits))
-        return result
-
-    @classmethod
-    def add_species_to_json(cls, list_of_species_actions):
-        """
-        Converts a list of AddSpeciesActions to List of Json BT
-        :param list_of_species_actions: List of AddSpeciesAction
-        :return: list_of_bt: a List of BT specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
-        """
-        result = []
-        for species_action in list_of_species_actions:
-            result.append([species_action.trade_card_index] + species_action.add_card_list)
-        return result
+        return [AddSpeciesAction(bt[0], (bt[1:] if len(bt) > 1 else [])) for bt in list_of_bt]
 
     @classmethod
     def json_to_replace_trait_action(cls, list_of_rt):
         """
-        Converts a List of JSON RT actions to a List of ReplaceTraitActions
-        :param list_of_rt: a List of RT specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
+        Converts a List of JSON RT into a List of ReplaceTraitActions
+        :param list_of_rt: a List of RT as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: List of ReplaceTraitActions
         """
-        result = []
-        for rt in list_of_rt:
-            result.append(ReplaceTraitAction(rt[0], rt[1], rt[2]))
-        return result
-
-    @classmethod
-    def replace_trait_to_json(cls, list_of_replace_actions):
-        """
-        Converts a List of ReplaceTraitActions to a JSON List of RT
-        :param list_of_replace_actions:
-        :return: List of RT specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
-        """
-        result = []
-        for replace_action in list_of_replace_actions:
-            result.append([replace_action.species_board_index,
-                           replace_action.card_to_replace_index,
-                           replace_action.replacement_card_index])
-        return result
+        return [ReplaceTraitAction(rt[0], rt[1], rt[2]) for rt in list_of_rt]
 
 # ======================================  Feeding ==========================================
 
