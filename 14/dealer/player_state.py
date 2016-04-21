@@ -57,7 +57,7 @@ class PlayerState(object):
         score = self.food_bag
         for spec in self.species:
             score += spec.population + len(spec.traits)
-        return score
+        return (self.ext_player.id, score)
 
 # ======================================  Step 1 Methods ============================================
 
