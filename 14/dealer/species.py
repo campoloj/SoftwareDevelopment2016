@@ -73,20 +73,16 @@ class Species(object):
         :param right_neighbor: the Species to the right of this species (False if no left neighbor)
         :return: True if this species is attackable, else False
         """
-        defender_traits = self.trait_names()
-        attacker_traits = attacker.trait_names()
-        left_traits = left_neighbor.trait_names() if left_neighbor else []
-        right_traits = right_neighbor.trait_names() if right_neighbor else []
-        attacker_body = attacker.body + (attacker.population if PACKHUNTING in attacker_traits else 0)
-
-        return not any([CARNIVORE not in attacker_traits,
-                        BURROWING in defender_traits and self.food == self.population,
-                        CLIMBING in defender_traits and CLIMBING not in attacker_traits,
-                        HARDSHELL in defender_traits and attacker_body - self.body < HARD_SHELL_DIFF,
-                        HERDING in defender_traits and attacker.population <= self.population,
-                        SYMBIOSIS in defender_traits and right_neighbor and right_neighbor.body > self.body,
-                        ((WARNINGCALL in right_traits) or (WARNINGCALL in left_traits))
-                        and AMBUSH not in attacker_traits])
+        warning_call = ((left_neighbor.has_trait(WARNINGCALL) if left_neighbor else False) or
+                        (right_neighbor.has_trait(WARNINGCALL) if right_neighbor else False))
+        attacker_body = attacker.body + (attacker.population if attacker.has_trait(PACKHUNTING) else 0)
+        return not any([attacker.has_trait(CARNIVORE),
+                        self.has_trait(BURROWING) and self.food == self.population,
+                        self.has_trait(CLIMBING) and not attacker.has_trait(CLIMBING),
+                        self.has_trait(HARDSHELL) and attacker_body - self.body < HARD_SHELL_DIFF,
+                        self.has_trait(HERDING) and attacker.population <= self.population,
+                        self.has_trait(SYMBIOSIS) and right_neighbor and right_neighbor.body > self.body,
+                        warning_call and not attacker.has_trait(AMBUSH)])
 
     def trait_names(self):
         """
@@ -138,11 +134,11 @@ class Species(object):
             self.fat_storage -= transfer
             self.food += transfer
 
-    def modify_fertiles(self):
+    def modify_if_fertile(self):
         """
         :effect Adds population to Species if it contains the fertile trait
         """
-        if FERTILE in self.trait_names():
+        if self.has_trait(FERTILE):
             self.population += GROW_POP_AMOUNT
 
     def has_trait(self, trait):

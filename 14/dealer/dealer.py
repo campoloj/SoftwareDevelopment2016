@@ -339,64 +339,6 @@ class Dealer(object):
         while self.list_of_players[0].name is not first_player_id:
             self.list_of_players.append(self.list_of_players.pop(0))
 
-# ======================================   Feeding Methods ==========================================
-
-    def feed_species(self, species, player, allow_forage=True):
-        """
-        Feeds the given species, and any others if necessary due to its traits.
-        :param species: The Species being fed
-        :param player: the PlayerState of the player who owns the species
-        :param allow_forage: True if this Species has not yet eaten its forage food, else False
-        """
-
-        if not species.is_hungry() or self.watering_hole <= MIN_WATERING_HOLE:
-            return
-
-        species.food += FEED_QUANTITY
-        self.watering_hole -= FEED_QUANTITY
-
-        if FORAGING in species.trait_names() and allow_forage:
-            self.feed_species(species, player, allow_forage=False)
-
-        if COOPERATION in species.trait_names():
-            right_neighbor = player.get_right_neighbor(species)
-            if right_neighbor:
-                self.feed_species(right_neighbor, player)
-
-
-# -----------------------------------   Carnivore Feed Methods --------------------------------------
-
-    def handle_attack_situation(self, attacker, defender, feeding_player, defending_player):
-        """
-        Resolves an attack between a carnivorous species and a target species.
-        :param attacker: attacking Species
-        :param defender: defending Species
-        :param feeding_player: PlayerState of attacking player
-        :param defending_player: PlayerState of defending player
-        """
-        self.handle_attacked_species(defender, defending_player)
-        if HORNS in defender.trait_names():
-            self.handle_attacked_species(attacker, feeding_player)
-
-    def handle_attacked_species(self, species, player):
-        """
-        Resolves an attack on a target species by modifying their population and checking for extinction
-        :param species: a Species harmed in an attack
-        :param player: the PlayerState of the player owning the given Species
-        """
-        species.reduce_population()
-        self.handle_extinction(species, player)
-
-    def handle_extinction(self, species, player):
-        """
-        Removes the given species from the player in exchange for TraitCards if the species went extinct in an attack.
-        :param species: a Species harmed in an attack
-        :param player: the PlayerState of the player owning the given Species
-        """
-        if species.population < MIN_POP:
-            player.species.remove(species)
-            self.deal_cards(player, EXTINCTION_CARD_AMOUNT)
-
 
 # ======================================   Validation Methods ===========================================
 
@@ -429,7 +371,7 @@ class Dealer(object):
         changes = []
         old_players = self.players_to_dict()
         new_players = dealer2.players_to_dict()
-        for i in range(0, len(self.list_of_players)):
+        for i in range(len(self.list_of_players)):
             name = self.list_of_players[i].name
             old_player = old_players.get(name)
             new_player = new_players.get(name)
@@ -441,8 +383,6 @@ class Dealer(object):
         if deck_changes:
             changes.append('deck: ' + deck_changes)
         return ", ".join(changes)
-
-
 
     def players_to_dict(self):
         """
