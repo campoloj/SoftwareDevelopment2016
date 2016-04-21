@@ -133,17 +133,17 @@ class PlayerState(object):
         fatties = self.get_needy_fats()
         herbivores = self.get_hungry_species(carnivores=False)
         carnivores = self.get_hungry_species(carnivores=True)
-        if not fatties and not herbivores and not carnivores:
+        if not (fatties or herbivores or carnivores):
             return NoFeeding()
-        elif len(fatties) == 1 and not herbivores and not carnivores:
-            return FatFeeding(self.species.index(fatties[0]),
-                              min(fatties[0].body - fatties[0].fat_storage, watering_hole))
-        elif not fatties and len(herbivores) == 1 and not carnivores:
+        elif len(fatties) == 1 and not (herbivores or carnivores):
+            fatty = fatties[0]
+            return FatFeeding(self.species.index(fatty),
+                              min(fatty.body - fatty.fat_storage, watering_hole))
+        elif len(herbivores) == 1 and not (carnivores or fatties):
             return HerbivoreFeeding(self.species.index(herbivores[0]))
-        elif not fatties and not herbivores and len(carnivores) == 1:
+        elif len(carnivores) == 1 and not (fatties or herbivores):
             return self.carnivore_auto_feeding(carnivores[0], other_players)
-        else:
-            return False
+        return False
 
     def carnivore_auto_feeding(self, carnivore, other_players):
         """
@@ -160,8 +160,7 @@ class PlayerState(object):
             return CarnivoreFeeding(self.species.index(carnivore),
                                     other_players.index(def_player),
                                     def_player.species.index(targets[0]))
-        else:
-            return False
+        return False
 
     def end_turn(self):
         """
@@ -198,12 +197,14 @@ class PlayerState(object):
         :effect Adds population to all fertile Species in this player
         """
         for species in self.species:
-            species.modify_fertiles()
+            species.modify_if_fertile()
 
     def feed_trait(self, watering_hole, trait):
         """
+        :effect Feeds all Species with the given trait
         :param watering_hole: The food left in the watering hole
-        :effect Feeds all long-neck Species
+        :param trait: The trait we are looking for in the species list
+        :return Nat representing the remaining food on the watering hole
         """
 
         for species in self.species:
@@ -214,10 +215,10 @@ class PlayerState(object):
     def feed_species(self, species, watering_hole, allow_forage=True):
         """
         Feed the species and set off foraging and cooperation.
-        :param species: The species
-        :param watering_hole:
-        :param allow_forage:
-        :return:
+        :param species: The species being fed
+        :param watering_hole: The food remaining on the watering hole
+        :param allow_forage: True if the given species has not foraged yet
+        :return: Nat representing the remaining food on the watering hole
         """
         feed = species.feed(watering_hole)
         if feed == watering_hole:
@@ -225,10 +226,10 @@ class PlayerState(object):
 
         watering_hole = feed
 
-        if FORAGING in species.trait_names() and allow_forage:
+        if species.has_trait(FORAGING) and allow_forage:
             watering_hole = self.feed_species(species, watering_hole, allow_forage=False)
 
-        if COOPERATION in species.trait_names():
+        if species.has_trait(COOPERATION):
             right_neighbor = self.get_right_neighbor(species)
             if right_neighbor:
                 watering_hole = self.feed_species(right_neighbor, watering_hole)
@@ -264,8 +265,8 @@ class PlayerState(object):
         :return: List of Species, Where species are hungry herbivores.
         """
         return [species for species in self.species
-                if (CARNIVORE in species.trait_names() if carnivores else CARNIVORE not in species.trait_names()) and
-                species.food < species.population]
+                if (species.has_trait(CARNIVORE) if carnivores else not species.has_trait(CARNIVORE)) and
+                species.is_hungry()]
 
     def get_needy_fats(self):
         """
@@ -273,7 +274,7 @@ class PlayerState(object):
         :return: List of Species, Where species fat-tissue is not full
         """
         return [species for species in self.species
-                if FATTISSUE in species.trait_names() and
+                if species.has_trait(FATTISSUE) and
                 species.fat_storage < species.body]
 
 # ======================================  Action Methods ============================================
