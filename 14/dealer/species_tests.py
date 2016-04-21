@@ -33,13 +33,6 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species_1.all_attackable_species([self.player_1, self.player_2]),
                          [self.species_3, self.species_5])
 
-    def test_attackable_species(self):
-        self.species_1.traits = [TraitCard(CARNIVORE)]
-        self.species_2.traits = [TraitCard(CLIMBING)]
-        self.species_4.traits = [TraitCard(HARDSHELL)]
-        self.player_1.species = [self.species_2, self.species_3, self.species_4, self.species_5]
-        self.assertEqual(self.species_1.attackable_species(self.player_1), [self.species_3, self.species_5])
-
     def test_trait_names(self):
         self.assertEqual(self.defender.trait_names(), [])
         self.assertEqual(self.attacker.trait_names(), [CARNIVORE])

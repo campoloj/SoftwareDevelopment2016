@@ -162,6 +162,20 @@ class PlayerState(object):
                                     def_player.species.index(targets[0]))
         return False
 
+    def get_attackable_species(self, attacker):
+        """
+        Find all species belonging to the given player that are attackable by this carnivore species
+        :param attacker: the attacking species
+        :return: List of Species objects attackable by the given attacker
+        """
+        attackable_species = []
+        for defender in self.species:
+            if attacker == defender:
+                continue
+            if defender.is_attackable(attacker, self.get_left_neighbor(defender), self.get_right_neighbor(defender)):
+                attackable_species.append(defender)
+        return attackable_species
+
     def end_turn(self):
         """
         Adjust species populations, remove extinct species, move food from species to food bag of this PlayerState

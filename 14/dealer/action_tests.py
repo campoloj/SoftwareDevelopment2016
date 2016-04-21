@@ -61,8 +61,8 @@ class TestActions(unittest.TestCase):
         self.replace_trait_action3 = ReplaceTraitAction(0, 2, 0)
 
         # Action4
-        self.action4_1 = Action4(self.player1, [self.food_card_action1])
-        self.action4_2 = Action4(self.player2, [self.food_card_action2, self.grow_action_pop])
+        self.action4_1 = Action4(self.food_card_action1)
+        self.action4_2 = Action4(self.food_card_action2, grow_pop=[self.grow_action_pop])
 
     def test_food_card_action(self):
         old_dealer = copy.deepcopy(self.dealer1)
@@ -76,63 +76,58 @@ class TestActions(unittest.TestCase):
         old_dealer = copy.deepcopy(self.dealer1)
         self.grow_action_pop.apply(self.dealer1, self.player1)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 1:'
+                          'Player 1: '
                           'Species 0: [[population, 1->2]]')
         old_dealer = copy.deepcopy(self.dealer1)
         self.grow_action_body.apply(self.dealer1, self.player2)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 2:'
+                          'Player 2: '
                           'Species 1: [[body, 5->6]]')
 
     def test_add_species_action(self):
         old_dealer = copy.deepcopy(self.dealer1)
         self.add_species_action1.apply(self.dealer1, self.player2)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          "Player 2:"
+                          "Player 2: "
                           "Species 3: New Species: [[food, 0], [body, 0], [population, 1], "
                                                    "[traits, [[carnivore, 3]]]]")
         old_dealer = copy.deepcopy(self.dealer1)
         self.add_species_action2.apply(self.dealer1, self.player3)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 3:'
+                          'Player 3: '
                           'Species 2: New Species: [[food, 0], [body, 0], [population, 1], [traits, []]]')
 
     def test_replace_trait_action(self):
         old_dealer = copy.deepcopy(self.dealer1)
         self.replace_trait_action1.apply(self.dealer1, self.player1)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 1:'
+                          'Player 1: '
                           'Species 0: [[traits: [0, [cooperation, 1]->[fat-tissue, 4]]]]')
         old_dealer = copy.deepcopy(self.dealer1)
         self.replace_trait_action2.apply(self.dealer1, self.player2)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 2:'
+                          'Player 2: '
                           'Species 2: [[traits: [0, [foraging, 2]->[carnivore, 3]]]]')
         old_dealer = copy.deepcopy(self.dealer1)
         self.replace_trait_action3.apply(self.dealer1, self.player3)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 3:'
+                          'Player 3: '
                           'Species 0: [[traits: [2, [scavenger, 2]->[burrowing, 2]]]]')
 
     def test_action4_apply_all(self):
         old_dealer = copy.deepcopy(self.dealer1)
-        self.action4_1.apply_all(self.dealer1)
+        self.action4_1.apply_all(self.dealer1, self.player1)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 1:'
-                             'removed cards: [fat-tissue, 4], '
+                          'Player 1: '
+                          'removed cards: [fat-tissue, 4], '
                           '[watering_hole, 10->14]')
         old_dealer = copy.deepcopy(self.dealer1)
-        self.action4_2.apply_all(self.dealer1)
+        self.action4_2.apply_all(self.dealer1, self.player2)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
-                          'Player 2:'
-                             'removed cards: [fat-tissue, 4], [carnivore, 3], '
-                             'Species 0: [[population, 3->4]], '
-                          '[watering_hole, 14->17]' )
-
-
-
-
-
+                          'Player 2: '
+                          'removed cards: [fat-tissue, 4], [carnivore, 3], '
+                          'Species 0: [[population, 3->4]], '
+                          '[watering_hole, 14->17]')
 
 if __name__ == '__main__':
     unittest.main()
