@@ -12,10 +12,12 @@ import json
 
 class Convert(object):
     """
-    Methods for converting between JSON input and Python objects
+    Methods for reading JSON and converting between JSON input and Python objects
     """
     def __init__(self):
         pass
+
+# ======================================  JSON Reading ==========================================
 
     @classmethod
     def json_parser(cls, buffer):
@@ -52,6 +54,8 @@ class Convert(object):
                 return ""
         return decoded_json[0]
 
+# ======================================  Dealer ==========================================
+
     @classmethod
     def json_to_dealer(cls, json_config):
         """
@@ -81,6 +85,8 @@ class Convert(object):
         json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
         json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
         return [json_players, dealer.watering_hole, json_deck]
+
+# ======================================  Actions ==========================================
 
     @classmethod
     def json_to_step4(cls, json_step4):
@@ -209,6 +215,8 @@ class Convert(object):
                            replace_action.replacement_card_index])
         return result
 
+# ======================================  Feeding ==========================================
+
     @classmethod
     def json_to_feeding_choice(cls, json_fc):
         """
@@ -229,28 +237,7 @@ class Convert(object):
         else:
             raise AssertionError
 
-    @classmethod
-    def json_to_choice_lop(cls, json_los_list):
-        """
-        Converts a List of List of JSON Species to a List of Player_States
-        :param json_los_list: the list of JSON LOS as specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/12.html
-        :return: a List of PlayerState.
-        """
-        return [cls.json_boards_to_player(jboards) for jboards in json_los_list]
-
-    @classmethod
-    def players_to_all_json(cls, lop_left, lop_right):
-        """
-        Converts two lists of PlayerStates to a [LOB, LOB]
-        :param lop_left: List of PlayerState to the left of the choosing player
-        :param lop_right: List of PlayerState to the right of the choosing player
-        :return: [LOB, LOB] as specified by
-                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
-        """
-        lob_left = [cls.player_to_json_boards(player) for player in lop_left]
-        lob_right = [cls.player_to_json_boards(player) for player in lop_right]
-        return [lob_left, lob_right]
+# ======================================  PlayerState ==========================================
 
     @classmethod
     def json_to_player(cls, json_player):
@@ -290,6 +277,54 @@ class Convert(object):
             json_player.append([CARDS, json_hand])
         return json_player
 
+# ----------------------------- Players as Lists of Species Boards ----------------------------
+
+    @classmethod
+    def json_to_choice_lop(cls, json_los_list):
+        """
+        Converts a List of List of JSON Species to a List of PlayerStates
+        :param json_los_list: the list of JSON LOS as specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/12.html
+        :return: a List of PlayerState.
+        """
+        return [cls.json_boards_to_player(jboards) for jboards in json_los_list]
+
+    @classmethod
+    def players_to_all_json(cls, lop_left, lop_right):
+        """
+        Converts two lists of PlayerStates to a [LOB, LOB]
+        :param lop_left: List of PlayerState to the left of the choosing player
+        :param lop_right: List of PlayerState to the right of the choosing player
+        :return: [LOB, LOB] as specified by
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        lob_left = [cls.player_to_json_boards(player) for player in lop_left]
+        lob_right = [cls.player_to_json_boards(player) for player in lop_right]
+        return [lob_left, lob_right]
+
+    @classmethod
+    def json_boards_to_player(cls, jboards):
+        """
+        Convert a JSON Boards to a List of PlayerStates
+        :param jboards: a JSON Boards as specified in
+                        http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        :return: a PlayerState object
+        """
+        species = [cls.json_to_species(jspecies) for jspecies in jboards]
+        return PlayerState(species=species)
+
+    @classmethod
+    def player_to_json_boards(cls, player):
+        """
+        Converts a PlayerState to a JSON Boards
+        :param player: a PlayerState object
+        :return: a JSON Boards as specified in
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [cls.species_to_json(species_obj) for species_obj in player.species]
+
+# ----------------------------- Players as States ----------------------------
+
     @classmethod
     def player_to_rp_json(cls, player):
         """
@@ -320,8 +355,8 @@ class Convert(object):
     @classmethod
     def json_to_state(cls, json_state):
         """
-        Converts a remote protocol JSON player state to a PlayerState
-        :param json_state: a remote protocol JSON state as specified in
+        Converts a watering hole and remote protocol JSON player state to a Integer and PlayerState
+        :param json_state: a remote protocol JSON state with watering hole as specified in
                             http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: [Integer, PlayerState object]
         """
@@ -329,27 +364,6 @@ class Convert(object):
         player = cls.rp_json_to_player(json_state)
         assert(isinstance(watering_hole, int) and watering_hole >= MIN_WATERING_HOLE)
         return [watering_hole, player]
-
-    @classmethod
-    def json_boards_to_player(cls, jboards):
-        """
-        Convert a JSON Boards to a List of PlayerStates
-        :param jboards: a JSON Boards as specified in
-                        http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
-        :return: a PlayerState object
-        """
-        species = [cls.json_to_species(jspecies) for jspecies in jboards]
-        return PlayerState(species=species)
-
-    @classmethod
-    def player_to_json_boards(cls, player):
-        """
-        Converts a PlayerState to a JSON Boards
-        :param player: a PlayerState object
-        :return: a JSON Boards as specified in
-                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
-        """
-        return [cls.species_to_json(species_obj) for species_obj in player.species]
 
     @classmethod
     def json_to_gamestate(cls, jgamestate):
@@ -380,6 +394,8 @@ class Convert(object):
         other_players = [cls.player_to_json_boards(op) for op in other_players]
         state += [watering_hole, other_players]
         return state
+
+# ======================================  Species ==========================================
 
     @classmethod
     def json_to_species(cls, json_species):
@@ -418,6 +434,8 @@ class Convert(object):
         if species_obj.fat_storage:
             json_species.append([FATFOOD, species_obj.fat_storage])
         return json_species
+
+# ======================================  TraitCard ==========================================
 
     @classmethod
     def json_to_trait(cls, json_trait):
