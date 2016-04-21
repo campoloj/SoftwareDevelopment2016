@@ -48,21 +48,7 @@ class Species(object):
         """
         attackable_species = []
         for player in list_of_players:
-            attackable_species += self.attackable_species(player)
-        return attackable_species
-
-    def attackable_species(self, player):
-        """
-        Find all species belonging to the given player that are attackable by this carnivore species
-        :param player: PlayerState of the defending player
-        :return: List of Species objects attackable by this carnivore Species
-        """
-        attackable_species = []
-        for defender in player.species:
-            if self == defender:
-                continue
-            if defender.is_attackable(self, player.get_left_neighbor(defender), player.get_right_neighbor(defender)):
-                attackable_species.append(defender)
+            attackable_species += player.get_attackable_species(self)
         return attackable_species
 
     def is_attackable(self, attacker, left_neighbor=False, right_neighbor=False):
@@ -143,6 +129,7 @@ class Species(object):
 
     def has_trait(self, trait):
         """
+        :param trait the trait we are looking for in this species' traits
         :return True if this species has the given trait
         """
         return trait in self.trait_names()

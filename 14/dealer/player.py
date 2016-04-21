@@ -116,6 +116,20 @@ class Player(object):
                                 list_of_player.index(target_player),
                                 target_player.species.index(target))
 
+    def get_attackable_species(self, attacker):
+        """
+        Find all species belonging to the given player that are attackable by this carnivore species
+        :param player: PlayerState of the defending player
+        :return: List of Species objects attackable by this carnivore Species
+        """
+        attackable_species = []
+        for defender in self.species:
+            if self == defender:
+                continue
+            if defender.is_attackable(attacker, self.get_left_neighbor(defender), self.get_right_neighbor(defender)):
+                attackable_species.append(defender)
+        return attackable_species
+
     @classmethod
     def sort_by_size(cls, list_of_species):
         """
