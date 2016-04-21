@@ -186,6 +186,56 @@ class PlayerState(object):
         self.species = survivors
         return card_amount
 
+    def move_fat(self):
+        """
+        Effect: Moves the fat from the fat-storage to food for species that it applies.
+        """
+        for species in self.species:
+            species.move_fat()
+
+    def modify_fertiles(self):
+        """
+        :effect Adds population to all fertile Species in this player
+        """
+        for species in self.species:
+            species.modify_fertiles()
+
+    def feed_trait(self, watering_hole, trait):
+        """
+        :param watering_hole: The food left in the watering hole
+        :effect Feeds all long-neck Species
+        """
+
+        for species in self.species:
+            if species.has_trait(trait):
+                watering_hole = self.feed_species(species, watering_hole)
+        return watering_hole
+
+    def feed_species(self, species, watering_hole, allow_forage=True):
+        """
+        Feed the species and set off foraging and cooperation.
+        :param species: The species
+        :param watering_hole:
+        :param allow_forage:
+        :return:
+        """
+        feed = species.feed(watering_hole)
+        if feed == watering_hole:
+            return watering_hole
+
+        watering_hole = feed
+
+        if FORAGING in species.trait_names() and allow_forage:
+            watering_hole = self.feed_species(species, watering_hole, allow_forage=False)
+
+        if COOPERATION in species.trait_names():
+            right_neighbor = self.get_right_neighbor(species)
+            if right_neighbor:
+                watering_hole = self.feed_species(right_neighbor, watering_hole)
+
+        return watering_hole
+
+
 # ======================================  Species Methods ============================================
 
     def get_left_neighbor(self, species):

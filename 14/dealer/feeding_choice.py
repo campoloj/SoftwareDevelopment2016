@@ -229,7 +229,7 @@ class CarnivoreFeeding(FeedingChoice):
         dealer.handle_attack_situation(attacker, defender, feeding_player, defending_player)
         if attacker.population >= MIN_POP:
             dealer.feed_species(attacker, feeding_player)
-            dealer.handle_scavenging()
+            dealer.feed_trait(SCAVENGER)
 
     def convert_to_json(self):
         """

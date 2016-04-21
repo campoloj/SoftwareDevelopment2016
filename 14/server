@@ -23,14 +23,12 @@ def main(hostname, port):
     """
     server = ThreadedTCPServer((hostname, int(port)), ThreadedTCPRequestHandler)
     server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.daemon = True
     server_thread.start()
     start_time = time.time()
     while not len(player_proxies) == LOP_MAX and time.time() - start_time < SIGNUP_TIME:
         continue
     run_game()
     server.shutdown()
-    server.server_close()
 
 
 def run_game():

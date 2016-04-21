@@ -129,6 +129,39 @@ class Species(object):
         """
         self.traits[traitcard_index] = replacement_card
 
+    def move_fat(self):
+        """
+        Effect: Moves the fat from the fat-storage to food if it applies.
+        """
+        if self.fat_storage:
+            transfer = min(self.population, self.fat_storage)
+            self.fat_storage -= transfer
+            self.food += transfer
+
+    def modify_fertiles(self):
+        """
+        :effect Adds population to Species if it contains the fertile trait
+        """
+        if FERTILE in self.trait_names():
+            self.population += GROW_POP_AMOUNT
+
+    def has_trait(self, trait):
+        """
+        :return True if this species has the given trait
+        """
+        return trait in self.trait_names()
+
+    def feed(self, watering_hole):
+        """
+        :effect feed this species if it can be fed
+        :param watering_hole: The food on the watering hole
+        :return: Nat food remaining on the watering hole
+        """
+        if not self.is_hungry() or watering_hole <= MIN_WATERING_HOLE:
+            return watering_hole
+        self.food += FEED_QUANTITY
+        return watering_hole - FEED_QUANTITY
+
     @classmethod
     def validate_all_cards(cls, list_of_species, total_deck):
         """

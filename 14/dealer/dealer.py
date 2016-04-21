@@ -1,5 +1,4 @@
 import gui
-
 from globals import *
 from player_state import PlayerState
 from species import Species
@@ -261,36 +260,28 @@ class Dealer(object):
         """
         self.move_fat()
         self.modify_fertiles()
-        self.feed_long_necks()
+        self.feed_trait(LONGNECK)
 
     def move_fat(self):
         """
         :effect Moves fat food from fat-storage to food
         """
         for player in self.list_of_players:
-            for species in player.species:
-                if species.fat_storage:
-                    transfer = min(species.population, species.fat_storage)
-                    species.fat_storage -= transfer
-                    species.food += transfer
+            player.move_fat()
 
     def modify_fertiles(self):
         """
         :effect Adds population to all fertile Species
         """
         for player in self.list_of_players:
-            for species in player.species:
-                if FERTILE in species.trait_names():
-                    species.population += GROW_POP_AMOUNT
+            player.modify_fertiles()
 
-    def feed_long_necks(self):
+    def feed_trait(self, trait):
         """
         :effect Feeds all long-neck Species
         """
         for player in self.list_of_players:
-            for species in player.species:
-                if LONGNECK in species.trait_names():
-                    self.feed_species(species, player)
+            self.watering_hole = player.feed_trait(self.watering_hole, trait)
 
 # -----------------------------------   Feed Cycle Methods --------------------------------------
 
@@ -356,6 +347,7 @@ class Dealer(object):
         :param player: the PlayerState of the player who owns the species
         :param allow_forage: True if this Species has not yet eaten its forage food, else False
         """
+
         if not species.is_hungry() or self.watering_hole <= MIN_WATERING_HOLE:
             return
 
@@ -403,22 +395,6 @@ class Dealer(object):
         if species.population < MIN_POP:
             player.species.remove(species)
             self.deal_cards(player, EXTINCTION_CARD_AMOUNT)
-
-    def handle_scavenging(self):
-        """
-        Feeds any species with the Scavenger trait after a carnivore attack
-        """
-        for player in self.list_of_players:
-            self.feed_scavengers(player)
-
-    def feed_scavengers(self, player):
-        """
-        Feeds all of the given player's scavenger species after a carnivore attack
-        :param player: the PlayerState of the player to feed scavenger species
-        """
-        for species in player.species:
-            if SCAVENGER in species.trait_names():
-                self.feed_species(species, player)
 
 
 # ======================================   Validation Methods ===========================================

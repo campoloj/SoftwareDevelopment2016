@@ -74,8 +74,8 @@ class TestDealer(unittest.TestCase):
 
     def test_cheater(self):
         dealer = Dealer.create_initial([Player(), Player(), Player(), Cheater(), Player()])
-        result = dealer.run_game()
-        print result
+        #result = dealer.run_game()
+        #print result
 
     def test_step4(self):
         old_dealer = copy.deepcopy(self.dealer1)
@@ -185,7 +185,7 @@ class TestDealer(unittest.TestCase):
     def test_handle_scavenging(self):
         # Regular
         old_dealer = copy.deepcopy(self.dealer1)
-        self.dealer1.handle_scavenging()
+        self.dealer1.feed_trait(SCAVENGER)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
                           'Player 3: Species 0: [[food, 1->2]], '
                           '[watering_hole, 10->9]')
@@ -193,7 +193,7 @@ class TestDealer(unittest.TestCase):
         # Foraging
         self.species6.population, self.species6.traits[0] = (6, self.foraging)
         old_dealer = copy.deepcopy(self.dealer1)
-        self.dealer1.handle_scavenging()
+        self.dealer1.feed_trait(SCAVENGER)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
                           'Player 3: Species 0: [[food, 2->4]], '
                           '[watering_hole, 9->7]')
@@ -201,7 +201,7 @@ class TestDealer(unittest.TestCase):
         # Cooperation
         self.species6.traits[1] = self.cooperation
         old_dealer = copy.deepcopy(self.dealer1)
-        self.dealer1.handle_scavenging()
+        self.dealer1.feed_trait(SCAVENGER)
         self.assertEquals(old_dealer.show_changes(self.dealer1),
                           'Player 3: Species 0: [[food, 4->6]], Species 1: [[food, 1->3]], '
                           '[watering_hole, 7->3]')
