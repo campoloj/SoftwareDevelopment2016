@@ -214,10 +214,7 @@ class Dealer(object):
         for player in self.list_of_players:
             try:
                 action4_list.append(player.choose(all_players))
-                print "Passed"
-            except Exception as exc:
-                print "Gather actions"
-                print exc
+            except:
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
         if not self.list_of_players:
@@ -252,9 +249,7 @@ class Dealer(object):
                 action4_list[i].validate_hand(player)
                 action4_list[i].apply_all(self, player)
                 self.validate_attributes()
-            except Exception as exc:
-                print "Apply actions"
-                print exc
+            except:
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
         self.foodcard_reveal()

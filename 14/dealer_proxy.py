@@ -42,7 +42,6 @@ class DealerProxy(object):
         right_players = Convert.json_to_choice_lop(json_all_players[1])
         action4 = self.player.choose(left_players, right_players)
         json_action4 = Convert.action4_to_json(action4)
-        print json_action4
         self.socket.sendall(json.dumps(json_action4))
         self.wait_for_next_step()
 
@@ -55,7 +54,7 @@ class DealerProxy(object):
         :return:
         """
         response = Convert.listen(self.socket)
-        if len(response) == 3:
+        if len(response) == 4:
             return self.start(response)
         elif len(response) == 5:
             return self.feed(response)
