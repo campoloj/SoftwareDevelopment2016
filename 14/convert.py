@@ -35,19 +35,21 @@ class Convert(object):
             return (decoded_json, buffer)
 
     @classmethod
-    def listen(cls, socket, time_out=True):
+    def listen(cls, socket, time_out=TIMEOUT):
         """
         Waits for the first valid json message from the socket and returns it.
-        Throws error if no message is received in the min time allowed.
-        :return: String
+        Returns if no message is received in the min time allowed.
+        :param time_out: Int representing time to wait before exiting, or False if no timeout
+        :return: first complete JSON message read
         """
         buffer = ""
         decoded_json = []
         start_time = time.time()
-        while not decoded_json and (time.time() - start_time < TIMEOUT if time_out else True):
+        while not decoded_json:
             buffer += socket.recv(1024).strip()
             (decoded_json, buffer) = Convert.json_parser(buffer)
-        #print "PRINT JSON %s" % decoded_json[0]
+            if time_out and time.time() - start_time > TIMEOUT:
+                return ""
         return decoded_json[0]
 
     @classmethod
@@ -316,6 +318,19 @@ class Convert(object):
         return PlayerState(food_bag=food_bag, hand=hand, species=species)
 
     @classmethod
+    def json_to_state(cls, json_state):
+        """
+        Converts a remote protocol JSON player state to a PlayerState
+        :param json_state: a remote protocol JSON state as specified in
+                            http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        :return: [Integer, PlayerState object]
+        """
+        watering_hole = json_state.pop(0)
+        player = cls.rp_json_to_player(json_state)
+        assert(isinstance(watering_hole, int) and watering_hole >= MIN_WATERING_HOLE)
+        return [watering_hole, player]
+
+    @classmethod
     def json_boards_to_player(cls, jboards):
         """
         Convert a JSON Boards to a List of PlayerStates
@@ -337,15 +352,15 @@ class Convert(object):
         return [cls.species_to_json(species_obj) for species_obj in player.species]
 
     @classmethod
-    def json_to_gamestate(cls, jstate):
+    def json_to_gamestate(cls, jgamestate):
         """
         Converts a JSON State to a game state
-        :param jstate: a JSON State as specified in
+        :param jgamestate: a JSON State as specified in
                         http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: [PlayerState, Natural, List of PlayerState]
         """
-        player = cls.rp_json_to_player(jstate[:3])
-        watering_hole, jboards = jstate[3:]
+        player = cls.rp_json_to_player(jgamestate[:3])
+        watering_hole, jboards = jgamestate[3:]
         assert(isinstance(watering_hole, int) and watering_hole > MIN_WATERING_HOLE)
         other_players = cls.json_to_choice_lop(jboards)
         return [player, watering_hole, other_players]

@@ -3,18 +3,29 @@ from time import *
 
 
 class PlayerProxy(object):
-
+    """
+    Filters JSON messages from the client to the server
+    Uses Dealer to generate responses and sends them back to client
+    """
     def __init__(self, id, handler):
+        """
+        Creates a PlayerProxy
+        :param id: String representing the client's chosen username
+        :param handler: Request Handler used to send messages to client
+        :return: PlayerProxy object
+        """
         self.id = id
         self.handler = handler
 
-    def start(self, player_state):
+    def start(self, watering_hole, player_state):
         """
         Sends the player_state in json to the proxy dealer
+        :param watering_hole: Natural representing food currently at the watering hole
         :param player_state: Player_State for the external player
         """
         json_player = Convert.player_to_rp_json(player_state)
-        self.handler.request.sendall(json.dumps(json_player))
+        state = [watering_hole] + json_player
+        self.handler.request.sendall(json.dumps(state))
 
     def choose(self, left_players, right_players):
         """

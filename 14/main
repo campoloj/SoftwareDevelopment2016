@@ -13,7 +13,7 @@ def main(n):
     :effect: Displays the results of the game on stdout
     """
     try:
-        loxp = [Player() for x in xrange(n)]
+        loxp = [Player(id=x+1) for x in xrange(n)]
         dealer = Dealer.create_initial(loxp)
         dealer.validate_attributes()
         results = dealer.run_game()

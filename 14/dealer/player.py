@@ -7,12 +7,14 @@ class Player(object):
     """
     A data representation of a Player in the Evolution game
     """
-    def __init__(self, player_state=False):
+    def __init__(self, id=0, player_state=False):
+        self.id = id
         self.player_state = player_state
 
-    def start(self, state):
+    def start(self, watering_hole, state):
         """
         :effect adds the given state to this players player_state
+        :param watering_hole: Natural representing the current food at the watering hole
         :param state: A copy of the current state of the playet
         """
         self.player_state = state

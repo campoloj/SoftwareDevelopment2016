@@ -61,10 +61,11 @@ class PlayerState(object):
 
 # ======================================  Step 1 Methods ============================================
 
-    def start(self, new_species, new_cards):
+    def start(self, watering_hole, new_species, new_cards):
         """
         :effect Updates this state by adding the new species board if it exists and adding the new trait cards
                 to the hand. Then gives the new state to the external player.
+        :param watering_hole: Natural representing the food currently at the watering hole
         :param new_species: the optional new_species to add to the board.
         :param new_cards: the appropriate number of cards to add to the had
         """
@@ -72,7 +73,7 @@ class PlayerState(object):
             self.species.append(new_species)
         self.hand += new_cards
         state_copy = self
-        self.ext_player.start(state_copy)
+        self.ext_player.start(watering_hole, state_copy)
 
     def deal_amount(self):
         """

@@ -4,8 +4,8 @@ from time import *
 
 class DealerProxy(object):
     """
-    Filters JSON requests from the server to the client
-    Uses external player to generate responses and sends them back to server
+    Filters JSON messages from the server to the client
+    Uses external Player to generate responses and sends them back to server
     """
     def __init__(self, player, socket):
         """
@@ -26,8 +26,8 @@ class DealerProxy(object):
         self.start(response)
 
     def start(self, response):
-        player_state = Convert.rp_json_to_player(response)
-        self.player.start(player_state)
+        [watering_hole, player_state] = Convert.json_to_state(response)
+        self.player.start(watering_hole, player_state)
         json_all_players = Convert.listen(self.socket, False)
         self.choose(json_all_players)
 
@@ -42,6 +42,7 @@ class DealerProxy(object):
         right_players = Convert.json_to_choice_lop(json_all_players[1])
         action4 = self.player.choose(left_players, right_players)
         json_action4 = Convert.action4_to_json(action4)
+        print json_action4
         self.socket.sendall(json.dumps(json_action4))
         self.wait_for_next_step()
 
@@ -53,7 +54,7 @@ class DealerProxy(object):
         If the response is a list of length five -> Feed
         :return:
         """
-        response = Convert.listen(self.socket, False)
+        response = Convert.listen(self.socket)
         if len(response) == 3:
             return self.start(response)
         elif len(response) == 5:

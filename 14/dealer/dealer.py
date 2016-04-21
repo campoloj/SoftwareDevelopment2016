@@ -186,7 +186,7 @@ class Dealer(object):
         """
         new_cards = self.cards_to_deal(player)
         opt_species = (False if player.species else Species())
-        player.start(opt_species, new_cards)
+        player.start(self.watering_hole, opt_species, new_cards)
 
     def cards_to_deal(self, player):
         """
@@ -214,7 +214,10 @@ class Dealer(object):
         for player in self.list_of_players:
             try:
                 action4_list.append(player.choose(all_players))
-            except:
+                print "Passed"
+            except Exception as exc:
+                print "Gather actions"
+                print exc
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
         if not self.list_of_players:
@@ -249,7 +252,9 @@ class Dealer(object):
                 action4_list[i].validate_hand(player)
                 action4_list[i].apply_all(self, player)
                 self.validate_attributes()
-            except:
+            except Exception as exc:
+                print "Apply actions"
+                print exc
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
         self.foodcard_reveal()

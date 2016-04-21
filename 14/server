@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os
+import sys
 import SocketServer
 import json
 import threading
@@ -11,23 +11,46 @@ from dealer.globals import *
 from convert import *
 
 player_proxies = []
-started = False
-server_active = True
+end_game = False
+
+
+def main(hostname, port):
+    """
+    Creates a TCP server and waits for client sign ups before running a game
+    :param hostname: String representing the TCP server hostname
+    :param port: String representing the TCP server port
+    :effect Runs a game when maximum players signed up or wait time expires, then shuts down
+    """
+    server = ThreadedTCPServer((hostname, int(port)), ThreadedTCPRequestHandler)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+    start_time = time.time()
+    while not len(player_proxies) == LOP_MAX and time.time() - start_time < SIGNUP_TIME:
+        continue
+    run_game()
+    server.shutdown()
+    server.server_close()
+
+
+def run_game():
+    """
+    Creates a Dealer with the currently signed-up Proxy_Players and runs a game
+    :effect: Terminates request handlers and prints game results on server console
+    """
+    global end_game
+    dealer = Dealer.create_initial(player_proxies)
+    result = dealer.run_game()
+    end_game = True
+    print result
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     """
     A TCP Server capable of handling clients on separate threads
     """
-    def serve_forever(self):
-        """
-        Handle client sign-up requests until game ends
-        :effect: Signs up clients, shuts server down upon completion of game
-        """
-        global server_active
-        while server_active:
-            self.handle_request()
-        self.shutdown()
+    allow_reuse_address = True
+    pass
 
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
@@ -36,63 +59,16 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     """
     def handle(self):
         """
-        Listens to client sign ups and creates Proxy_Players for them if a valid sigh-up message is received.
-        :effect: Will start the game once the maximum amount of clients have signed up or the sign up time expires
+        Listens to client sign ups and creates ProxyPlayers for them if a valid sign-up message is received.
+        :effect: Updates list of ProxyPlayers
         """
-        global PROXY_ID, player_proxies, start_time, started
         signup_message = Convert.listen(self.request, time_out=False)
 
         self.request.sendall(json.dumps(SIGNUP_RSP))
         player_proxies.append(PlayerProxy(signup_message, self))
-        if len(player_proxies) == LOP_MAX:
-            start_game()
-
-        while time.time() - start_time < SIGNUP_TIME:
+        while not end_game:
             continue
-
-        start_game()
-
-        while started:
-            continue
-
-
-def start_game():
-    """
-    Creates a Dealer with the currently signed-up Proxy_Players and runs a game
-    :effect: Sends game results to each client and messages server to terminate upon game completion
-    """
-    global started, player_proxies
-    if started:
-        return
-    started = True
-
-    dealer = Dealer.create_initial(player_proxies)
-    result = dealer.run_game()
-    end_game(result)
-
-
-def end_game(result):
-    """
-    Sends game results to each client and messages server to terminate upon game completion
-    :param result: String representation of scoreboard
-    """
-    global started, player_proxies, server_active
-    for proxy in player_proxies:
-        proxy.handler.request.sendall(json.dumps([result]))
-    print result
-
-    started = server_active = False
-    os.system("nc %s %d" % (HOSTNAME, PORT))
-
-
-def main():
-    global start_time
-    server = ThreadedTCPServer((HOSTNAME, PORT), ThreadedTCPRequestHandler)
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.daemon = True
-    start_time = time.time()
-    server_thread.run()
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1], sys.argv[2])
