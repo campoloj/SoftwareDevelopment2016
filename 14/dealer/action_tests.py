@@ -127,12 +127,7 @@ class TestActions(unittest.TestCase):
                           'Player 2: '
                           'removed cards: [fat-tissue, 4], [carnivore, 3], '
                           'Species 0: [[population, 3->4]], '
-                          '[watering_hole, 14->17]' )
-
-
-
-
-
+                          '[watering_hole, 14->17]')
 
 if __name__ == '__main__':
     unittest.main()
