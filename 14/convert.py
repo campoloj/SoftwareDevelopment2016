@@ -125,7 +125,7 @@ class Convert(object):
         :param list_of_gp: List of GP as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: List of GrowAction objects
         """
-        return [GrowAction(POPULATION, gp[1], gp[2]) for gp in list_of_gp]
+        return [GrowAction(POPULATION, gp[0], gp[1]) for gp in list_of_gp]
 
     @classmethod
     def json_to_gb(cls, list_of_gb):
@@ -134,7 +134,7 @@ class Convert(object):
         :param list_of_gb: List of GB as specified by http://www.ccs.neu.edu/home/matthias/4500-s16/11.html
         :return: List of GrowAction objects
         """
-        return [GrowAction(BODY, gb[1], gb[2]) for gb in list_of_gb]
+        return [GrowAction(BODY, gb[0], gb[1]) for gb in list_of_gb]
 
     @classmethod
     def json_to_species_action(cls, list_of_bt):
