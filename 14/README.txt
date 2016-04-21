@@ -1,7 +1,5 @@
-The purpose of this project was to run an entire game of evolution, remotely
-which meant creating a server file and a player proxy. Additionally, we
-created a client file and dealer proxy that can connect and player with
-the server.
+The purpose of this project was to incorporate minor changes in the remote protocol
+to our system, as well as prepare our code base for the final code walk
 _____________________________________________________________________________________________
 
 server: The server file that starts the sign up and runs a game.
@@ -35,22 +33,16 @@ xsilly: exectutable to test Player choose() method
 __________________________________________________________________________________________
 
 to run server:
-./server
+./server <hostname> <port>
+ex: ./server localhost 9999
 
 to run remote_main:
-./remote_main
+./remote_main <username> <hostname> <port>
+ex: ./remote_main jake localhost 9999
 
 to run main:
 n = number of players
 ./main n
-
-to run xstep:
-
-./xstep < input.json > output.json
-
-to run xstep4:
-
-./xstep4 < input.json > output.json
 
 to run xsilly:
 
@@ -61,7 +53,7 @@ ________________________________________________________________________________
 
 Read the following files (from top to bottom) in order below:
 
-In 13/dealer:
+In 14/dealer:
 - dealer.py
 - dealer_tests.py
 - player.py
@@ -78,7 +70,7 @@ In 13/dealer:
 - gui.py
 - gui_tests.py
 
-In 13:
+In 14:
 - main
 - server
 - player_proxy.py
