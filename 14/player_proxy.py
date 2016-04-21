@@ -23,7 +23,7 @@ class PlayerProxy(object):
         :param watering_hole: Natural representing food currently at the watering hole
         :param player_state: Player_State for the external player
         """
-        json_player = Convert.player_to_rp_json(player_state)
+        json_player = player_state.convert_to_state_json()
         state = [watering_hole] + json_player
         self.handler.request.sendall(json.dumps(state))
 

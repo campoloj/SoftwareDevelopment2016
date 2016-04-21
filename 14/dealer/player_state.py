@@ -318,6 +318,41 @@ class PlayerState(object):
             self.hand[i] = False
         self.hand = [card for card in self.hand if card]
 
+# ====================================  Conversion Methods ==========================================
+
+    def convert_to_player_json(self):
+        """
+        Converts this PlayerState to a JSON Player+. Does not render empty hands.
+        :return: a JSON Player+ as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        """
+        self.validate_attributes()
+        json_species = [species_obj.convert_to_json() for species_obj in self.species]
+        json_hand = [trait_card.convert_to_json() for trait_card in self.hand]
+        json_player = [[ID, self.name], [SPECIES, json_species], [BAG, self.food_bag]]
+        if json_hand:
+            json_player.append([CARDS, json_hand])
+        return json_player
+
+    def convert_to_boards_json(self):
+        """
+        Converts this PlayerState to a JSON Boards
+        :return: a JSON Boards as specified in
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [species_obj.convert_to_json() for species_obj in self.species]
+
+    def convert_to_state_json(self):
+        """
+        Converts tgis PlayerState to a remote protocol JSON player state
+        :return: a remote protocol JSON player state as specified in
+                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        self.validate_attributes()
+        json_species = [species_obj.convert_to_json() for species_obj in self.species]
+        json_hand = [trait_card.convert_to_json() for trait_card in self.hand]
+        return [self.food_bag, json_species, json_hand]
+
 # ====================================  Validation Methods ==========================================
 
     @classmethod

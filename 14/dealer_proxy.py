@@ -29,7 +29,7 @@ class DealerProxy(object):
         Gives the external player their state, then waits for the choice json of all the players and calls choose.
         :param json_state: JSON State representing watering hole and PlayerState attributes
         """
-        [watering_hole, player_state] = Convert.json_to_state(json_state)
+        [watering_hole, player_state] = Convert.json_to_wh_state(json_state)
         self.player.start(watering_hole, player_state)
         json_all_players = Convert.listen(self.socket, False)
         self.choose(json_all_players)

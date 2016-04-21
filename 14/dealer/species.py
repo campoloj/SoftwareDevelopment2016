@@ -145,6 +145,24 @@ class Species(object):
         self.food += FEED_QUANTITY
         return watering_hole - FEED_QUANTITY
 
+# ====================================  Conversion Methods ==========================================
+
+    def convert_to_json(self):
+        """
+        Converts this Species object into a JSON Species+. Does not render empty fat-food.
+        :return: a JSON Species+ as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
+        """
+        self.validate_attributes()
+        json_traits = [trait.convert_to_json() for trait in self.traits]
+        json_species = [[FOOD, self.food], [BODY, self.body],
+                        [POPULATION, self.population], [TRAITS, json_traits]]
+        if self.fat_storage:
+            json_species.append([FATFOOD, self.fat_storage])
+        return json_species
+
+# ====================================  Validation Methods ==========================================
+
     @classmethod
     def validate_all_cards(cls, list_of_species, total_deck):
         """

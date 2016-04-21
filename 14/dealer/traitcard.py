@@ -23,6 +23,16 @@ class TraitCard(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def convert_to_json(self):
+        """
+        Converts this TraitCard into a JSON Trait or SpeciesCard
+        :return: a JSON Trait or SpeciesCard as specified by the data definitions at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/5.html and
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html, respectively.
+        """
+        self.validate_attributes()
+        return self.trait if self.food_points is False else [self.food_points, self.trait]
+
     @classmethod
     def validate_all_unique(cls, list_of_traitcard, total_deck):
         """

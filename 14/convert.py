@@ -72,20 +72,6 @@ class Convert(object):
         dealer.validate_attributes()
         return dealer
 
-    @classmethod
-    def dealer_to_json(cls, dealer):
-        """
-        Converts a Dealer object into a JSON Configuration
-        :param dealer: a Dealer object
-        :return: a JSON Configuration as specified by the data definition at
-                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
-        """
-        dealer.validate_attributes()
-
-        json_players = [cls.player_to_json(player) for player in dealer.list_of_players]
-        json_deck = [cls.trait_to_json(trait_card) for trait_card in dealer.deck]
-        return [json_players, dealer.watering_hole, json_deck]
-
 # ======================================  Actions ==========================================
 
     @classmethod
@@ -200,30 +186,14 @@ class Convert(object):
         player_obj.validate_attributes()
         return player_obj
 
-    @classmethod
-    def player_to_json(cls, player):
-        """
-        Converts a PlayerState to a JSON Player+. Does not render empty hands.
-        :param player: a PlayerState object
-        :return: a JSON Player+ as specified by the data definition at
-                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
-        """
-        player.validate_attributes()
-        json_species = [cls.species_to_json(species_obj) for species_obj in player.species]
-        json_hand = [cls.trait_to_json(trait_card) for trait_card in player.hand]
-        json_player = [[ID, player.name], [SPECIES, json_species], [BAG, player.food_bag]]
-        if json_hand:
-            json_player.append([CARDS, json_hand])
-        return json_player
-
 # ----------------------------- Players as Lists of Species Boards ----------------------------
 
     @classmethod
     def json_to_choice_lop(cls, json_los_list):
         """
-        Converts a List of List of JSON Species to a List of PlayerStates
-        :param json_los_list: the list of JSON LOS as specified by the data definition at
-                           http://www.ccs.neu.edu/home/matthias/4500-s16/12.html
+        Converts a List of JSON Boards to a List of PlayerStates
+        :param json_los_list: the list of JSON Boards as specified by the data definition at
+                           http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: a List of PlayerState.
         """
         return [cls.json_boards_to_player(jboards) for jboards in json_los_list]
@@ -237,8 +207,8 @@ class Convert(object):
         :return: [LOB, LOB] as specified by
                 http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         """
-        lob_left = [cls.player_to_json_boards(player) for player in lop_left]
-        lob_right = [cls.player_to_json_boards(player) for player in lop_right]
+        lob_left = [player.convert_to_boards_json() for player in lop_left]
+        lob_right = [player.convert_to_boards_json() for player in lop_right]
         return [lob_left, lob_right]
 
     @classmethod
@@ -252,33 +222,10 @@ class Convert(object):
         species = [cls.json_to_species(jspecies) for jspecies in jboards]
         return PlayerState(species=species)
 
-    @classmethod
-    def player_to_json_boards(cls, player):
-        """
-        Converts a PlayerState to a JSON Boards
-        :param player: a PlayerState object
-        :return: a JSON Boards as specified in
-                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
-        """
-        return [cls.species_to_json(species_obj) for species_obj in player.species]
-
 # ----------------------------- Players as States ----------------------------
 
     @classmethod
-    def player_to_rp_json(cls, player):
-        """
-        Converts a PlayerState to a remote protocol JSON state
-        :param player: a PlayerState object
-        :return: a remote protocol JSON state as specified in
-                http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
-        """
-        player.validate_attributes()
-        json_species = [cls.species_to_json(species_obj) for species_obj in player.species]
-        json_hand = [cls.trait_to_json(trait_card) for trait_card in player.hand]
-        return [player.food_bag, json_species, json_hand]
-
-    @classmethod
-    def rp_json_to_player(cls, rp_json):
+    def state_json_to_player(cls, rp_json):
         """
         Converts a remote protocol JSON player state to a PlayerState
         :param rp_json: a remote protocol JSON state as specified in
@@ -292,7 +239,7 @@ class Convert(object):
         return PlayerState(food_bag=food_bag, hand=hand, species=species)
 
     @classmethod
-    def json_to_state(cls, json_state):
+    def json_to_wh_state(cls, json_state):
         """
         Converts a watering hole and remote protocol JSON player state to a Integer and PlayerState
         :param json_state: a remote protocol JSON state with watering hole as specified in
@@ -300,7 +247,7 @@ class Convert(object):
         :return: [Integer, PlayerState object]
         """
         watering_hole = json_state.pop(0)
-        player = cls.rp_json_to_player(json_state)
+        player = cls.state_json_to_player(json_state)
         assert(isinstance(watering_hole, int) and watering_hole >= MIN_WATERING_HOLE)
         return [watering_hole, player]
 
@@ -312,7 +259,7 @@ class Convert(object):
                         http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: [PlayerState, Natural, List of PlayerState]
         """
-        player = cls.rp_json_to_player(jgamestate[:3])
+        player = cls.state_json_to_player(jgamestate[:3])
         watering_hole, jboards = jgamestate[3:]
         assert(isinstance(watering_hole, int) and watering_hole > MIN_WATERING_HOLE)
         other_players = cls.json_to_choice_lop(jboards)
@@ -329,8 +276,8 @@ class Convert(object):
                  http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         """
         assert(isinstance(watering_hole, int) and watering_hole > MIN_WATERING_HOLE)
-        state = cls.player_to_rp_json(player)
-        other_players = [cls.player_to_json_boards(op) for op in other_players]
+        state = player.convert_to_state_json()
+        other_players = [op.convert_to_boards_json() for op in other_players]
         state += [watering_hole, other_players]
         return state
 
@@ -358,22 +305,6 @@ class Convert(object):
         species_obj.validate_attributes()
         return species_obj
 
-    @classmethod
-    def species_to_json(cls, species_obj):
-        """
-        Converts a Species object into a JSON Species+. Does not render empty fat-food.
-        :param species_obj: a Species object
-        :return: a JSON Species+ as specified by the data definition at
-                 http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
-        """
-        species_obj.validate_attributes()
-        json_traits = [cls.trait_to_json(trait) for trait in species_obj.traits]
-        json_species = [[FOOD, species_obj.food], [BODY, species_obj.body],
-                        [POPULATION, species_obj.population], [TRAITS, json_traits]]
-        if species_obj.fat_storage:
-            json_species.append([FATFOOD, species_obj.fat_storage])
-        return json_species
-
 # ======================================  TraitCard ==========================================
 
     @classmethod
@@ -392,15 +323,3 @@ class Convert(object):
         trait_card = TraitCard(trait, food)
         trait_card.validate_attributes()
         return trait_card
-
-    @classmethod
-    def trait_to_json(cls, trait_card):
-        """
-        Converts a TraitCard into a JSON Trait or SpeciesCard
-        :param trait_card: a TraitCard object
-        :return: a JSON Trait or SpeciesCard as specified by the data definitions at
-                 http://www.ccs.neu.edu/home/matthias/4500-s16/5.html and
-                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html, respectively.
-        """
-        trait_card.validate_attributes()
-        return trait_card.trait if trait_card.food_points is False else [trait_card.food_points, trait_card.trait]

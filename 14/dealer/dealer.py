@@ -339,6 +339,18 @@ class Dealer(object):
         while self.list_of_players[0].name is not first_player_id:
             self.list_of_players.append(self.list_of_players.pop(0))
 
+# ======================================   Conversion Methods ===========================================
+
+    def convert_to_json(self):
+        """
+        Converts this Dealer object into a JSON Configuration
+        :return: a JSON Configuration as specified by the data definition at
+                 http://www.ccs.neu.edu/home/matthias/4500-s16/8.html
+        """
+        self.validate_attributes()
+        json_players = [player.convert_to_player_json() for player in self.list_of_players]
+        json_deck = [trait_card.convert_to_json() for trait_card in self.deck]
+        return [json_players, self.watering_hole, json_deck]
 
 # ======================================   Validation Methods ===========================================
 
