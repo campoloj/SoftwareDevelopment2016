@@ -117,7 +117,7 @@ class GrowAction(Action):
     def convert_to_json(self):
         """
         Convert this GrowAction into its respective JSON representation
-        :return: Nat representing the index into the acting PlayerState's hand
+        :return: GP or GB as specified in http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         """
         return [self.species_board_index, self.trade_card_index]
 
@@ -163,6 +163,13 @@ class AddSpeciesAction(Action):
         hand_indices += self.add_card_list
         return hand_indices
 
+    def convert_to_json(self):
+        """
+        Convert this AddSpeciesAction into its respective JSON representation
+        :return: BT as specified in http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [self.trade_card_index] + self.add_card_list
+
 
 class ReplaceTraitAction(Action):
     """
@@ -203,3 +210,10 @@ class ReplaceTraitAction(Action):
         :return: List of Nat representing indices into the hand
         """
         return [self.replacement_card_index]
+
+    def convert_to_json(self):
+        """
+        Convert this ReplaceTraitAction into its respective JSON representation
+        :return: RT as specified in http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
+        """
+        return [self.species_board_index, self.card_to_replace_index, self.replacement_card_index]

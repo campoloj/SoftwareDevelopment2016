@@ -43,7 +43,7 @@ class DealerProxy(object):
         left_players = Convert.json_to_choice_lop(json_all_players[0])
         right_players = Convert.json_to_choice_lop(json_all_players[1])
         action4 = self.player.choose(left_players, right_players)
-        json_action4 = Convert.action4_to_json(action4)
+        json_action4 = action4.convert_to_json()
         self.socket.sendall(json.dumps(json_action4))
         self.wait_for_next_step()
 
