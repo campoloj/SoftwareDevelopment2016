@@ -98,7 +98,7 @@ class Dealer(object):
         Runs a complete game of Evolution
         :return: String representation of Player scores
         """
-        while not self.game_over() and self.list_of_players:
+        while not self.game_over():
             self.run_turn()
 
         return self.scoreboard()
@@ -110,7 +110,7 @@ class Dealer(object):
         :return: True if game is over, else False
         """
         cards_to_deal = sum([player.deal_amount() for player in self.list_of_players])
-        return len(self.deck) < cards_to_deal
+        return len(self.deck) < cards_to_deal or not self.list_of_players
 
     def run_turn(self):
         """
@@ -120,7 +120,8 @@ class Dealer(object):
                           else self.list_of_players[0].name)
         self.step1()
         action4_list = self.step2n3()
-        self.step4(action4_list)
+        if action4_list:
+            self.step4(action4_list)
         self.end_turn()
         self.order_players(next_player_id)
 
@@ -216,8 +217,6 @@ class Dealer(object):
             except:
                 cheater_ids.append(player.name)
         self.remove_cheaters(cheater_ids)
-        if not self.list_of_players:
-            return []
         return action4_list
 
 # ======================================  Step 4 Methods ============================================
