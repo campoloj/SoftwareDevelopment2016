@@ -191,8 +191,8 @@ class Convert(object):
     @classmethod
     def json_to_choice_lop(cls, json_los_list):
         """
-        Converts a List of JSON Boards to a List of PlayerStates
-        :param json_los_list: the list of JSON Boards as specified by the data definition at
+        Converts a JSON LOB to a List of PlayerStates
+        :param json_los_list: JSON LOB as specified by the data definition at
                            http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: a List of PlayerState.
         """
@@ -214,7 +214,7 @@ class Convert(object):
     @classmethod
     def json_boards_to_player(cls, jboards):
         """
-        Convert a JSON Boards to a List of PlayerStates
+        Convert a JSON Boards to a PlayerState
         :param jboards: a JSON Boards as specified in
                         http://www.ccs.neu.edu/home/matthias/4500-s16/r_remote.html
         :return: a PlayerState object

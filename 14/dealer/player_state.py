@@ -13,7 +13,7 @@ class PlayerState(object):
     the dealer only sends the minimum amount of data needed for the player to make
     choices
     """
-    def __init__(self, name=0, food_bag=0, hand=False, species=False, active=True, ext_player=False):
+    def __init__(self, name=1, food_bag=0, hand=False, species=False, active=True, ext_player=False):
         """
         Creates a PlayerState
         :param name: The players ID

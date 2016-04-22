@@ -63,7 +63,7 @@ In 14/dealer:
 - action_tests.py
 - feeding_choice.py
 - player_state.py
-- palyer_state_tests.py
+- player_state_tests.py
 - species.py
 - species_tests.py
 - traitcard.py
@@ -76,6 +76,7 @@ In 14:
 - player_proxy.py
 - dealer_proxy.py
 - remote_main
+- convert
 
 
 
