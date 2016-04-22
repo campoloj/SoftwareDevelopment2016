@@ -150,7 +150,7 @@ class Dealer(object):
         :return: List of (Natural, Natural) representing ordered (Player ID, score) tuples
         """
         player_scores = [player.get_score() for player in self.list_of_players]
-        return sorted(player_scores, key=lambda player_score: player_score[1], reverse=True)
+        return sorted(player_scores, key=lambda player_score: (-player_score[1], player_score[0]))
 
     @classmethod
     def render_scoreboard(cls, player_scores):
