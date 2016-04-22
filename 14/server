@@ -25,7 +25,7 @@ def main(hostname, port):
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.start()
     start_time = time.time()
-    while not len(player_proxies) == LOP_MAX and time.time() - start_time < SIGNUP_TIME:
+    while len(player_proxies) < LOP_MAX and time.time() - start_time < SIGNUP_TIME:
         continue
     run_game()
     server.shutdown()

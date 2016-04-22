@@ -19,7 +19,7 @@ class DealerProxy(object):
 
     def wait_for_start(self):
         """
-        Waits for the start message with the initial player state. Calls start on our player.
+        Waits for the start message with the initial watering hole and player state
         """
         response = Convert.listen(self.socket, False)
         self.start(response)
@@ -36,7 +36,7 @@ class DealerProxy(object):
 
     def choose(self, json_all_players):
         """
-        Converts the json_all_players to two lists of Player_States. Then asks the player to chose with the
+        Converts the json_all_players to two lists of PlayerStates. Then asks the player to chose with the
         information. Converts the Action4 results to json. Sends it. Waits for the next step.
         :param json_all_players: JSON [LOB, LOB]
         """
@@ -63,10 +63,10 @@ class DealerProxy(object):
         """
         Waits for the response and then checks where in the game we are.
         If the response is a list of length 4 -> Choose
-        If the response is a list of length five -> Feed
+        If the response is a list of length 5 -> Feed
         """
         response = Convert.listen(self.socket)
-        if len(response) == 4:
+        if len(response) == CHOOSE_LEN:
             return self.start(response)
-        elif len(response) == 5:
+        elif len(response) == FEED_LEN:
             return self.feed(response)

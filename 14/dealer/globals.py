@@ -91,3 +91,5 @@ HOSTNAME = 'localhost'
 SIGNUP_TIME = 60
 SIGNUP_MSG = "sign-up"
 SIGNUP_RSP = "ok"
+CHOOSE_LEN = 4
+FEED_LEN = 5
