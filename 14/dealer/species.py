@@ -154,7 +154,7 @@ class Species(object):
                  http://www.ccs.neu.edu/home/matthias/4500-s16/6.html
         """
         self.validate_attributes()
-        json_traits = [trait.convert_to_json() for trait in self.traits]
+        json_traits = self.trait_names()
         json_species = [[FOOD, self.food], [BODY, self.body],
                         [POPULATION, self.population], [TRAITS, json_traits]]
         if self.fat_storage:
