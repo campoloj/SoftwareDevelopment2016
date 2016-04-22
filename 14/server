@@ -61,10 +61,11 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         :effect: Updates list of ProxyPlayers
         """
         signup_message = Convert.listen(self.request, time_out=False)
-        self.request.sendall(json.dumps(SIGNUP_RSP))
-        player_proxies.append(PlayerProxy(signup_message, self))
-        while not end_game:
-            continue
+        if isinstance(signup_message, basestring):
+            self.request.sendall(json.dumps(SIGNUP_RSP))
+            player_proxies.append(PlayerProxy(signup_message, self))
+            while not end_game:
+                continue
 
 
 if __name__ == "__main__":
